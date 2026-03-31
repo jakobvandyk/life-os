@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { supabase } from "@/lib/supabase";
 
 interface TaxFlag {
   id: number;
@@ -8,6 +9,7 @@ interface TaxFlag {
   jurisdiction: string;
   priority: string;
   notes: string;
+  user_id: string;
 }
 
 const priorityColors: Record<string, string> = {
@@ -32,9 +34,11 @@ const selectClass =
 export default function TaxFlagsTab({
   taxFlags,
   onRefresh,
+  userId,
 }: {
   taxFlags: TaxFlag[];
   onRefresh: () => void;
+  userId: string | null;
 }) {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({
@@ -45,28 +49,34 @@ export default function TaxFlagsTab({
   });
 
   const addFlag = async () => {
+    if (!userId) return;
     if (!form.title.trim()) return;
-    await fetch("/api/finances", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ table: "tax_flag", data: form }),
+    const { error } = await supabase.from("finance_tax_flags").insert({
+      ...form,
+      resolved_at: null,
+      user_id: userId,
     });
+    if (error) console.error("Error adding tax flag:", error);
     setForm({ title: "", jurisdiction: "AU", priority: "medium", notes: "" });
     setShowForm(false);
     onRefresh();
   };
 
   const resolveFlag = async (id: number) => {
-    await fetch(`/api/finances/${id}?table=tax_flag`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ resolve: true }),
-    });
+    if (!userId) return;
+    const { error } = await supabase
+      .from("finance_tax_flags")
+      .update({ resolved_at: new Date().toISOString() })
+      .eq("id", id)
+      .eq("user_id", userId);
+    if (error) console.error("Error resolving tax flag:", error);
     onRefresh();
   };
 
   const deleteFlag = async (id: number) => {
-    await fetch(`/api/finances/${id}?table=tax_flag`, { method: "DELETE" });
+    if (!userId) return;
+    const { error } = await supabase.from("finance_tax_flags").delete().eq("id", id).eq("user_id", userId);
+    if (error) console.error("Error deleting tax flag:", error);
     onRefresh();
   };
 

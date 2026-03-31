@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
 
 interface DashboardData {
   taskStats: { active: number; completed_this_week: number; overdue: number };
   todayTasks: { id: number; title: string; priority: string; due_date: string }[];
-  habits: { name: string; icon: string; done_today: number }[];
+  habits: { name: string; icon: string; done_today: boolean }[];
   spending: { month_expenses: number; month_income: number };
   goals: { title: string; progress: number }[];
   recentJournal: { date: string; mood: number; energy: number }[];
@@ -24,7 +25,130 @@ export default function Dashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
 
   useEffect(() => {
-    fetch("/api/dashboard").then((r) => r.json()).then(setData);
+    async function fetchDashboardData() {
+      const todayISO = new Date().toISOString().split('T')[0];
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      const sevenDaysAgoISO = sevenDaysAgo.toISOString();
+
+      // Task Stats
+      const { count: activeCount } = await supabase
+        .from('tasks')
+        .select('*', { count: 'exact', head: true })
+        .neq('status', 'done');
+
+      const { count: completedThisWeekCount } = await supabase
+        .from('tasks')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'done')
+        .gte('completed_at', sevenDaysAgoISO);
+
+      const { count: overdueCount } = await supabase
+        .from('tasks')
+        .select('*', { count: 'exact', head: true })
+        .lt('due_date', todayISO)
+        .neq('status', 'done');
+
+      const taskStats = {
+        active: activeCount || 0,
+        completed_this_week: completedThisWeekCount || 0,
+        overdue: overdueCount || 0,
+      };
+
+      // Today Tasks
+      const priorityOrder: Record<string, number> = {
+        urgent: 1,
+        high: 2,
+        medium: 3,
+        low: 4,
+      };
+
+      const { data: todayTasksRawData } = await supabase
+        .from('tasks')
+        .select('id, title, priority, due_date')
+        .or(`due_date.lte.${todayISO},due_date.is.null`)
+        .neq('status', 'done');
+
+      const todayTasks = todayTasksRawData
+        ?.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority])
+        .slice(0, 10) || [];
+
+      // Habits
+      const { data: habitsRawData } = await supabase
+        .from('habits')
+        .select('id, name, icon')
+        .eq('active', true);
+
+      const { data: habitLogsRawData } = await supabase
+        .from('habit_logs')
+        .select('habit_id')
+        .eq('date', todayISO);
+
+      const todayDoneHabitIds = new Set(
+        habitLogsRawData?.map(log => log.habit_id)
+      );
+
+      const habits = habitsRawData?.map(habit => ({
+        name: habit.name,
+        icon: habit.icon,
+        done_today: todayDoneHabitIds.has(habit.id),
+      })) || [];
+
+      // Spending
+      const startOfMonth = new Date();
+      startOfMonth.setDate(1);
+      startOfMonth.setHours(0, 0, 0, 0);
+      const endOfMonth = new Date(startOfMonth.getFullYear(), startOfMonth.getMonth() + 1, 0);
+      endOfMonth.setHours(23, 59, 59, 999);
+
+      const { data: expensesData } = await supabase
+        .from('finance_expenses')
+        .select('amount')
+        .gte('created_at', startOfMonth.toISOString())
+        .lte('created_at', endOfMonth.toISOString());
+
+      const { data: incomeData } = await supabase
+        .from('finance_income')
+        .select('amount')
+        .gte('created_at', startOfMonth.toISOString())
+        .lte('created_at', endOfMonth.toISOString());
+
+      const month_expenses = expensesData?.reduce((sum, item) => sum + item.amount, 0) || 0;
+      const month_income = incomeData?.reduce((sum, item) => sum + item.amount, 0) || 0;
+
+      const spending = { month_expenses, month_income };
+
+      // Goals
+      const { data: goalsData } = await supabase
+        .from('goals')
+        .select('title, percent_complete')
+        .eq('status', 'active');
+
+      const goals = goalsData?.map(goal => ({
+        title: goal.title,
+        progress: goal.percent_complete
+      })) || [];
+
+      // Recent Journal
+      const { data: recentJournalData } = await supabase
+        .from('journal_entries')
+        .select('date, mood, energy')
+        .order('date', { ascending: false })
+        .limit(7);
+      
+      const recentJournal = recentJournalData || [];
+
+      setData({
+        taskStats,
+        todayTasks,
+        habits,
+        spending,
+        goals,
+        recentJournal,
+      });
+    }
+
+    fetchDashboardData();
   }, []);
 
   if (!data) {

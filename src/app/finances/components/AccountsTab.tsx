@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { supabase } from "@/lib/supabase";
 
 interface Account {
   id: number;
@@ -14,6 +15,7 @@ interface Account {
   balance: number;
   interest_rate_pa: number | null;
   notes: string;
+  user_id: string;
 }
 
 const CUR: Record<string, string> = { AUD: "A$", NZD: "NZ$", USD: "US$" };
@@ -40,9 +42,11 @@ const TIERS = [
 export default function AccountsTab({
   accounts,
   onRefresh,
+  userId,
 }: {
   accounts: Account[];
   onRefresh: () => void;
+  userId: string | null;
 }) {
   const [showForm, setShowForm] = useState(false);
   const [editBal, setEditBal] = useState<number | null>(null);
@@ -61,20 +65,17 @@ export default function AccountsTab({
   });
 
   const addAccount = async () => {
+    if (!userId) return;
     if (!form.name.trim()) return;
-    await fetch("/api/finances", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        table: "account",
-        data: {...form,
-          balance: form.balance ? Math.round(parseFloat(form.balance) * 100) : 0,
-          interest_rate_pa: form.interest_rate_pa
-            ? parseFloat(form.interest_rate_pa) / 100
-            : null,
-        },
-      }),
+    const { error } = await supabase.from("finance_accounts").insert({
+      ...form,
+      balance: form.balance ? Math.round(parseFloat(form.balance) * 100) : 0,
+      interest_rate_pa: form.interest_rate_pa
+        ? parseFloat(form.interest_rate_pa) / 100
+        : null,
+      user_id: userId,
     });
+    if (error) console.error("Error adding account:", error);
     setForm({
       name: "", institution: "", currency: "AUD", liquidity_tier: "immediate",
       asset_class: "cash_equivalents", account_type: "savings", balance: "",
@@ -85,19 +86,23 @@ export default function AccountsTab({
   };
 
   const saveBal = async (id: number) => {
+    if (!userId) return;
     const cents = Math.round(parseFloat(balVal) * 100);
     if (isNaN(cents)) return;
-    await fetch(`/api/finances/${id}?table=account`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ balance: cents }),
-    });
+    const { error } = await supabase
+      .from("finance_accounts")
+      .update({ balance: cents })
+      .eq("id", id)
+      .eq("user_id", userId);
+    if (error) console.error("Error saving balance:", error);
     setEditBal(null);
     onRefresh();
   };
 
   const deleteAccount = async (id: number) => {
-    await fetch(`/api/finances/${id}?table=account`, { method: "DELETE" });
+    if (!userId) return;
+    const { error } = await supabase.from("finance_accounts").delete().eq("id", id).eq("user_id", userId);
+    if (error) console.error("Error deleting account:", error);
     onRefresh();
   };
 

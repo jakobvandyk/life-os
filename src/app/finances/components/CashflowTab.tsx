@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { supabase } from "@/lib/supabase";
 
 interface Income {
   id: number;
@@ -10,6 +11,7 @@ interface Income {
   frequency: string;
   is_passive: number;
   notes: string;
+  user_id: string;
 }
 
 interface Expense {
@@ -20,6 +22,7 @@ interface Expense {
   frequency: string;
   is_variable: number;
   notes: string;
+  user_id: string;
 }
 
 interface Liability {
@@ -31,6 +34,7 @@ interface Liability {
   due_day: number;
   category: string;
   notes: string;
+  user_id: string;
 }
 
 interface Metrics {
@@ -79,12 +83,14 @@ export default function CashflowTab({
   liabilities,
   metrics,
   onRefresh,
+  userId,
 }: {
   income: Income[];
   expenses: Expense[];
   liabilities: Liability[];
   metrics: Metrics;
   onRefresh: () => void;
+  userId: string | null;
 }) {
   const [form, setForm] = useState<string | null>(null);
 
@@ -101,59 +107,52 @@ export default function CashflowTab({
   });
 
   const addIncome = async () => {
+    if (!userId) return;
     if (!incomeForm.name.trim() || !incomeForm.amount) return;
-    await fetch("/api/finances", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        table: "income",
-        data: {...incomeForm,
-          amount: Math.round(parseFloat(incomeForm.amount) * 100),
-        },
-      }),
+    const { error } = await supabase.from("finance_income").insert({
+      ...incomeForm,
+      amount: Math.round(parseFloat(incomeForm.amount) * 100),
+      user_id: userId,
     });
+    if (error) console.error("Error adding income:", error);
     setIncomeForm({ name: "", amount: "", currency: "AUD", frequency: "monthly", is_passive: false, notes: "" });
     setForm(null);
     onRefresh();
   };
 
   const addExpense = async () => {
+    if (!userId) return;
     if (!expenseForm.category.trim() || !expenseForm.amount) return;
-    await fetch("/api/finances", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        table: "expense",
-        data: {...expenseForm,
-          amount: Math.round(parseFloat(expenseForm.amount) * 100),
-        },
-      }),
+    const { error } = await supabase.from("finance_expenses").insert({
+      ...expenseForm,
+      amount: Math.round(parseFloat(expenseForm.amount) * 100),
+      user_id: userId,
     });
+    if (error) console.error("Error adding expense:", error);
     setExpenseForm({ category: "", amount: "", currency: "AUD", frequency: "monthly", notes: "" });
     setForm(null);
     onRefresh();
   };
 
   const addLiability = async () => {
+    if (!userId) return;
     if (!liabilityForm.name.trim() || !liabilityForm.amount) return;
-    await fetch("/api/finances", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        table: "liability",
-        data: {...liabilityForm,
-          amount: Math.round(parseFloat(liabilityForm.amount) * 100),
-          due_day: parseInt(liabilityForm.due_day),
-        },
-      }),
+    const { error } = await supabase.from("finance_liabilities").insert({
+      ...liabilityForm,
+      amount: Math.round(parseFloat(liabilityForm.amount) * 100),
+      due_day: parseInt(liabilityForm.due_day),
+      user_id: userId,
     });
+    if (error) console.error("Error adding liability:", error);
     setLiabilityForm({ name: "", amount: "", currency: "AUD", frequency: "monthly", due_day: "1", category: "other", notes: "" });
     setForm(null);
     onRefresh();
   };
 
   const deleteItem = async (table: string, id: number) => {
-    await fetch(`/api/finances/${id}?table=${table}`, { method: "DELETE" });
+    if (!userId) return;
+    const { error } = await supabase.from(`finance_${table}`).delete().eq("id", id).eq("user_id", userId);
+    if (error) console.error(`Error deleting ${table}:`, error);
     onRefresh();
   };
 

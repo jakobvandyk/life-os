@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
 
 interface KeyResult {
   id: number;
@@ -22,6 +23,12 @@ interface Goal {
 
 export default function GoalsPage() {
   const [goals, setGoals] = useState<Goal[]>([]);
+  const [userId, setUserId] = useState<string | null>(null);
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) setUserId(user.id);
+    });
+  }, []);
   const [showForm, setShowForm] = useState(false);
   const [editingKR, setEditingKR] = useState<number | null>(null);
   const [krValue, setKrValue] = useState("");
@@ -33,7 +40,10 @@ export default function GoalsPage() {
   });
 
   const fetchGoals = () => {
-    fetch("/api/goals").then((r) => r.json()).then(setGoals);
+    supabase.from("goals").select("*, key_results(*)").eq("status", "active").order("created_at", { ascending: false }).then(({ data, error }) => {
+      if (data) setGoals(data);
+      if (error) console.error("Error fetching goals:", error);
+    });
   };
 
   useEffect(() => {
@@ -41,6 +51,7 @@ export default function GoalsPage() {
   }, []);
 
   const addGoal = async () => {
+    if (!userId) return; // Guard
     if (!form.title.trim()) return;
     const keyResults = form.keyResults.filter((kr) => kr.title.trim() && kr.target).map((kr) => ({
         title: kr.title,
@@ -48,16 +59,30 @@ export default function GoalsPage() {
         unit: kr.unit,
       }));
 
-    await fetch("/api/goals", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        title: form.title,
-        description: form.description,
-        timeframe: form.timeframe,
-        key_results: keyResults,
-      }),
-    });
+    const { data: goalData, error: goalError } = await supabase.from("goals").insert({
+      title: form.title,
+      description: form.description,
+      timeframe: form.timeframe,
+      user_id: userId,
+    }).select();
+
+    if (goalError) {
+      console.error("Error adding goal:", goalError);
+      return;
+    }
+
+    if (goalData && goalData.length > 0) {
+      const newGoalId = goalData[0].id;
+      for (const kr of keyResults) {
+        await supabase.from("key_results").insert({
+          goal_id: newGoalId,
+          title: kr.title,
+          target: kr.target,
+          unit: kr.unit,
+          user_id: userId,
+        });
+      }
+    }
     setForm({
       title: "",
       description: "",
@@ -87,13 +112,13 @@ export default function GoalsPage() {
   };
 
   const updateKRProgress = async (krId: number) => {
+    if (!userId) return; // Guard
     const val = parseFloat(krValue);
     if (isNaN(val)) return;
-    await fetch(`/api/goals/kr/${krId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ current: val }),
-    });
+    const { error } = await supabase.from("key_results").update({ current: val }).eq("id", krId);
+    if (error) {
+      console.error("Error updating key result progress:", error);
+    }
     setEditingKR(null);
     fetchGoals();
   };

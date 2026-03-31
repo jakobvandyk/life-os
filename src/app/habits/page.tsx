@@ -1,18 +1,26 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
 
 interface Habit {
   id: number;
   name: string;
   icon: string;
   target_frequency: string;
-  completed_today: number;
+  completed_today: boolean;
   streak: number;
 }
 
 export default function HabitsPage() {
   const [habits, setHabits] = useState<Habit[]>([]);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) setUserId(user.id);
+    });
+  }, []);
   const [showForm, setShowForm] = useState(false);
   const [newHabit, setNewHabit] = useState({
     name: "",
@@ -20,28 +28,129 @@ export default function HabitsPage() {
     target_frequency: "daily",
   });
 
-  const fetchHabits = () => {
-    fetch("/api/habits").then((r) => r.json()).then(setHabits);
+  const fetchHabits = async () => {
+    if (!userId) return; // Guard against null userId
+
+    const today = new Date().toISOString().split('T')[0];
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+    const { data: habitsData, error: habitsError } = await supabase
+      .from("habits")
+      .select("*", { count: 'exact' })
+      .eq("active", true)
+      .eq("user_id", userId);
+
+    if (habitsError) {
+      console.error("Error fetching habits:", habitsError);
+      return;
+    }
+
+    const { data: habitLogsData, error: habitLogsError } = await supabase
+      .from("habit_logs")
+      .select("habit_id, date")
+      .eq("user_id", userId)
+      .gte("date", thirtyDaysAgo); // Fetch logs for the last 30 days for streak calculation
+
+    if (habitLogsError) {
+      console.error("Error fetching habit logs:", habitLogsError);
+      return;
+    }
+
+    const habitsWithStatusAndStreak = habitsData.map((habit) => {
+      const logsForHabit = habitLogsData.filter((log) => log.habit_id === habit.id);
+      const completedToday = logsForHabit.some((log) => log.date === today);
+
+      // Calculate streak
+      let streak = 0;
+      let currentDate = new Date();
+      for (let i = 0; i < 365; i++) { // Check last 365 days
+        const dateToCheck = currentDate.toISOString().split('T')[0];
+        const hasLog = logsForHabit.some(log => log.date === dateToCheck);
+        if (hasLog) {
+          streak++;
+          currentDate.setDate(currentDate.getDate() - 1);
+        } else {
+          break;
+        }
+      }
+
+      return { ...habit, completed_today: completedToday, streak };
+    });
+
+    setHabits(habitsWithStatusAndStreak);
   };
 
   useEffect(() => {
-    fetchHabits();
-  }, []);
+    if (userId) {
+      fetchHabits();
+    }
+  }, [userId]);
 
   const addHabit = async () => {
-    if (!newHabit.name.trim()) return;
-    await fetch("/api/habits", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newHabit),
+    if (!newHabit.name.trim() || !userId) return; // Guard against null userId
+
+    const { error } = await supabase.from("habits").insert({
+      name: newHabit.name,
+      icon: newHabit.icon,
+      target_frequency: newHabit.target_frequency,
+      user_id: userId, // Include user_id
     });
+
+    if (error) {
+      console.error("Error adding habit:", error);
+      return;
+    }
+
     setNewHabit({ name: "", icon: "✅", target_frequency: "daily" });
     setShowForm(false);
     fetchHabits();
   };
 
   const toggleHabit = async (id: number) => {
-    await fetch(`/api/habits/${id}/toggle`, { method: "POST" });
+    if (!userId) return; // Guard against null userId
+
+    const today = new Date().toISOString().split('T')[0];
+
+    const { data: existingLog, error: checkError } = await supabase
+      .from("habit_logs")
+      .select("id")
+      .eq("habit_id", id)
+      .eq("date", today)
+      .eq("user_id", userId);
+
+    if (checkError) {
+      console.error("Error checking habit log:", checkError);
+      return;
+    }
+
+    if (existingLog && existingLog.length > 0) {
+      // If exists, delete it
+      const { error: deleteError } = await supabase
+        .from("habit_logs")
+        .delete()
+        .eq("habit_id", id)
+        .eq("date", today)
+        .eq("user_id", userId);
+
+      if (deleteError) {
+        console.error("Error deleting habit log:", deleteError);
+        return;
+      }
+    } else {
+      // If not, insert
+      const { error: insertError } = await supabase.from("habit_logs").insert({
+        habit_id: id,
+        user_id: userId, // Include user_id
+        date: today,
+        value: 1,
+      });
+
+      if (insertError) {
+        console.error("Error inserting habit log:", insertError);
+        return;
+      }
+    }
+
     fetchHabits();
   };
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
 
 interface Task {
   id: number;
@@ -9,8 +10,6 @@ interface Task {
   priority: string;
   status: string;
   due_date: string | null;
-  project_name: string | null;
-  project_color: string | null;
   created_at: string;
 }
 
@@ -31,6 +30,7 @@ export default function TasksPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [filter, setFilter] = useState("all");
   const [showForm, setShowForm] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
   const [newTask, setNewTask] = useState({
     title: "",
     description: "",
@@ -38,10 +38,21 @@ export default function TasksPage() {
     due_date: "",
   });
 
-  const fetchTasks = () => {
-    const url =
-      filter === "all" ? "/api/tasks" : `/api/tasks?status=${filter}`;
-    fetch(url).then((r) => r.json()).then(setTasks);
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) setUserId(user.id);
+    });
+  }, []);
+
+  const fetchTasks = async () => {
+    let query = supabase.from("tasks").select("*").order("status").order("priority");
+
+    if (filter !== "all") {
+      query = query.eq("status", filter);
+    }
+
+    const { data } = await query;
+    setTasks(data || []);
   };
 
   useEffect(() => {
@@ -49,11 +60,13 @@ export default function TasksPage() {
   }, [filter]);
 
   const addTask = async () => {
-    if (!newTask.title.trim()) return;
-    await fetch("/api/tasks", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newTask),
+    if (!newTask.title.trim() || !userId) return;
+    await supabase.from("tasks").insert({
+      title: newTask.title,
+      description: newTask.description || "",
+      priority: newTask.priority,
+      due_date: newTask.due_date || null,
+      user_id: userId,
     });
     setNewTask({ title: "", description: "", priority: "medium", due_date: "" });
     setShowForm(false);
@@ -61,16 +74,18 @@ export default function TasksPage() {
   };
 
   const updateStatus = async (id: number, status: string) => {
-    await fetch(`/api/tasks/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status }),
-    });
+    const updates: Record<string, unknown> = { status };
+    if (status === "done") {
+      updates.completed_at = new Date().toISOString();
+    } else {
+      updates.completed_at = null;
+    }
+    await supabase.from("tasks").update(updates).eq("id", id);
     fetchTasks();
   };
 
   const deleteTask = async (id: number) => {
-    await fetch(`/api/tasks/${id}`, { method: "DELETE" });
+    await supabase.from("tasks").delete().eq("id", id);
     fetchTasks();
   };
 
@@ -79,7 +94,6 @@ export default function TasksPage() {
 
   return (
     <div className="max-w-4xl">
-      {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold text-white">📋 Tasks</h1>
@@ -95,7 +109,6 @@ export default function TasksPage() {
         </button>
       </div>
 
-      {/* Add Task Form */}
       {showForm && (
         <div className="bg-gray-900 rounded-xl p-5 border border-gray-800 mb-6">
           <div className="space-y-3">
@@ -103,9 +116,7 @@ export default function TasksPage() {
               type="text"
               placeholder="Task title..."
               value={newTask.title}
-              onChange={(e) =>
-                setNewTask({...newTask, title: e.target.value })
-              }
+              onChange={(e) => setNewTask({...newTask, title: e.target.value })}
               onKeyDown={(e) => e.key === "Enter" && addTask()}
               autoFocus
               className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500"
@@ -113,18 +124,14 @@ export default function TasksPage() {
             <textarea
               placeholder="Description (optional)"
               value={newTask.description}
-              onChange={(e) =>
-                setNewTask({...newTask, description: e.target.value })
-              }
+              onChange={(e) => setNewTask({...newTask, description: e.target.value })}
               rows={2}
               className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500"
             />
             <div className="flex gap-3">
               <select
                 value={newTask.priority}
-                onChange={(e) =>
-                  setNewTask({...newTask, priority: e.target.value })
-                }
+                onChange={(e) => setNewTask({...newTask, priority: e.target.value })}
                 className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
               >
                 <option value="urgent">🔴 Urgent</option>
@@ -135,9 +142,7 @@ export default function TasksPage() {
               <input
                 type="date"
                 value={newTask.due_date}
-                onChange={(e) =>
-                  setNewTask({...newTask, due_date: e.target.value })
-                }
+                onChange={(e) => setNewTask({...newTask, due_date: e.target.value })}
                 className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
               />
               <button
@@ -157,7 +162,6 @@ export default function TasksPage() {
         </div>
       )}
 
-      {/* Filters */}
       <div className="flex gap-2 mb-6">
         {["all", "todo", "in_progress", "done"].map((f) => (
           <button
@@ -174,7 +178,6 @@ export default function TasksPage() {
         ))}
       </div>
 
-      {/* Task List */}
       {tasks.length === 0 ? (
         <div className="bg-gray-900 rounded-xl p-12 border border-gray-800 text-center">
           <p className="text-gray-500">No tasks yet. Create your first one!</p>
@@ -188,13 +191,9 @@ export default function TasksPage() {
                 task.status === "done" ? "opacity-50" : ""
               }`}
             >
-              {/* Checkbox */}
               <button
                 onClick={() =>
-                  updateStatus(
-                    task.id,
-                    task.status === "done" ? "todo" : "done"
-                  )
+                  updateStatus(task.id, task.status === "done" ? "todo" : "done")
                 }
                 className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
                   task.status === "done"
@@ -207,37 +206,29 @@ export default function TasksPage() {
                 )}
               </button>
 
-              {/* Content */}
               <div className="flex-1 min-w-0">
                 <p
                   className={`text-sm font-medium ${
-                    task.status === "done"
-                      ? "text-gray-500 line-through"
-                      : "text-white"
+                    task.status === "done" ? "text-gray-500 line-through" : "text-white"
                   }`}
                 >
                   {task.title}
                 </p>
                 {task.description && (
-                  <p className="text-xs text-gray-500 mt-0.5 truncate">
-                    {task.description}
-                  </p>
+                  <p className="text-xs text-gray-500 mt-0.5 truncate">{task.description}</p>
                 )}
               </div>
 
-              {/* Priority Badge */}
               <span
                 className={`px-2 py-0.5 rounded-md text-xs font-medium border ${priorityColors[task.priority]}`}
               >
                 {task.priority}
               </span>
 
-              {/* Due Date */}
               {task.due_date && (
                 <span
                   className={`text-xs ${
-                    new Date(task.due_date) < new Date() &&
-                    task.status !== "done"
+                    new Date(task.due_date) < new Date() && task.status !== "done"
                       ? "text-red-400"
                       : "text-gray-500"
                   }`}
@@ -249,7 +240,6 @@ export default function TasksPage() {
                 </span>
               )}
 
-              {/* Status Toggle */}
               {task.status !== "done" && (
                 <select
                   value={task.status}
@@ -262,7 +252,6 @@ export default function TasksPage() {
                 </select>
               )}
 
-              {/* Delete */}
               <button
                 onClick={() => deleteTask(task.id)}
                 className="text-gray-600 hover:text-red-400 text-sm opacity-0 group-hover:opacity-100 transition-opacity"

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
 
 interface JournalEntry {
   id: number;
@@ -35,6 +36,13 @@ export default function JournalPage() {
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split("T")[0]
   );
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) setUserId(user.id);
+    });
+  }, []);
   const [entry, setEntry] = useState<JournalEntry | null>(null);
   const [mood, setMood] = useState<number | null>(null);
   const [energy, setEnergy] = useState<number | null>(null);
@@ -45,27 +53,47 @@ export default function JournalPage() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  const fetchEntry = (date: string) => {
-    fetch(`/api/journal?date=${date}`).then((r) => r.json()).then((data) => {
-        setEntry(data);
-        if (data) {
-          setMood(data.mood);
-          setEnergy(data.energy);
-          setGratitude(data.gratitude || "");
-          setReflection(data.reflection || "");
-          setWins(data.wins || "");
-        } else {
-          setMood(null);
-          setEnergy(null);
-          setGratitude("");
-          setReflection("");
-          setWins("");
-        }
-      });
+  const fetchEntry = async (date: string) => {
+    const { data, error } = await supabase
+      .from("journal_entries")
+      .select("*")
+      .eq("date", date)
+      .maybeSingle();
+
+    if (error) {
+      console.error("Error fetching entry:", error);
+      return;
+    }
+
+    setEntry(data);
+    if (data) {
+      setMood(data.mood);
+      setEnergy(data.energy);
+      setGratitude(data.gratitude || "");
+      setReflection(data.reflection || "");
+      setWins(data.wins || "");
+    } else {
+      setMood(null);
+      setEnergy(null);
+      setGratitude("");
+      setReflection("");
+      setWins("");
+    }
   };
 
-  const fetchRecent = () => {
-    fetch("/api/journal").then((r) => r.json()).then(setRecentEntries);
+  const fetchRecent = async () => {
+    const { data, error } = await supabase
+      .from("journal_entries")
+      .select("*")
+      .order("date", { ascending: false })
+      .limit(30);
+
+    if (error) {
+      console.error("Error fetching recent entries:", error);
+      return;
+    }
+
+    setRecentEntries(data || []);
   };
 
   useEffect(() => {
@@ -74,19 +102,25 @@ export default function JournalPage() {
   }, [selectedDate]);
 
   const saveEntry = async () => {
+    if (!userId) return; // Guard
     setSaving(true);
-    await fetch("/api/journal", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    const { error } = await supabase.from("journal_entries").upsert(
+      {
+        user_id: userId,
         date: selectedDate,
         mood,
         energy,
         gratitude,
         reflection,
         wins,
-      }),
-    });
+      },
+      { onConflict: "user_id,date" }
+    );
+
+    if (error) {
+      console.error("Error saving entry:", error);
+    }
+
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);

@@ -1,0 +1,82 @@
+openspec: "1.0"
+name: Life OS Dashboard
+description: >
+  Personal operating system web dashboard. Local-first architecture
+  currently using SQLite, planned migration to Supabase for cloud
+  access. Single user, multi-device.
+
+stack:
+  runtime: Node.js v24.14.1
+  framework: Next.js 14 (App Router)
+  language: TypeScript
+  styling: Tailwind CSS
+  database: SQLite via better-sqlite3 (migrating to Supabase PostgreSQL)
+  os: macOS 12.7
+
+structure:
+  source: src/
+  pages: src/app/
+  api: src/app/api/
+  lib: src/lib/
+  components: src/app/[module]/components/
+
+modules:
+  dashboard:
+    path: src/app/page.tsx
+    api: src/app/api/dashboard/route.ts
+    description: Overview with stats from all modules
+
+  tasks:
+    path: src/app/tasks/page.tsx
+    api: src/app/api/tasks/
+    description: CRUD task manager with priorities, filters, due dates
+
+  habits:
+    path: src/app/habits/page.tsx
+    api: src/app/api/habits/
+    description: Daily toggle, streak calculation, progress tracking
+
+  finances:
+    path: src/app/finances/
+    api: src/app/api/finances/
+    components:
+      - MetricCards.tsx
+      - AccountsTab.tsx
+      - CashflowTab.tsx
+      - TaxFlagsTab.tsx
+    description: >
+      Multi-currency finance tracker. AUD base, NZD and USD secondary.
+      Accounts grouped by liquidity tier. Server-computed metrics:
+      net worth, surplus, savings rate, runway, passive income.
+      Daily net worth snapshots recorded idempotently.
+
+  journal:
+    path: src/app/journal/page.tsx
+    api: src/app/api/journal/route.ts
+    description: Mood/energy selectors, gratitude, reflection, wins
+
+  goals:
+    path: src/app/goals/page.tsx
+    api: src/app/api/goals/
+    description: OKRs with key results, inline progress updates
+
+conventions:
+  monetary_values: Integers (cents), never floats
+  currencies: [AUD, NZD, USD]
+  base_currency: AUD
+  fx_conversion: Display time only, using stored exchange rates
+  components: Split large pages into separate component files
+  client_components: Use "use client" for interactive pages
+  theme: Dark mode (gray-950 bg, gray-900 cards, gray-800 borders)
+  styling: Tailwind only, no CSS modules
+
+planned_migration:
+  from: SQLite (better-sqlite3, synchronous)
+  to: Supabase (PostgreSQL, async)
+  strategy: Migrate in place, not clean rewrite
+  phases:
+    - Supabase project setup + schema conversion
+    - Auth (single user, email + password, RLS)
+    - Deploy to Vercel
+    - PWA support (service worker, manifest)
+    - Offline sync (IndexedDB + sync queue)
