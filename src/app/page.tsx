@@ -174,7 +174,7 @@ export default function Dashboard() {
       </div>
 
       {/* Stats Row */}
-      <div className="grid grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <div className="bg-gray-900 rounded-xl p-4 border border-gray-800">
           <p className="text-2xl font-bold text-white">
             {data.taskStats.active}
@@ -201,7 +201,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Today's Tasks */}
         <div className="bg-gray-900 rounded-xl p-5 border border-gray-800">
           <h2 className="text-lg font-semibold text-white mb-4">
