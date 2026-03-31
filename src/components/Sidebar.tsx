@@ -37,7 +37,7 @@ export default function Sidebar({ user }: SidebarProps) {
     <>
       {/* Hamburger menu button for mobile */}
       <button
-        className="md:hidden fixed top-4 left-4 z-40 p-2 rounded-md bg-gray-900 border border-gray-800 text-white"
+        className="md:hidden fixed top-4 left-4 z-50 p-2 rounded-md bg-gray-900 border border-gray-800 text-white"
         onClick={() => setSidebarOpen(true)}
         aria-label="Open sidebar"
       >
@@ -47,16 +47,52 @@ export default function Sidebar({ user }: SidebarProps) {
       {/* Backdrop for mobile sidebar */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden"
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
           onClick={() => setSidebarOpen(false)}
         ></div>
       )}
 
-      {/* Sidebar */}
+      {/* Mobile Sidebar Overlay */}
+      {sidebarOpen && (
+        <nav
+          className="fixed inset-y-0 left-0 w-64 bg-gray-900 z-50 border-r border-gray-800 flex flex-col p-4 shrink-0 transition-transform duration-300 ease-in-out translate-x-0 md:hidden"
+        >
+          <div className="mb-6">
+            <h1 className="text-xl font-bold text-white tracking-tight">
+              ⚡ Life OS
+            </h1>
+            <p className="text-xs text-gray-500 mt-1 font-mono">
+              Your personal system
+            </p>
+          </div>
+          <ul className="space-y-0.5 flex-1 overflow-y-auto">
+            {navItems.map((item) => (
+              <li key={item.href}>
+                <Link
+                  href={item.href}
+                  className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
+                  onClick={() => setSidebarOpen(false)} // Close sidebar on nav click
+                >
+                  <span className="text-base">{item.icon}</span>
+                  <span>{item.label}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+          <div className="pt-4 border-t border-gray-800 space-y-2">
+            {user && (
+              <p className="text-xs text-gray-600 font-mono truncate px-1">
+                {user.email}
+              </p>
+            )}
+            <SignOutButton />
+          </div>
+        </nav>
+      )}
+
+      {/* Desktop Sidebar */}
       <nav
-        className={`fixed inset-y-0 left-0 w-56 bg-gray-900 border-r border-gray-800 flex flex-col p-4 shrink-0 transition-transform duration-300 ease-in-out
-          ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
-          md:translate-x-0 md:static md:h-screen md:block`}
+        className="hidden md:flex md:flex-col md:w-64 bg-gray-900 border-r border-gray-800 p-4 shrink-0 md:h-screen"
       >
         <div className="mb-6">
           <h1 className="text-xl font-bold text-white tracking-tight">
