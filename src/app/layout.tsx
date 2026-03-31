@@ -21,12 +21,12 @@ export default async function RootLayout({
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </head>
-      <body className="bg-gray-950 text-gray-100 antialiased">
-        <div className="flex flex-col md:flex-row h-screen">
+      <body className="bg-gray-950 text-white antialiased">
+        <div className="flex h-screen">
           <Sidebar user={user} />
 
           {/* Main Content */}
-          <main className="flex-1 overflow-y-auto p-4 md:p-8 lg:ml-64">
+          <main className="flex-1 overflow-y-auto p-4 md:p-6">
             {children}
           </main>
         </div>

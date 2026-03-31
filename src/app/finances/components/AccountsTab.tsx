@@ -29,9 +29,9 @@ function fmt(cents: number, c = "AUD") {
 }
 
 const inputClass =
-  "w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-indigo-500";
+  "w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-amber-500";
 const selectClass =
-  "bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500";
+  "bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500";
 
 const TIERS = [
   { key: "immediate", label: "💧 Immediate", order: 0 },
@@ -116,7 +116,7 @@ export default function AccountsTab({
         <h2 className="text-lg font-semibold text-white">Accounts</h2>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-lg transition-colors"
+          className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-white text-sm font-medium rounded-lg transition-colors"
         >
           + Add Account
         </button>
@@ -124,7 +124,7 @@ export default function AccountsTab({
 
       {/* Add Form */}
       {showForm && (
-        <div className="bg-gray-900 rounded-xl p-5 border border-gray-800 mb-6 space-y-3">
+        <div className="bg-gray-900 rounded-lg p-5 mb-6 space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <input
               type="text"
@@ -222,7 +222,7 @@ export default function AccountsTab({
               Tax advantaged
             </label>
             <div className="flex-1" />
-            <button onClick={addAccount} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-lg transition-colors">
+            <button onClick={addAccount} className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-white text-sm font-medium rounded-lg transition-colors">
               Add Account
             </button>
             <button onClick={() => setShowForm(false)} className="px-4 py-2 text-gray-400 hover:text-white text-sm transition-colors">
@@ -234,7 +234,7 @@ export default function AccountsTab({
 
       {/* Empty State */}
       {accounts.length === 0 && (
-        <div className="bg-gray-900 rounded-xl p-12 border border-gray-800 text-center">
+        <div className="bg-gray-900 rounded-lg p-12 text-center">
           <p className="text-gray-500">No accounts yet. Add your first one!</p>
         </div>
       )}
@@ -252,7 +252,7 @@ export default function AccountsTab({
               {tierAccounts.map((a) => (
                 <div
                   key={a.id}
-                  className="bg-gray-900 rounded-xl p-4 border border-gray-800 flex items-center gap-4 group hover:border-gray-700 transition-colors"
+                  className="bg-gray-900 rounded-lg p-4 flex items-center gap-4 group hover:border-gray-700 transition-colors"
                 >
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-white">{a.name}</p>
@@ -270,7 +270,7 @@ export default function AccountsTab({
                           value={balVal}
                           onChange={(e) => setBalVal(e.target.value)}
                           onKeyDown={(e) => e.key === "Enter" && saveBal(a.id)}
-                          className="w-32 bg-gray-800 border border-indigo-500 rounded px-2 py-1 text-white text-sm text-right"
+                          className="w-32 bg-gray-800 border border-amber-500 rounded px-2 py-1 text-white text-sm text-right"
                           autoFocus
                         />
                         <button onClick={() => saveBal(a.id)} className="text-green-400 text-xs">✓</button>
@@ -278,7 +278,7 @@ export default function AccountsTab({
                       </div>
                     ) : (
                       <p
-                        className="text-lg font-bold text-white cursor-pointer hover:text-indigo-400 transition-colors"
+                        className="text-lg font-bold text-white font-mono cursor-pointer hover:text-amber-400 transition-colors"
                         onClick={() => { setEditBal(a.id); setBalVal((a.balance / 100).toFixed(2)); }}
                       >
                         {fmt(a.balance, a.currency)}
@@ -313,7 +313,7 @@ export default function AccountsTab({
             {creditAccounts.map((a) => (
               <div
                 key={a.id}
-                className="bg-gray-900 rounded-xl p-4 border border-gray-800 flex items-center gap-4 group hover:border-gray-700 transition-colors"
+                className="bg-gray-900 rounded-lg p-4 flex items-center gap-4 group hover:border-gray-700 transition-colors"
               >
                 <div className="flex-1">
                   <p className="text-sm font-medium text-white">{a.name}</p>

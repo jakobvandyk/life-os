@@ -165,7 +165,7 @@ export default function HabitsPage() {
   ];
 
   return (
-    <div className="max-w-4xl">
+    <div className="p-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
@@ -177,7 +177,7 @@ export default function HabitsPage() {
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-lg transition-colors"
+          className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-white text-sm font-medium rounded-lg transition-colors"
         >
           + New Habit
         </button>
@@ -196,7 +196,7 @@ export default function HabitsPage() {
                 completionRate === 100
                   ? "bg-green-500"
                   : completionRate >= 50
-                  ? "bg-indigo-500"
+                  ? "bg-amber-400"
                   : "bg-amber-500"
               }`}
               style={{ width: `${completionRate}%` }}
@@ -207,7 +207,7 @@ export default function HabitsPage() {
 
       {/* Add Habit Form */}
       {showForm && (
-        <div className="bg-gray-900 rounded-xl p-5 border border-gray-800 mb-6">
+        <div className="bg-gray-900 rounded-lg p-5 mb-6">
           <div className="space-y-3">
             <input
               type="text"
@@ -218,7 +218,7 @@ export default function HabitsPage() {
               }
               onKeyDown={(e) => e.key === "Enter" && addHabit()}
               autoFocus
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500"
+              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500"
             />
             <div className="flex gap-3 items-center">
               <div>
@@ -230,7 +230,7 @@ export default function HabitsPage() {
                       onClick={() => setNewHabit({...newHabit, icon })}
                       className={`w-8 h-8 rounded-md flex items-center justify-center text-sm transition-colors ${
                         newHabit.icon === icon
-                          ? "bg-indigo-600"
+                          ? "bg-amber-500"
                           : "bg-gray-800 hover:bg-gray-700"
                       }`}
                     >
@@ -247,7 +247,7 @@ export default function HabitsPage() {
                       target_frequency: e.target.value,
                     })
                   }
-                  className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
+                  className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500"
                 >
                   <option value="daily">Daily</option>
                   <option value="weekdays">Weekdays</option>
@@ -255,7 +255,7 @@ export default function HabitsPage() {
                 </select>
                 <button
                   onClick={addHabit}
-                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-lg transition-colors"
+                  className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-white text-sm font-medium rounded-lg transition-colors"
                 >
                   Add
                 </button>
@@ -273,7 +273,7 @@ export default function HabitsPage() {
 
       {/* Habit List */}
       {habits.length === 0 ? (
-        <div className="bg-gray-900 rounded-xl p-12 border border-gray-800 text-center">
+        <div className="bg-gray-900 rounded-lg p-12 text-center">
           <p className="text-gray-500">
             No habits yet. Start building your routine!
           </p>
@@ -283,15 +283,15 @@ export default function HabitsPage() {
           {habits.map((habit) => (
             <div
               key={habit.id}
-              className="bg-gray-900 rounded-xl p-4 border border-gray-800 flex items-center gap-4 hover:border-gray-700 transition-colors"
+              className="bg-gray-900 rounded-lg p-4 flex items-center gap-4 hover:border-gray-700 transition-colors"
             >
               {/* Toggle Button */}
               <button
                 onClick={() => toggleHabit(habit.id)}
-                className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl shrink-0 transition-all ${
+                className={`w-12 h-12 rounded-lg flex items-center justify-center text-xl shrink-0 transition-all ${
                   habit.completed_today
                     ? "bg-green-500/20 border-2 border-green-500/50 scale-105"
-                    : "bg-gray-800 border-2 border-gray-700 hover:border-indigo-500"
+                    : "bg-gray-800 border-2 border-gray-700 hover:border-amber-500"
                 }`}
               >
                 {habit.icon}
@@ -315,7 +315,7 @@ export default function HabitsPage() {
 
               {/* Streak */}
               <div className="text-right">
-                <p className="text-lg font-bold text-white">
+                <p className="text-lg font-bold text-white font-mono">
                   {habit.streak}
                 </p>
                 <p className="text-xs text-gray-500">

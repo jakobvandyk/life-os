@@ -133,12 +133,12 @@ export default function GoalsPage() {
   };
 
   const inputClass =
-    "w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-indigo-500";
+    "w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-amber-500";
   const selectClass =
-    "bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500";
+    "bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500";
 
   return (
-    <div className="max-w-4xl">
+    <div className="p-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
@@ -149,7 +149,7 @@ export default function GoalsPage() {
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-lg transition-colors"
+          className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-white text-sm font-medium rounded-lg transition-colors"
         >
           + New Goal
         </button>
@@ -157,7 +157,7 @@ export default function GoalsPage() {
 
       {/* Add Goal Form */}
       {showForm && (
-        <div className="bg-gray-900 rounded-xl p-5 border border-gray-800 mb-6 space-y-4">
+        <div className="bg-gray-900 rounded-lg p-5 mb-6 space-y-4">
           <input
             type="text"
             placeholder="Goal title (e.g. Improve fitness)"
@@ -224,7 +224,7 @@ export default function GoalsPage() {
             </div>
             <button
               onClick={addKRRow}
-              className="mt-2 text-sm text-indigo-400 hover:text-indigo-300 transition-colors"
+              className="mt-2 text-sm text-amber-400 hover:text-amber-300 transition-colors"
             >
               + Add key result
             </button>
@@ -233,7 +233,7 @@ export default function GoalsPage() {
           <div className="flex gap-2 justify-end">
             <button
               onClick={addGoal}
-              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-lg transition-colors"
+              className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-white text-sm font-medium rounded-lg transition-colors"
             >
               Create Goal
             </button>
@@ -249,7 +249,7 @@ export default function GoalsPage() {
 
       {/* Goals List */}
       {goals.length === 0 ? (
-        <div className="bg-gray-900 rounded-xl p-12 border border-gray-800 text-center">
+        <div className="bg-gray-900 rounded-lg p-12 text-center">
           <p className="text-gray-500 text-lg mb-2">No goals yet</p>
           <p className="text-gray-600 text-sm">
             Set a goal with measurable key results to track your progress.
@@ -262,7 +262,7 @@ export default function GoalsPage() {
             return (
               <div
                 key={goal.id}
-                className="bg-gray-900 rounded-xl p-5 border border-gray-800 hover:border-gray-700 transition-colors"
+                className="bg-gray-900 rounded-lg p-5 hover:border-gray-700 transition-colors"
               >
                 {/* Goal Header */}
                 <div className="flex items-start justify-between mb-3">
@@ -285,7 +285,7 @@ export default function GoalsPage() {
                         progress >= 100
                           ? "text-green-400"
                           : progress >= 50
-                          ? "text-indigo-400"
+                          ? "text-amber-400"
                           : "text-amber-400"
                       }`}
                     >
@@ -301,7 +301,7 @@ export default function GoalsPage() {
                       progress >= 100
                         ? "bg-green-500"
                         : progress >= 50
-                        ? "bg-indigo-500"
+                        ? "bg-amber-400"
                         : "bg-amber-500"
                     }`}
                     style={{ width: `${Math.min(progress, 100)}%` }}
@@ -334,7 +334,7 @@ export default function GoalsPage() {
                                       e.key === "Enter" &&
                                       updateKRProgress(kr.id)
                                     }
-                                    className="w-20 bg-gray-800 border border-indigo-500 rounded px-2 py-0.5 text-white text-sm text-right"
+                                    className="w-20 bg-gray-800 border border-amber-500 rounded px-2 py-0.5 text-white text-sm text-right"
                                     autoFocus
                                   />
                                   <span className="text-xs text-gray-500">
@@ -355,7 +355,7 @@ export default function GoalsPage() {
                                 </div>
                               ) : (
                                 <span
-                                  className="text-sm text-gray-400 cursor-pointer hover:text-indigo-400 transition-colors"
+                                  className="text-sm text-gray-400 cursor-pointer hover:text-amber-400 transition-colors"
                                   onClick={() => {
                                     setEditingKR(kr.id);
                                     setKrValue(kr.current.toString());
@@ -368,7 +368,7 @@ export default function GoalsPage() {
                           </div>
                           <div className="w-full bg-gray-800 rounded-full h-1.5">
                             <div
-                              className="bg-indigo-500/70 h-1.5 rounded-full transition-all"
+                              className="bg-amber-400/70 h-1.5 rounded-full transition-all"
                               style={{ width: `${krPct}%` }}
                             />
                           </div>

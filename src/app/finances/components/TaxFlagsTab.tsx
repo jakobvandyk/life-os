@@ -27,9 +27,9 @@ const jurisdictionColors: Record<string, string> = {
 };
 
 const inputClass =
-  "w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-indigo-500";
+  "w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-amber-500";
 const selectClass =
-  "bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500";
+  "bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500";
 
 export default function TaxFlagsTab({
   taxFlags,
@@ -92,7 +92,7 @@ export default function TaxFlagsTab({
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-lg transition-colors"
+          className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-white text-sm font-medium rounded-lg transition-colors"
         >
           + Add Flag
         </button>
@@ -100,7 +100,7 @@ export default function TaxFlagsTab({
 
       {/* Add Form */}
       {showForm && (
-        <div className="bg-gray-900 rounded-xl p-5 border border-gray-800 mb-6 space-y-3">
+        <div className="bg-gray-900 rounded-lg p-5 mb-6 space-y-3">
           <input
             type="text"
             placeholder="Flag title (e.g. Multi-jurisdiction tax filing)"
@@ -146,7 +146,7 @@ export default function TaxFlagsTab({
             <div className="flex-1" />
             <button
               onClick={addFlag}
-              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-lg transition-colors"
+              className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-white text-sm font-medium rounded-lg transition-colors"
             >
               Add Flag
             </button>
@@ -162,7 +162,7 @@ export default function TaxFlagsTab({
 
       {/* Empty State */}
       {taxFlags.length === 0 ? (
-        <div className="bg-gray-900 rounded-xl p-12 border border-gray-800 text-center">
+        <div className="bg-gray-900 rounded-lg p-12 text-center">
           <p className="text-gray-500 text-lg mb-2">🎉 All clear!</p>
           <p className="text-gray-600 text-sm">No open tax or compliance flags.</p>
         </div>
@@ -171,7 +171,7 @@ export default function TaxFlagsTab({
           {taxFlags.map((flag) => (
             <div
               key={flag.id}
-              className="bg-gray-900 rounded-xl p-4 border border-gray-800 hover:border-gray-700 transition-colors"
+              className="bg-gray-900 rounded-lg p-4 hover:border-gray-700 transition-colors"
             >
               <div className="flex items-start gap-4">
                 {/* Content */}

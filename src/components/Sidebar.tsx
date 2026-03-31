@@ -70,7 +70,11 @@ export default function Sidebar({ user }: SidebarProps) {
               <li key={item.href}>
                 <Link
                   href={item.href}
-                  className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
+                  className={`flex items-center gap-3 py-2 rounded-lg text-sm transition-colors ${
+                    pathname === item.href
+                      ? "border-l-2 border-amber-500 pl-3 text-white"
+                      : "pl-5 text-gray-400 hover:text-white hover:bg-gray-800"
+                  }`}
                   onClick={() => setSidebarOpen(false)} // Close sidebar on nav click
                 >
                   <span className="text-base">{item.icon}</span>
@@ -79,9 +83,9 @@ export default function Sidebar({ user }: SidebarProps) {
               </li>
             ))}
           </ul>
-          <div className="pt-4 border-t border-gray-800 space-y-2">
+          <div className="pt-4 border-t border-gray-800 space-y-2 pl-4">
             {user && (
-              <p className="text-xs text-gray-600 font-mono truncate px-1">
+              <p className="text-xs text-gray-600 font-mono truncate">
                 {user.email}
               </p>
             )}
@@ -107,7 +111,11 @@ export default function Sidebar({ user }: SidebarProps) {
             <li key={item.href}>
               <Link
                 href={item.href}
-                className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-gray-800 transition-colors"
+                className={`flex items-center gap-3 py-2 rounded-lg text-sm transition-colors ${
+                  pathname === item.href
+                    ? "border-l-2 border-amber-500 pl-3 text-white"
+                    : "pl-5 text-gray-400 hover:text-white hover:bg-gray-800"
+                }`}
                 onClick={() => setSidebarOpen(false)} // Close sidebar on nav click
               >
                 <span className="text-base">{item.icon}</span>
@@ -116,9 +124,9 @@ export default function Sidebar({ user }: SidebarProps) {
             </li>
           ))}
         </ul>
-        <div className="pt-4 border-t border-gray-800 space-y-2">
+        <div className="pt-4 border-t border-gray-800 space-y-2 pl-4">
           {user && (
-            <p className="text-xs text-gray-600 font-mono truncate px-1">
+            <p className="text-xs text-gray-600 font-mono truncate">
               {user.email}
             </p>
           )}

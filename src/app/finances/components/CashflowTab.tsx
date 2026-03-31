@@ -73,9 +73,9 @@ function daysUntil(dueDay: number): number {
 }
 
 const inputClass =
-  "w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-indigo-500";
+  "w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-amber-500";
 const selectClass =
-  "bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500";
+  "bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500";
 
 export default function CashflowTab({
   income,
@@ -159,7 +159,7 @@ export default function CashflowTab({
   return (
     <div className="space-y-8">
       {/* P&L Summary */}
-      <div className="bg-gray-900 rounded-xl p-5 border border-gray-800">
+      <div className="bg-gray-900 rounded-lg p-5">
         <h2 className="text-lg font-semibold text-white mb-3">Monthly P&L</h2>
         <div className="grid grid-cols-4 gap-4">
           <div>
@@ -191,14 +191,14 @@ export default function CashflowTab({
           <h2 className="text-lg font-semibold text-white">Income Sources</h2>
           <button
             onClick={() => setForm(form === "income" ? null : "income")}
-            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-lg transition-colors"
+            className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-white text-sm font-medium rounded-lg transition-colors"
           >
             + Add Income
           </button>
         </div>
 
         {form === "income" && (
-          <div className="bg-gray-900 rounded-xl p-5 border border-gray-800 mb-4 space-y-3">
+          <div className="bg-gray-900 rounded-lg p-5 mb-4 space-y-3">
             <div className="grid grid-cols-2 gap-3">
               <input type="text" placeholder="Source name (e.g. UoA Salary)" value={incomeForm.name}
                 onChange={(e) => setIncomeForm({...incomeForm, name: e.target.value })} className={inputClass} autoFocus />
@@ -219,18 +219,18 @@ export default function CashflowTab({
                 Passive
               </label>
               <div className="flex-1" />
-              <button onClick={addIncome} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-lg transition-colors">Add</button>
+              <button onClick={addIncome} className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-white text-sm font-medium rounded-lg transition-colors">Add</button>
               <button onClick={() => setForm(null)} className="px-4 py-2 text-gray-400 hover:text-white text-sm transition-colors">Cancel</button>
             </div>
           </div>
         )}
 
         {income.length === 0 ? (
-          <p className="text-gray-600 text-sm bg-gray-900 rounded-xl p-8 border border-gray-800 text-center">No income sources yet.</p>
+          <p className="text-gray-600 text-sm bg-gray-900 rounded-lg p-8 text-center">No income sources yet.</p>
         ) : (
           <div className="space-y-2">
             {income.map((i) => (
-              <div key={i.id} className="bg-gray-900 rounded-xl p-4 border border-gray-800 flex items-center gap-4 group hover:border-gray-700 transition-colors">
+              <div key={i.id} className="bg-gray-900 rounded-lg p-4 flex items-center gap-4 group hover:border-gray-700 transition-colors">
                 <div className="flex-1">
                   <p className="text-sm font-medium text-white">
                     {i.name}
@@ -255,11 +255,11 @@ export default function CashflowTab({
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-semibold text-white">Expenses</h2>
           <button onClick={() => setForm(form === "expense" ? null : "expense")}
-            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-lg transition-colors">+ Add Expense</button>
+            className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-white text-sm font-medium rounded-lg transition-colors">+ Add Expense</button>
         </div>
 
         {form === "expense" && (
-          <div className="bg-gray-900 rounded-xl p-5 border border-gray-800 mb-4 space-y-3">
+          <div className="bg-gray-900 rounded-lg p-5 mb-4 space-y-3">
             <div className="grid grid-cols-2 gap-3">
               <input type="text" placeholder="Category (e.g. Rent, Food)" value={expenseForm.category}
                 onChange={(e) => setExpenseForm({...expenseForm, category: e.target.value })} className={inputClass} autoFocus />
@@ -275,18 +275,18 @@ export default function CashflowTab({
                 <option value="monthly">Monthly</option><option value="quarterly">Quarterly</option><option value="annual">Annual</option>
               </select>
               <div className="flex-1" />
-              <button onClick={addExpense} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-lg transition-colors">Add</button>
+              <button onClick={addExpense} className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-white text-sm font-medium rounded-lg transition-colors">Add</button>
               <button onClick={() => setForm(null)} className="px-4 py-2 text-gray-400 hover:text-white text-sm transition-colors">Cancel</button>
             </div>
           </div>
         )}
 
         {expenses.length === 0 ? (
-          <p className="text-gray-600 text-sm bg-gray-900 rounded-xl p-8 border border-gray-800 text-center">No expenses yet.</p>
+          <p className="text-gray-600 text-sm bg-gray-900 rounded-lg p-8 text-center">No expenses yet.</p>
         ) : (
           <div className="space-y-2">
             {expenses.map((e) => (
-              <div key={e.id} className="bg-gray-900 rounded-xl p-4 border border-gray-800 flex items-center gap-4 group hover:border-gray-700 transition-colors">
+              <div key={e.id} className="bg-gray-900 rounded-lg p-4 flex items-center gap-4 group hover:border-gray-700 transition-colors">
                 <div className="flex-1">
                   <p className="text-sm font-medium text-white">{e.category}</p>
                   {e.notes && <p className="text-xs text-gray-500">{e.notes}</p>}
@@ -308,11 +308,11 @@ export default function CashflowTab({
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-semibold text-white">Liabilities</h2>
           <button onClick={() => setForm(form === "liability" ? null : "liability")}
-            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-lg transition-colors">+ Add Liability</button>
+            className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-white text-sm font-medium rounded-lg transition-colors">+ Add Liability</button>
         </div>
 
         {form === "liability" && (
-          <div className="bg-gray-900 rounded-xl p-5 border border-gray-800 mb-4 space-y-3">
+          <div className="bg-gray-900 rounded-lg p-5 mb-4 space-y-3">
             <div className="grid grid-cols-2 gap-3">
               <input type="text" placeholder="Name (e.g. CommBank CC)" value={liabilityForm.name}
                 onChange={(e) => setLiabilityForm({...liabilityForm, name: e.target.value })} className={inputClass} autoFocus />
@@ -331,27 +331,27 @@ export default function CashflowTab({
                 <span className="text-xs text-gray-500">Due day:</span>
                 <input type="number" min="1" max="31" value={liabilityForm.due_day}
                   onChange={(e) => setLiabilityForm({...liabilityForm, due_day: e.target.value })}
-                  className="w-16 bg-gray-800 border border-gray-700 rounded-lg px-2 py-2 text-white text-sm focus:outline-none focus:border-indigo-500" />
+                  className="w-16 bg-gray-800 border border-gray-700 rounded-lg px-2 py-2 text-white text-sm focus:outline-none focus:border-amber-500" />
               </div>
               <select value={liabilityForm.category} onChange={(e) => setLiabilityForm({...liabilityForm, category: e.target.value })} className={selectClass}>
                 <option value="credit_card">Credit Card</option><option value="subscription">Subscription</option>
                 <option value="insurance">Insurance</option><option value="loan">Loan</option><option value="other">Other</option>
               </select>
               <div className="flex-1" />
-              <button onClick={addLiability} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-lg transition-colors">Add</button>
+              <button onClick={addLiability} className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-white text-sm font-medium rounded-lg transition-colors">Add</button>
               <button onClick={() => setForm(null)} className="px-4 py-2 text-gray-400 hover:text-white text-sm transition-colors">Cancel</button>
             </div>
           </div>
         )}
 
         {liabilities.length === 0 ? (
-          <p className="text-gray-600 text-sm bg-gray-900 rounded-xl p-8 border border-gray-800 text-center">No liabilities yet.</p>
+          <p className="text-gray-600 text-sm bg-gray-900 rounded-lg p-8 text-center">No liabilities yet.</p>
         ) : (
           <div className="space-y-2">
             {liabilities.map((l) => {
               const days = daysUntil(l.due_day);
               return (
-                <div key={l.id} className="bg-gray-900 rounded-xl p-4 border border-gray-800 flex items-center gap-4 group hover:border-gray-700 transition-colors">
+                <div key={l.id} className="bg-gray-900 rounded-lg p-4 flex items-center gap-4 group hover:border-gray-700 transition-colors">
                   <div className="flex-1">
                     <p className="text-sm font-medium text-white">{l.name}</p>
                     <p className="text-xs text-gray-500">

@@ -63,9 +63,9 @@ export default function MetricCards({ metrics }: { metrics: Metrics }) {
       {cards.map((card) => (
         <div
           key={card.label}
-          className="bg-gray-900 rounded-xl p-4 border border-gray-800"
+          className="bg-gray-900 rounded-lg p-4"
         >
-          <p className={`text-xl font-bold ${card.color}`}>{card.value}</p>
+          <p className={`text-xl font-bold font-mono ${card.color}`}>{card.value}</p>
           <p className="text-xs text-gray-500">{card.label}</p>
         </div>
       ))}

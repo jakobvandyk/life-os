@@ -37,7 +37,7 @@ export default function LoginPage() {
           <p className="text-sm text-gray-500 mt-1 font-mono">personal dashboard</p>
         </div>
 
-        <form onSubmit={handleLogin} className="bg-gray-900 border border-gray-800 rounded-xl p-6 space-y-4">
+        <form onSubmit={handleLogin} className="bg-gray-900 rounded-lg p-6 space-y-4">
 
           <div>
             <label className="block text-xs text-gray-500 uppercase tracking-widest mb-1.5 font-mono">
@@ -49,7 +49,7 @@ export default function LoginPage() {
               onChange={e => setEmail(e.target.value)}
               required
               autoFocus
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-indigo-500 transition-colors"
+              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-amber-500 transition-colors"
               placeholder="you@example.com"
             />
           </div>
@@ -63,7 +63,7 @@ export default function LoginPage() {
               value={password}
               onChange={e => setPassword(e.target.value)}
               required
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-indigo-500 transition-colors"
+              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-amber-500 transition-colors"
               placeholder="••••••••"
             />
           </div>
@@ -77,7 +77,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg py-2.5 transition-colors font-mono tracking-wide"
+            className="w-full bg-amber-500 hover:bg-amber-400 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg py-2.5 transition-colors font-mono tracking-wide"
           >
             {loading ? 'Signing in…' : 'Sign in'}
           </button>

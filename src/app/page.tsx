@@ -21,8 +21,39 @@ const priorityColors: Record<string, string> = {
 
 const moodEmoji = ["", "😞", "😐", "🙂", "😊", "🤩"];
 
+function getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour >= 5 && hour < 12) return 'Good morning';
+  if (hour >= 12 && hour < 18) return 'Good afternoon';
+  return 'Good evening';
+}
+
+function getISOWeek(date: Date): number {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+}
+
 export default function Dashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
+  const [userName, setUserName] = useState<string>("there");
+
+  useEffect(() => {
+    async function fetchUser() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        // Try to get name from user metadata or use email prefix
+        const name = user.user_metadata?.full_name ||
+                     user.user_metadata?.name ||
+                     user.email?.split('@')[0] ||
+                     'there';
+        setUserName(name);
+      }
+    }
+    fetchUser();
+  }, []);
 
   useEffect(() => {
     async function fetchDashboardData() {
@@ -159,7 +190,9 @@ export default function Dashboard() {
     );
   }
 
-  const today = new Date().toLocaleDateString("en-NZ", {
+  const today = new Date();
+  const weekNumber = getISOWeek(today);
+  const todayFormatted = today.toLocaleDateString("en-NZ", {
     weekday: "long",
     year: "numeric",
     month: "long",
@@ -167,43 +200,43 @@ export default function Dashboard() {
   });
 
   return (
-    <div className="max-w-5xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white">Good evening 👋</h1>
-        <p className="text-gray-500 mt-1">{today}</p>
+    <div className="p-6 space-y-6">
+      <div className="mt-6">
+        <h1 className="text-3xl font-bold text-white">{getGreeting()}, {userName} 👋</h1>
+        <p className="text-gray-500 mt-1">{todayFormatted} · Week {weekNumber}</p>
       </div>
 
       {/* Stats Row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <div className="bg-gray-900 rounded-xl p-4 border border-gray-800">
-          <p className="text-2xl font-bold text-white">
+        <div className="bg-gray-900 rounded-lg p-5">
+          <p className="text-2xl font-bold text-white font-mono">
             {data.taskStats.active}
           </p>
           <p className="text-sm text-gray-500">Active Tasks</p>
         </div>
-        <div className="bg-gray-900 rounded-xl p-4 border border-gray-800">
-          <p className="text-2xl font-bold text-green-400">
+        <div className="bg-gray-900 rounded-lg p-5">
+          <p className="text-2xl font-bold text-green-400 font-mono">
             {data.taskStats.completed_this_week}
           </p>
           <p className="text-sm text-gray-500">Done This Week</p>
         </div>
-        <div className="bg-gray-900 rounded-xl p-4 border border-gray-800">
-          <p className="text-2xl font-bold text-red-400">
+        <div className="bg-gray-900 rounded-lg p-5">
+          <p className="text-2xl font-bold text-red-400 font-mono">
             {data.taskStats.overdue}
           </p>
           <p className="text-sm text-gray-500">Overdue</p>
         </div>
-        <div className="bg-gray-900 rounded-xl p-4 border border-gray-800">
-          <p className="text-2xl font-bold text-amber-400">
+        <div className="bg-gray-900 rounded-lg p-5">
+          <p className="text-2xl font-bold text-amber-400 font-mono">
             ${data.spending.month_expenses.toFixed(0)}
           </p>
           <p className="text-sm text-gray-500">Spent This Month</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Today's Tasks */}
-        <div className="bg-gray-900 rounded-xl p-5 border border-gray-800">
+        <div className="bg-gray-900 rounded-lg p-5">
           <h2 className="text-lg font-semibold text-white mb-4">
             📋 Today&apos;s Focus
           </h2>
@@ -228,7 +261,7 @@ export default function Dashboard() {
         </div>
 
         {/* Habits */}
-        <div className="bg-gray-900 rounded-xl p-5 border border-gray-800">
+        <div className="bg-gray-900 rounded-lg p-5">
           <h2 className="text-lg font-semibold text-white mb-4">
             🔁 Today&apos;s Habits
           </h2>
@@ -255,7 +288,7 @@ export default function Dashboard() {
         </div>
 
         {/* Goals */}
-        <div className="bg-gray-900 rounded-xl p-5 border border-gray-800">
+        <div className="bg-gray-900 rounded-lg p-5">
           <h2 className="text-lg font-semibold text-white mb-4">
             🎯 Active Goals
           </h2>
@@ -269,13 +302,13 @@ export default function Dashboard() {
                 <li key={i}>
                   <div className="flex justify-between text-sm mb-1">
                     <span className="text-gray-300">{goal.title}</span>
-                    <span className="text-gray-500">
+                    <span className="text-gray-500 font-mono">
                       {Math.round(goal.progress)}%
                     </span>
                   </div>
                   <div className="w-full bg-gray-800 rounded-full h-2">
                     <div
-                      className="bg-indigo-500 h-2 rounded-full transition-all"
+                      className="bg-amber-400 h-2 rounded-full transition-all"
                       style={{ width: `${Math.min(goal.progress, 100)}%` }}
                     />
                   </div>
@@ -286,7 +319,7 @@ export default function Dashboard() {
         </div>
 
         {/* Recent Mood */}
-        <div className="bg-gray-900 rounded-xl p-5 border border-gray-800">
+        <div className="bg-gray-900 rounded-lg p-5">
           <h2 className="text-lg font-semibold text-white mb-4">
             📔 Recent Mood
           </h2>
@@ -301,10 +334,10 @@ export default function Dashboard() {
                   key={i}
                   className="flex items-center justify-between text-sm"
                 >
-                  <span className="text-gray-500">{entry.date}</span>
+                  <span className="text-gray-500 text-xs font-mono">{entry.date}</span>
                   <div className="flex gap-2">
                     <span>{moodEmoji[entry.mood] || "—"}</span>
-                    <span className="text-gray-600">
+                    <span className="text-gray-600 font-mono">
                       ⚡{entry.energy || "—"}
                     </span>
                   </div>

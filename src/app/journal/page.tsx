@@ -30,7 +30,7 @@ const energyOptions = [
 ];
 
 const textareaClass =
-  "w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-indigo-500 resize-none";
+  "w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-amber-500 resize-none";
 
 export default function JournalPage() {
   const [selectedDate, setSelectedDate] = useState(
@@ -141,7 +141,7 @@ export default function JournalPage() {
   );
 
   return (
-    <div className="max-w-4xl">
+    <div className="p-6">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-white">📔 Journal</h1>
@@ -163,7 +163,7 @@ export default function JournalPage() {
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-white text-sm focus:outline-none focus:border-indigo-500"
+              className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-white text-sm focus:outline-none focus:border-amber-500"
             />
             <button
               onClick={() => goToDate(1)}
@@ -177,7 +177,7 @@ export default function JournalPage() {
               Next →
             </button>
             {isToday && (
-              <span className="text-xs text-indigo-400 font-medium">Today</span>
+              <span className="text-xs text-amber-400 font-medium">Today</span>
             )}
           </div>
 
@@ -191,10 +191,10 @@ export default function JournalPage() {
                 <button
                   key={opt.value}
                   onClick={() => setMood(opt.value)}
-                  className={`flex flex-col items-center gap-1 px-4 py-3 rounded-xl transition-all ${
+                  className={`flex flex-col items-center gap-1 px-4 py-3 rounded-lg transition-all ${
                     mood === opt.value
-                      ? "bg-indigo-600/30 border-2 border-indigo-500 scale-105"
-                      : "bg-gray-900 border-2 border-gray-800 hover:border-gray-700"
+                      ? "bg-amber-500/30 border-2 border-amber-500 scale-105"
+                      : "bg-gray-900 border-2 border-gray-700 hover:border-gray-600"
                   }`}
                 >
                   <span className="text-2xl">{opt.emoji}</span>
@@ -212,10 +212,10 @@ export default function JournalPage() {
                 <button
                   key={opt.value}
                   onClick={() => setEnergy(opt.value)}
-                  className={`flex flex-col items-center gap-1 px-4 py-3 rounded-xl transition-all ${
+                  className={`flex flex-col items-center gap-1 px-4 py-3 rounded-lg transition-all ${
                     energy === opt.value
-                      ? "bg-indigo-600/30 border-2 border-indigo-500 scale-105"
-                      : "bg-gray-900 border-2 border-gray-800 hover:border-gray-700"
+                      ? "bg-amber-500/30 border-2 border-amber-500 scale-105"
+                      : "bg-gray-900 border-2 border-gray-700 hover:border-gray-600"
                   }`}
                 >
                   <span className="text-2xl">{opt.emoji}</span>
@@ -272,7 +272,7 @@ export default function JournalPage() {
                 ? "bg-green-600 text-white"
                 : saving
                 ? "bg-gray-700 text-gray-400"
-                : "bg-indigo-600 hover:bg-indigo-500 text-white"
+                : "bg-amber-500 hover:bg-amber-400 text-white"
             }`}
           >
             {saved ? "✓ Saved!" : saving ? "Saving..." : "Save Entry"}
@@ -294,8 +294,8 @@ export default function JournalPage() {
                   onClick={() => setSelectedDate(e.date)}
                   className={`w-full text-left p-3 rounded-lg transition-colors ${
                     e.date === selectedDate
-                      ? "bg-indigo-600/20 border border-indigo-500/30"
-                      : "bg-gray-900 border border-gray-800 hover:border-gray-700"
+                    ? "bg-amber-500/20 border border-amber-500/30"
+                    : "bg-gray-900 border border-gray-700 hover:border-gray-600"
                   }`}
                 >
                   <div className="flex items-center justify-between">

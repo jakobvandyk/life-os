@@ -240,7 +240,7 @@ export default function FinancesPage() {
   }
 
   return (
-    <div className="max-w-5xl">
+    <div className="p-6">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-white">💰 Finances</h1>
@@ -264,7 +264,7 @@ export default function FinancesPage() {
             onClick={() => setTab(t.key)}
             className={`px-4 py-2 rounded-lg text-sm transition-colors ${
               tab === t.key
-                ? "bg-indigo-600 text-white"
+                ? "bg-amber-500 text-white"
                 : "bg-gray-800 text-gray-400 hover:text-white"
             }`}
           >

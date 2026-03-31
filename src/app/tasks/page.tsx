@@ -93,7 +93,7 @@ export default function TasksPage() {
   const doneTasks = tasks.filter((t) => t.status === "done");
 
   return (
-    <div className="max-w-4xl">
+    <div className="p-6">
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold text-white">📋 Tasks</h1>
@@ -103,14 +103,14 @@ export default function TasksPage() {
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-lg transition-colors"
+          className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-white text-sm font-medium rounded-lg transition-colors"
         >
           + New Task
         </button>
       </div>
 
       {showForm && (
-        <div className="bg-gray-900 rounded-xl p-5 border border-gray-800 mb-6">
+        <div className="bg-gray-900 rounded-lg p-5 mb-6">
           <div className="space-y-3">
             <input
               type="text"
@@ -119,20 +119,20 @@ export default function TasksPage() {
               onChange={(e) => setNewTask({...newTask, title: e.target.value })}
               onKeyDown={(e) => e.key === "Enter" && addTask()}
               autoFocus
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500"
+              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500"
             />
             <textarea
               placeholder="Description (optional)"
               value={newTask.description}
               onChange={(e) => setNewTask({...newTask, description: e.target.value })}
               rows={2}
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500"
+              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500"
             />
             <div className="flex gap-3">
               <select
                 value={newTask.priority}
                 onChange={(e) => setNewTask({...newTask, priority: e.target.value })}
-                className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
+                className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500"
               >
                 <option value="urgent">🔴 Urgent</option>
                 <option value="high">🟠 High</option>
@@ -143,11 +143,11 @@ export default function TasksPage() {
                 type="date"
                 value={newTask.due_date}
                 onChange={(e) => setNewTask({...newTask, due_date: e.target.value })}
-                className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-indigo-500"
+                className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500"
               />
               <button
                 onClick={addTask}
-                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-lg transition-colors"
+                className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-white text-sm font-medium rounded-lg transition-colors"
               >
                 Add Task
               </button>
@@ -169,7 +169,7 @@ export default function TasksPage() {
             onClick={() => setFilter(f)}
             className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
               filter === f
-                ? "bg-indigo-600 text-white"
+                ? "bg-amber-500 text-white"
                 : "bg-gray-800 text-gray-400 hover:text-white"
             }`}
           >
@@ -179,7 +179,7 @@ export default function TasksPage() {
       </div>
 
       {tasks.length === 0 ? (
-        <div className="bg-gray-900 rounded-xl p-12 border border-gray-800 text-center">
+        <div className="bg-gray-900 rounded-lg p-12 text-center">
           <p className="text-gray-500">No tasks yet. Create your first one!</p>
         </div>
       ) : (
@@ -187,7 +187,7 @@ export default function TasksPage() {
           {tasks.map((task) => (
             <div
               key={task.id}
-              className={`bg-gray-900 rounded-xl p-4 border border-gray-800 flex items-center gap-4 group hover:border-gray-700 transition-colors ${
+              className={`bg-gray-900 rounded-lg p-4 flex items-center gap-4 group hover:border-gray-700 transition-colors ${
                 task.status === "done" ? "opacity-50" : ""
               }`}
             >
@@ -198,7 +198,7 @@ export default function TasksPage() {
                 className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
                   task.status === "done"
                     ? "bg-green-500 border-green-500"
-                    : "border-gray-600 hover:border-indigo-500"
+                    : "border-gray-600 hover:border-amber-500"
                 }`}
               >
                 {task.status === "done" && (
@@ -227,16 +227,39 @@ export default function TasksPage() {
 
               {task.due_date && (
                 <span
-                  className={`text-xs ${
+                  className={`text-xs font-mono ${
                     new Date(task.due_date) < new Date() && task.status !== "done"
                       ? "text-red-400"
                       : "text-gray-500"
                   }`}
                 >
-                  {new Date(task.due_date).toLocaleDateString("en-NZ", {
-                    month: "short",
-                    day: "numeric",
-                  })}
+                  {(() => {
+                    const dueDate = new Date(task.due_date!);
+                    const today = new Date();
+                    const tomorrow = new Date(today);
+                    tomorrow.setDate(tomorrow.getDate() + 1);
+                    
+                    // Normalize dates to midnight for accurate day comparison
+                    const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                    const dueDateMidnight = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate());
+                    const diffTime = dueDateMidnight.getTime() - todayMidnight.getTime();
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    
+                    if (diffDays < 0 && task.status !== "done") {
+                      return `${Math.abs(diffDays)}d overdue`;
+                    } else if (diffDays === 0) {
+                      return <span className="text-amber-400">today</span>;
+                    } else if (diffDays === 1) {
+                      return <span className="text-green-400">tomorrow</span>;
+                    } else if (diffDays > 0 && diffDays <= 7) {
+                      return dueDate.toLocaleDateString("en-NZ", { weekday: "short" });
+                    } else {
+                      return dueDate.toLocaleDateString("en-NZ", {
+                        month: "short",
+                        day: "numeric",
+                      });
+                    }
+                  })()}
                 </span>
               )}
 
