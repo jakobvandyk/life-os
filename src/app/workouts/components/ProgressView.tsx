@@ -20,7 +20,7 @@ const FILTER_OPTIONS: { label: string; value: FilterType }[] = [
   { label: "Lower vol", value: "lower-volume" },
 ];
 
-export default function ProgressView({ sessions, exercises }: ProgressViewProps) {
+export default function ProgressView({ sessions }: ProgressViewProps) {
   const [filter, setFilter] = useState<FilterType>("all");
 
 

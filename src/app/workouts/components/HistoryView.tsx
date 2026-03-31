@@ -1,10 +1,12 @@
 "use client";
 
 import { WorkoutSession, WorkoutExercise } from "../page";
+import { Checkin } from "./DailyCheckin";
 
 interface HistoryViewProps {
   sessions: WorkoutSession[];
   exercises: WorkoutExercise[];
+  checkins: Checkin[];
   userId: string | null;
   onRefetch: () => void;
 }
