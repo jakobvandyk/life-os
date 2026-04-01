@@ -1,4 +1,4 @@
-import { supabaseService } from "@/lib/supabase-service";
+import { getServiceClient } from "@/lib/supabase-service";
 
 export async function POST(request: Request) {
   const apiKey = request.headers.get("x-api-key");
@@ -37,7 +37,7 @@ export async function POST(request: Request) {
 
   if (Object.keys(checkinFields).length > 0) {
     // Try update first, then insert if no rows updated
-    const { data: existing } = await supabaseService
+    const { data: existing } = await getServiceClient()
       .from("workout_checkins")
       .select("id")
       .eq("user_id", userId)
@@ -45,12 +45,12 @@ export async function POST(request: Request) {
       .single();
 
     if (existing) {
-      await supabaseService
+      await getServiceClient()
         .from("workout_checkins")
         .update(checkinFields)
         .eq("id", existing.id);
     } else {
-      await supabaseService
+      await getServiceClient()
         .from("workout_checkins")
         .insert({ user_id: userId, date, ...checkinFields });
     }
@@ -58,7 +58,7 @@ export async function POST(request: Request) {
 
   // Mindfulness → habit log
   if (mindfulness_minutes != null && mindfulness_minutes > 0) {
-    const { data: habit } = await supabaseService
+    const { data: habit } = await getServiceClient()
       .from("habits")
       .select("id")
       .eq("user_id", userId)
@@ -67,7 +67,7 @@ export async function POST(request: Request) {
 
     if (!habit) {
       // Try meditation
-      const { data: meditationHabit } = await supabaseService
+      const { data: meditationHabit } = await getServiceClient()
         .from("habits")
         .select("id")
         .eq("user_id", userId)
@@ -75,7 +75,7 @@ export async function POST(request: Request) {
         .single();
 
       if (meditationHabit) {
-        await supabaseService
+        await getServiceClient()
           .from("habit_logs")
           .upsert(
             {
@@ -89,7 +89,7 @@ export async function POST(request: Request) {
         imported.push("mindfulness");
       }
     } else {
-      await supabaseService
+      await getServiceClient()
         .from("habit_logs")
         .upsert(
           {
@@ -105,7 +105,7 @@ export async function POST(request: Request) {
   }
 
   // Log to integration_syncs
-  await supabaseService.from("integration_syncs").insert({
+  await getServiceClient().from("integration_syncs").insert({
     user_id: userId,
     source: "apple_health",
     status: "ok",

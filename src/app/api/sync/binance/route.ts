@@ -1,4 +1,4 @@
-import { supabaseService } from "@/lib/supabase-service";
+import { getServiceClient } from "@/lib/supabase-service";
 import { createClient } from "@/lib/supabase-server";
 import { createHmac } from "crypto";
 
@@ -34,7 +34,7 @@ export async function GET(request: Request) {
   }
 
   // Get USDT→NZD rate
-  const { data: usdRate } = await supabaseService
+  const { data: usdRate } = await getServiceClient()
     .from("finance_exchange_rates")
     .select("rate")
     .eq("pair", "USDNZD")
@@ -56,7 +56,7 @@ export async function GET(request: Request) {
 
   if (!accountRes.ok) {
     const err = await accountRes.text();
-    await supabaseService.from("integration_syncs").insert({
+    await getServiceClient().from("integration_syncs").insert({
       user_id: userId,
       source: "binance",
       status: "error",
@@ -103,7 +103,7 @@ export async function GET(request: Request) {
     const balanceCents = Math.round(nzdValue * 100);
 
     // Find or create account
-    const { data: existing } = await supabaseService
+    const { data: existing } = await getServiceClient()
       .from("finance_accounts")
       .select("id")
       .eq("user_id", userId)
@@ -112,7 +112,7 @@ export async function GET(request: Request) {
       .single();
 
     if (existing) {
-      await supabaseService
+      await getServiceClient()
         .from("finance_accounts")
         .update({
           balance: balanceCents,
@@ -120,7 +120,7 @@ export async function GET(request: Request) {
         })
         .eq("id", existing.id);
     } else {
-      await supabaseService.from("finance_accounts").insert({
+      await getServiceClient().from("finance_accounts").insert({
         user_id: userId,
         name: symbol,
         institution: "Binance",
@@ -135,7 +135,7 @@ export async function GET(request: Request) {
     updated++;
   }
 
-  await supabaseService.from("integration_syncs").insert({
+  await getServiceClient().from("integration_syncs").insert({
     user_id: userId,
     source: "binance",
     status: "ok",

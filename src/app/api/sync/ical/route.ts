@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase-server";
-import { supabaseService } from "@/lib/supabase-service";
+import { getServiceClient } from "@/lib/supabase-service";
 
 function toDateStr(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -69,7 +69,7 @@ export async function GET(request: Request) {
         const dtend = event.endDate?.toJSDate();
         const allDay = event.startDate?.isDate ?? false;
 
-        const { error } = await supabaseService
+        const { error } = await getServiceClient()
           .from("calendar_events")
           .upsert(
             {
@@ -93,7 +93,7 @@ export async function GET(request: Request) {
     }
   }
 
-  await supabaseService.from("integration_syncs").insert({
+  await getServiceClient().from("integration_syncs").insert({
     user_id: userId,
     source: "ical",
     status: "ok",
