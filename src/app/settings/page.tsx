@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
@@ -10,32 +10,47 @@ interface ExchangeRate {
   rate: number;
 }
 
-const INTEGRATIONS = [
-  { name: "Apple Health", description: "Sync sleep, HRV, and activity data", icon: "♥" },
-  { name: "Cronometer", description: "Import nutrition and micronutrient logs", icon: "🥗" },
-  { name: "myBOQ", description: "Auto-sync bank transactions", icon: "🏦" },
-  { name: "Binance", description: "Track crypto portfolio balances", icon: "₿" },
-  { name: "iCal", description: "Sync calendar events and schedules", icon: "📅" },
-];
+interface SyncLog {
+  id: number;
+  source: string;
+  status: string;
+  records_imported: number;
+  error_message: string | null;
+  synced_at: string;
+}
 
 export default function SettingsPage() {
   const router = useRouter();
   const [email, setEmail] = useState<string | null>(null);
   const [rates, setRates] = useState<ExchangeRate[]>([]);
+  const [syncLogs, setSyncLogs] = useState<SyncLog[]>([]);
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState<string | null>(null);
+  const [uploadResult, setUploadResult] = useState<string | null>(null);
+  const cronometerRef = useRef<HTMLInputElement>(null);
+  const ofxRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const load = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) return;
 
       setEmail(user.email ?? null);
 
-      const { data: ratesData } = await supabase
-        .from("finance_exchange_rates")
-        .select("*");
+      const [{ data: ratesData }, { data: logsData }] = await Promise.all([
+        supabase.from("finance_exchange_rates").select("*"),
+        supabase
+          .from("integration_syncs")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("synced_at", { ascending: false })
+          .limit(20),
+      ]);
 
       setRates(ratesData || []);
+      setSyncLogs(logsData || []);
       setLoading(false);
     };
 
@@ -46,6 +61,66 @@ export default function SettingsPage() {
     await supabase.auth.signOut();
     router.push("/login");
     router.refresh();
+  };
+
+  const getLastSync = (source: string): SyncLog | undefined =>
+    syncLogs.find((l) => l.source === source);
+
+  const formatSyncTime = (log: SyncLog | undefined): string => {
+    if (!log) return "Never synced";
+    const d = new Date(log.synced_at);
+    return `${d.toLocaleDateString("en-NZ", { day: "numeric", month: "short" })} ${d.toLocaleTimeString("en-NZ", { hour: "2-digit", minute: "2-digit" })} · ${log.records_imported} records`;
+  };
+
+  const triggerSync = async (source: string, endpoint: string) => {
+    setSyncing(source);
+    setUploadResult(null);
+    try {
+      const res = await fetch(endpoint);
+      const data = await res.json();
+      if (res.ok) {
+        setUploadResult(`${source}: Synced ${data.imported ?? data.updated ?? 0} records`);
+      } else {
+        setUploadResult(`${source}: ${data.error || "Failed"}`);
+      }
+    } catch {
+      setUploadResult(`${source}: Connection error`);
+    }
+    setSyncing(null);
+    // Refresh sync logs
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (user) {
+      const { data } = await supabase
+        .from("integration_syncs")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("synced_at", { ascending: false })
+        .limit(20);
+      setSyncLogs(data || []);
+    }
+  };
+
+  const uploadFile = async (source: string, endpoint: string, file: File) => {
+    setSyncing(source);
+    setUploadResult(null);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch(endpoint, { method: "POST", body: formData });
+      const data = await res.json();
+      if (res.ok) {
+        setUploadResult(
+          `${source}: Imported ${data.imported} records${data.skipped ? `, ${data.skipped} skipped` : ""}${data.total_value ? ` ($${data.total_value})` : ""}`
+        );
+      } else {
+        setUploadResult(`${source}: ${data.error || "Failed"}`);
+      }
+    } catch {
+      setUploadResult(`${source}: Upload error`);
+    }
+    setSyncing(null);
   };
 
   if (loading) {
@@ -63,6 +138,19 @@ export default function SettingsPage() {
         <h1 className="font-pixel text-lg text-desert-text">⚙ Settings</h1>
         <p className="text-desert-text-3 mt-1">Account, integrations, and data</p>
       </div>
+
+      {/* Upload result banner */}
+      {uploadResult && (
+        <div className="mb-6 bg-desert-surface border border-desert-border rounded-sm p-3 flex items-center justify-between">
+          <p className="text-desert-text text-sm font-mono">{uploadResult}</p>
+          <button
+            onClick={() => setUploadResult(null)}
+            className="text-desert-text-3 hover:text-desert-text text-xs"
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       <div className="space-y-8 max-w-2xl">
         {/* Profile Section */}
@@ -94,25 +182,145 @@ export default function SettingsPage() {
             Integrations
           </h2>
           <div className="space-y-2">
-            {INTEGRATIONS.map((integration) => (
-              <div
-                key={integration.name}
-                className="bg-desert-surface border border-desert-border rounded-sm p-4 flex items-center justify-between hover:bg-desert-surface-hover hover:border-desert-border-strong transition-colors duration-150"
-              >
+            {/* Apple Health */}
+            <div className="bg-desert-surface border border-desert-border rounded-sm p-4 hover:border-desert-border-strong transition-colors duration-150">
+              <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <span className="text-xl w-8 text-center">{integration.icon}</span>
+                  <span className="text-xl w-8 text-center">♥</span>
                   <div>
-                    <p className="text-desert-text font-mono text-sm font-medium">
-                      {integration.name}
+                    <p className="text-desert-text font-mono text-sm font-medium">Apple Health</p>
+                    <p className="text-desert-text-3 text-xs">
+                      Webhook for iOS Shortcut — POST /api/integrations/health
                     </p>
-                    <p className="text-desert-text-3 text-xs">{integration.description}</p>
                   </div>
                 </div>
-                <span className="text-desert-text-3 font-mono text-xs uppercase tracking-wider">
-                  Coming soon
+                <span className="text-desert-text-3 font-mono text-[10px]">
+                  {formatSyncTime(getLastSync("apple_health"))}
                 </span>
               </div>
-            ))}
+            </div>
+
+            {/* Cronometer */}
+            <div className="bg-desert-surface border border-desert-border rounded-sm p-4 hover:border-desert-border-strong transition-colors duration-150">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="text-xl w-8 text-center">🥗</span>
+                  <div>
+                    <p className="text-desert-text font-mono text-sm font-medium">Cronometer</p>
+                    <p className="text-desert-text-3 text-xs">Upload CSV nutrition export</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-desert-text-3 font-mono text-[10px]">
+                    {formatSyncTime(getLastSync("cronometer"))}
+                  </span>
+                  <input
+                    ref={cronometerRef}
+                    type="file"
+                    accept=".csv"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) uploadFile("Cronometer", "/api/import/cronometer", file);
+                    }}
+                  />
+                  <button
+                    onClick={() => cronometerRef.current?.click()}
+                    disabled={syncing === "Cronometer"}
+                    className="px-3 py-1.5 bg-desert-accent text-desert-bg font-mono font-semibold uppercase tracking-wider text-[10px] rounded-sm hover:bg-desert-accent-glow transition-colors duration-150 disabled:opacity-50"
+                  >
+                    {syncing === "Cronometer" ? "..." : "Upload CSV"}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* myBOQ */}
+            <div className="bg-desert-surface border border-desert-border rounded-sm p-4 hover:border-desert-border-strong transition-colors duration-150">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="text-xl w-8 text-center">🏦</span>
+                  <div>
+                    <p className="text-desert-text font-mono text-sm font-medium">myBOQ</p>
+                    <p className="text-desert-text-3 text-xs">Upload OFX bank export</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-desert-text-3 font-mono text-[10px]">
+                    {formatSyncTime(getLastSync("boq_ofx"))}
+                  </span>
+                  <input
+                    ref={ofxRef}
+                    type="file"
+                    accept=".ofx,.qfx"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) uploadFile("myBOQ", "/api/import/ofx", file);
+                    }}
+                  />
+                  <button
+                    onClick={() => ofxRef.current?.click()}
+                    disabled={syncing === "myBOQ"}
+                    className="px-3 py-1.5 bg-desert-accent text-desert-bg font-mono font-semibold uppercase tracking-wider text-[10px] rounded-sm hover:bg-desert-accent-glow transition-colors duration-150 disabled:opacity-50"
+                  >
+                    {syncing === "myBOQ" ? "..." : "Upload OFX"}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Binance */}
+            <div className="bg-desert-surface border border-desert-border rounded-sm p-4 hover:border-desert-border-strong transition-colors duration-150">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="text-xl w-8 text-center">₿</span>
+                  <div>
+                    <p className="text-desert-text font-mono text-sm font-medium">Binance</p>
+                    <p className="text-desert-text-3 text-xs">Sync crypto portfolio balances</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-desert-text-3 font-mono text-[10px]">
+                    {formatSyncTime(getLastSync("binance"))}
+                  </span>
+                  <button
+                    onClick={() => triggerSync("Binance", "/api/sync/binance")}
+                    disabled={syncing === "Binance"}
+                    className="px-3 py-1.5 bg-desert-accent text-desert-bg font-mono font-semibold uppercase tracking-wider text-[10px] rounded-sm hover:bg-desert-accent-glow transition-colors duration-150 disabled:opacity-50"
+                  >
+                    {syncing === "Binance" ? "..." : "Sync Now"}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* iCal */}
+            <div className="bg-desert-surface border border-desert-border rounded-sm p-4 hover:border-desert-border-strong transition-colors duration-150">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="text-xl w-8 text-center">📅</span>
+                  <div>
+                    <p className="text-desert-text font-mono text-sm font-medium">iCal</p>
+                    <p className="text-desert-text-3 text-xs">
+                      Sync calendar feeds (set ICAL_URL_1 in env)
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-desert-text-3 font-mono text-[10px]">
+                    {formatSyncTime(getLastSync("ical"))}
+                  </span>
+                  <button
+                    onClick={() => triggerSync("iCal", "/api/sync/ical")}
+                    disabled={syncing === "iCal"}
+                    className="px-3 py-1.5 bg-desert-accent text-desert-bg font-mono font-semibold uppercase tracking-wider text-[10px] rounded-sm hover:bg-desert-accent-glow transition-colors duration-150 disabled:opacity-50"
+                  >
+                    {syncing === "iCal" ? "..." : "Sync Now"}
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -148,7 +356,9 @@ export default function SettingsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-desert-text text-sm">Export all data</p>
-                <p className="text-desert-text-3 text-xs">Download a JSON backup of your Life OS data</p>
+                <p className="text-desert-text-3 text-xs">
+                  Download a JSON backup of your Life OS data
+                </p>
               </div>
               <button
                 disabled
