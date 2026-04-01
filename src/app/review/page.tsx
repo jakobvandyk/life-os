@@ -83,6 +83,7 @@ export default function ReviewPage() {
   const [review, setReview] = useState<WeeklyReview | null>(null);
   const [pastReviews, setPastReviews] = useState<{ id: number; week_start_date: string }[]>([]);
   const [saving, setSaving] = useState(false);
+  const [generating, setGenerating] = useState(false);
   const [weekStart, setWeekStart] = useState(() => toDateStr(getMonday(new Date())));
 
   // Auto-pulled data
@@ -531,19 +532,46 @@ export default function ReviewPage() {
           {review?.ai_summary ? (
             <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
               <p className="text-desert-text text-sm whitespace-pre-wrap">{review.ai_summary}</p>
+              <button
+                onClick={async () => {
+                  if (!review) return;
+                  setGenerating(true);
+                  const res = await fetch("/api/review-summary", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ reviewId: review.id }),
+                  });
+                  if (res.ok) await fetchReview();
+                  setGenerating(false);
+                }}
+                disabled={generating}
+                className="mt-3 px-3 py-1.5 text-desert-text-3 hover:text-desert-text font-mono text-xs uppercase tracking-wider transition-colors disabled:opacity-50"
+              >
+                {generating ? "Regenerating..." : "Regenerate"}
+              </button>
             </div>
           ) : (
             <div className="bg-desert-surface border border-desert-border rounded-sm p-4 text-center">
               <p className="text-desert-text-3 text-sm mb-3">
-                Save your review first, then generate an AI summary
+                {review ? "Generate an AI summary of your review" : "Save your review first, then generate an AI summary"}
               </p>
               <button
-                disabled
-                className="px-4 py-2 bg-desert-surface-hover border border-desert-border-strong text-desert-text-3 font-mono font-semibold uppercase tracking-wider text-sm rounded-sm cursor-not-allowed"
+                onClick={async () => {
+                  if (!review) return;
+                  setGenerating(true);
+                  const res = await fetch("/api/review-summary", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ reviewId: review.id }),
+                  });
+                  if (res.ok) await fetchReview();
+                  setGenerating(false);
+                }}
+                disabled={!review || generating}
+                className="px-4 py-2 bg-desert-accent text-desert-bg font-mono font-semibold uppercase tracking-wider text-sm rounded-sm hover:bg-desert-accent-glow transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Generate Summary
+                {generating ? "Generating..." : "Generate Summary"}
               </button>
-              <p className="text-desert-text-3 text-xs mt-2">Coming soon — requires AI Chat API</p>
             </div>
           )}
         </section>
