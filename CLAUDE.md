@@ -64,7 +64,7 @@ Custom CSS variables defined in globals.css. Use Tailwind desert-* classes:
 
 ## Project Structure
 src/app/
-├── page.tsx (dashboard)
+├── page.tsx (bento dashboard)
 ├── layout.tsx (sidebar + dark theme)
 ├── globals.css (design system variables)
 ├── login/page.tsx
@@ -79,10 +79,17 @@ src/app/
 │   ├── page.tsx
 │   ├── constants.ts (SESSIONS definition)
 │   └── components/ (SessionLogger, DailyCheckin, ProgressView, HistoryView)
-└── settings/
-    └── page.tsx
+├── calendar/page.tsx
+├── knowledge/page.tsx
+├── review/page.tsx
+├── chat/page.tsx
+├── settings/page.tsx
+└── api/
+    ├── chat/route.ts
+    └── review-summary/route.ts
 src/components/ (Sidebar, SignOutButton)
 src/lib/ (supabase.ts, supabase-server.ts)
+src/lib/ai/ (context-builders.ts)
 
 ## Supabase Tables
 tasks, habits, habit_logs, journal_entries, goals, goal_milestones,
@@ -111,23 +118,21 @@ integration_syncs, raw_imports
 
 ## What's Built
 - Login (Supabase Auth)
-- Dashboard (overview stats)
+- Dashboard (bento grid, contextual greetings, linked cards)
 - Tasks (full CRUD, priorities, filters, relative dates)
 - Habits (daily toggle, streaks)
 - Journal (mood/energy, gratitude/reflection/wins, upsert by date)
 - Goals (OKRs with key results, progress updates)
 - Finances (accounts, cashflow P&L, tax flags, multi-currency)
 - Workouts (session logger, daily checkin, progress, history)
+- Calendar (month grid + agenda, merged events/tasks/goals)
+- Knowledge Base (notes, tags, search, types, linked goals/tasks)
+- Weekly Review (8-section form, auto-pulled data, AI summary)
+- AI Chat (5 capabilities, context builders, session history, save-to-KB)
 - Settings (profile, integration placeholders, exchange rates, data export placeholder)
-- Desert Mystic design system (D1 applied)
+- Desert Mystic design system (D1-D6 applied)
 
 ## What's NOT Built Yet
-
-### Phase 5 — Remaining Modules
-- Calendar page (/calendar) — month grid + agenda view, merge calendar_events + task due dates + goal target dates
-- Knowledge Base page (/knowledge) — notes with tags, search, types (note/ai_response/research), linked goals/tasks
-- Weekly Review page (/review) — 8-section structured form with auto-pulled data (habits/goals/tasks/finance), wins/challenges/intentions, AI summary
-- AI Chat page (/chat) — 5 capabilities (Focus/Review/Spending/Journal/General), context builders in src/lib/ai/context-builders.ts, API route at /api/chat
 
 ### Phase 6 — Integrations
 - Apple Health: webhook at /api/integrations/health, receives HRV/sleep/weight via iOS Shortcut, protected by x-api-key header
@@ -142,18 +147,11 @@ integration_syncs, raw_imports
 - Service worker via next-pwa, manifest.json
 - SyncStatus component in sidebar (green/amber/red dot)
 
-### Design Polish (D2-D6)
-- D2: Bento dashboard redesign
-- D3: Sidebar pixel art icons
-- D4: Page header banners
-- D5: Contextual greeting messages
-- D6: Hover states + micro-polish
-
 ## AI Chat System Prompt
 "You are Jakob's personal Life OS assistant. You have access to his live data.
 Be concise, direct, and practical. Use plain text unless markdown genuinely helps.
 Jakob is based in Hamilton, New Zealand. Currency is NZD."
 
 ## Current Priority
-Build remaining Phase 5 modules (Calendar, Knowledge, Review, AI Chat)
-in the Desert Mystic design system, then Phase 6 integrations, then D2-D6 design polish.
+Phase 6 integrations (Apple Health, Cronometer, myBOQ, Binance, iCal),
+then Phase 7 PWA + offline sync.
