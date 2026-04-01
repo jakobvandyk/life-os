@@ -12,21 +12,21 @@ export const metadata: Metadata = {
 const pressStart = Press_Start_2P({
   subsets: ["latin"],
   weight: ["400"],
-  variable: "--font-pixel",
+  variable: "--font-pixel-var",
   display: "swap",
 });
 
 const plexMono = IBM_Plex_Mono({
   subsets: ["latin"],
   weight: ["400", "500", "700"],
-  variable: "--font-mono",
+  variable: "--font-mono-var",
   display: "swap",
 });
 
 const plexSans = IBM_Plex_Sans({
   subsets: ["latin"],
   weight: ["400", "500", "600"],
-  variable: "--font-sans",
+  variable: "--font-sans-var",
   display: "swap",
 });
 
