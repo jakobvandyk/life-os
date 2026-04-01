@@ -37,7 +37,7 @@ export default function Sidebar({ user }: SidebarProps) {
     <>
       {/* Hamburger menu button for mobile */}
       <button
-        className="md:hidden fixed top-4 left-4 z-50 p-2 rounded-md bg-gray-900 border border-gray-800 text-white"
+        className="md:hidden fixed top-4 left-4 z-50 p-2 rounded-md bg-desert-surface border border-desert-border text-desert-text-2"
         onClick={() => setSidebarOpen(true)}
         aria-label="Open sidebar"
       >
@@ -47,7 +47,7 @@ export default function Sidebar({ user }: SidebarProps) {
       {/* Backdrop for mobile sidebar */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          className="fixed inset-0 bg-desert-bg/80 z-40 md:hidden"
           onClick={() => setSidebarOpen(false)}
         ></div>
       )}
@@ -55,13 +55,13 @@ export default function Sidebar({ user }: SidebarProps) {
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
         <nav
-          className="fixed inset-y-0 left-0 w-64 bg-gray-900 z-50 border-r border-gray-800 flex flex-col p-4 shrink-0 transition-transform duration-300 ease-in-out translate-x-0 md:hidden"
+          className="fixed inset-y-0 left-0 w-64 bg-desert-surface z-50 border-r border-desert-border flex flex-col p-4 shrink-0 transition-transform duration-300 ease-in-out translate-x-0 md:hidden"
         >
           <div className="mb-6">
-            <h1 className="text-xl font-bold text-white tracking-tight">
-              ⚡ Life OS
+            <h1 className="font-pixel text-desert-accent text-[10px] uppercase tracking-tight">
+              ⚡ LIFE OS
             </h1>
-            <p className="text-xs text-gray-500 mt-1 font-mono">
+            <p className="font-mono text-desert-text-3 text-[9px] tracking-wider uppercase mt-1">
               Your personal system
             </p>
           </div>
@@ -70,22 +70,22 @@ export default function Sidebar({ user }: SidebarProps) {
               <li key={item.href}>
                 <Link
                   href={item.href}
-                  className={`flex items-center gap-3 py-2 rounded-lg text-sm transition-colors ${
+                  className={`flex items-center gap-3 py-2 rounded-sm text-sm transition-colors ${
                     pathname === item.href
-                      ? "border-l-2 border-amber-500 pl-3 text-white"
-                      : "pl-5 text-gray-400 hover:text-white hover:bg-gray-800"
+                      ? "border-l-2 border-desert-accent pl-3 text-desert-text bg-desert-surface"
+                      : "pl-5 text-desert-text-3 hover:text-desert-text-2 hover:bg-desert-surface-hover"
                   }`}
                   onClick={() => setSidebarOpen(false)} // Close sidebar on nav click
                 >
                   <span className="text-base">{item.icon}</span>
-                  <span>{item.label}</span>
+                  <span className="font-pixel text-[10px]">{item.label}</span>
                 </Link>
               </li>
             ))}
           </ul>
-          <div className="pt-4 border-t border-gray-800 space-y-2 pl-4">
+          <div className="pt-4 border-t border-desert-border space-y-2 pl-4">
             {user && (
-              <p className="text-xs text-gray-600 font-mono truncate">
+              <p className="font-mono text-desert-text-3 text-[9px] truncate">
                 {user.email}
               </p>
             )}
@@ -96,13 +96,13 @@ export default function Sidebar({ user }: SidebarProps) {
 
       {/* Desktop Sidebar */}
       <nav
-        className="hidden md:flex md:flex-col md:w-64 bg-gray-900 border-r border-gray-800 p-4 shrink-0 md:h-screen"
+        className="hidden md:flex md:flex-col md:w-64 bg-desert-bg-secondary border-r border-desert-border p-4 shrink-0 md:h-screen relative z-10"
       >
         <div className="mb-6">
-          <h1 className="text-xl font-bold text-white tracking-tight">
-            ⚡ Life OS
+          <h1 className="font-pixel text-desert-accent text-[10px] uppercase tracking-tight">
+            ⚡ LIFE OS
           </h1>
-          <p className="text-xs text-gray-500 mt-1 font-mono">
+          <p className="font-mono text-desert-text-3 text-[9px] tracking-wider uppercase mt-1">
             Your personal system
           </p>
         </div>
@@ -111,22 +111,22 @@ export default function Sidebar({ user }: SidebarProps) {
             <li key={item.href}>
               <Link
                 href={item.href}
-                className={`flex items-center gap-3 py-2 rounded-lg text-sm transition-colors ${
+                className={`flex items-center gap-3 py-2 rounded-sm text-sm transition-colors ${
                   pathname === item.href
-                    ? "border-l-2 border-amber-500 pl-3 text-white"
-                    : "pl-5 text-gray-400 hover:text-white hover:bg-gray-800"
+                    ? "border-l-2 border-desert-accent pl-3 text-desert-text bg-desert-surface"
+                    : "pl-5 text-desert-text-3 hover:text-desert-text-2 hover:bg-desert-surface-hover"
                 }`}
                 onClick={() => setSidebarOpen(false)} // Close sidebar on nav click
               >
                 <span className="text-base">{item.icon}</span>
-                <span>{item.label}</span>
+                <span className="font-pixel text-[10px]">{item.label}</span>
               </Link>
             </li>
           ))}
         </ul>
-        <div className="pt-4 border-t border-gray-800 space-y-2 pl-4">
+        <div className="pt-4 border-t border-desert-border space-y-2 pl-4">
           {user && (
-            <p className="text-xs text-gray-600 font-mono truncate">
+            <p className="font-mono text-desert-text-3 text-[9px] truncate">
               {user.email}
             </p>
           )}

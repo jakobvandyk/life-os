@@ -165,19 +165,19 @@ export default function HabitsPage() {
   ];
 
   return (
-    <div className="p-6">
+    <div className="bg-desert-bg min-h-screen p-6 relative z-10">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-white">🔁 Habits</h1>
-          <p className="text-gray-500 mt-1">
+          <h1 className="font-pixel text-lg text-desert-text">🔁 Habits</h1>
+          <p className="text-desert-text-3 mt-1">
             {completedToday}/{totalHabits} completed today ·{" "}
             {completionRate}%
           </p>
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-white text-sm font-medium rounded-lg transition-colors"
+          className="px-4 py-2 bg-desert-accent text-desert-bg font-mono font-semibold uppercase tracking-wider text-sm rounded-sm hover:bg-desert-accent-glow transition-colors duration-150"
         >
           + New Habit
         </button>
@@ -187,17 +187,15 @@ export default function HabitsPage() {
       {totalHabits > 0 && (
         <div className="mb-8">
           <div className="flex justify-between text-sm mb-2">
-            <span className="text-gray-400">Today&apos;s Progress</span>
-            <span className="text-white font-medium">{completionRate}%</span>
+             <span className="text-desert-text-2">Today&apos;s Progress</span>
+             <span className="font-mono text-desert-text">{completionRate}%</span>
           </div>
-          <div className="w-full bg-gray-800 rounded-full h-3">
+          <div className="w-full bg-desert-border rounded-full h-3">
             <div
               className={`h-3 rounded-full transition-all duration-500 ${
                 completionRate === 100
-                  ? "bg-green-500"
-                  : completionRate >= 50
-                  ? "bg-amber-400"
-                  : "bg-amber-500"
+                  ? "bg-desert-success"
+                  : "bg-desert-accent"
               }`}
               style={{ width: `${completionRate}%` }}
             />
@@ -207,7 +205,7 @@ export default function HabitsPage() {
 
       {/* Add Habit Form */}
       {showForm && (
-        <div className="bg-gray-900 rounded-lg p-5 mb-6">
+        <div className="bg-desert-surface rounded-sm p-5 mb-6">
           <div className="space-y-3">
             <input
               type="text"
@@ -218,11 +216,11 @@ export default function HabitsPage() {
               }
               onKeyDown={(e) => e.key === "Enter" && addHabit()}
               autoFocus
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500"
+              className="w-full bg-desert-bg border border-desert-border-strong rounded-sm px-4 py-2 text-desert-text placeholder:text-desert-text-3 focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent transition-colors"
             />
             <div className="flex gap-3 items-center">
               <div>
-                <p className="text-xs text-gray-500 mb-1">Icon</p>
+                <p className="text-xs text-desert-text-3 mb-1">Icon</p>
                 <div className="flex gap-1 flex-wrap max-w-xs">
                   {iconOptions.map((icon) => (
                     <button
@@ -230,8 +228,8 @@ export default function HabitsPage() {
                       onClick={() => setNewHabit({...newHabit, icon })}
                       className={`w-8 h-8 rounded-md flex items-center justify-center text-sm transition-colors ${
                         newHabit.icon === icon
-                          ? "bg-amber-500"
-                          : "bg-gray-800 hover:bg-gray-700"
+                          ? "bg-desert-accent"
+                          : "bg-desert-surface-hover hover:bg-desert-surface-hover"
                       }`}
                     >
                       {icon}
@@ -247,7 +245,7 @@ export default function HabitsPage() {
                       target_frequency: e.target.value,
                     })
                   }
-                  className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500"
+                  className="bg-desert-bg border border-desert-border-strong rounded-sm px-3 py-2 text-desert-text text-sm focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent transition-colors"
                 >
                   <option value="daily">Daily</option>
                   <option value="weekdays">Weekdays</option>
@@ -255,13 +253,13 @@ export default function HabitsPage() {
                 </select>
                 <button
                   onClick={addHabit}
-                  className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-white text-sm font-medium rounded-lg transition-colors"
+                  className="px-4 py-2 bg-desert-accent text-desert-bg font-mono font-semibold uppercase tracking-wider text-sm rounded-sm hover:bg-desert-accent-glow transition-colors duration-150"
                 >
                   Add
                 </button>
                 <button
                   onClick={() => setShowForm(false)}
-                  className="px-4 py-2 text-gray-400 hover:text-white text-sm transition-colors"
+                  className="px-4 py-2 text-desert-text-3 hover:text-desert-text text-sm transition-colors duration-150"
                 >
                   Cancel
                 </button>
@@ -273,8 +271,8 @@ export default function HabitsPage() {
 
       {/* Habit List */}
       {habits.length === 0 ? (
-        <div className="bg-gray-900 rounded-lg p-12 text-center">
-          <p className="text-gray-500">
+        <div className="bg-desert-surface rounded-sm p-12 text-center">
+          <p className="text-desert-text-3">
             No habits yet. Start building your routine!
           </p>
         </div>
@@ -283,15 +281,15 @@ export default function HabitsPage() {
           {habits.map((habit) => (
             <div
               key={habit.id}
-              className="bg-gray-900 rounded-lg p-4 flex items-center gap-4 hover:border-gray-700 transition-colors"
+              className="bg-desert-surface rounded-sm p-4 flex items-center gap-4 hover:border-desert-border-strong transition-colors"
             >
               {/* Toggle Button */}
               <button
                 onClick={() => toggleHabit(habit.id)}
-                className={`w-12 h-12 rounded-lg flex items-center justify-center text-xl shrink-0 transition-all ${
+                className={`w-12 h-12 rounded-sm flex items-center justify-center text-xl shrink-0 transition-all ${
                   habit.completed_today
-                    ? "bg-green-500/20 border-2 border-green-500/50 scale-105"
-                    : "bg-gray-800 border-2 border-gray-700 hover:border-amber-500"
+                    ? "bg-desert-success-dim border-2 border-desert-success/50 scale-105"
+                    : "bg-desert-surface-hover border-2 border-desert-border-strong hover:border-desert-accent"
                 }`}
               >
                 {habit.icon}
@@ -302,31 +300,31 @@ export default function HabitsPage() {
                 <p
                   className={`font-medium ${
                     habit.completed_today
-                      ? "text-green-400"
-                      : "text-white"
+                      ? "text-desert-success"
+                      : "text-desert-text"
                   }`}
                 >
                   {habit.name}
                 </p>
-                <p className="text-xs text-gray-500">
-                  {habit.target_frequency}
-                </p>
+                 <p className="text-xs text-desert-text-3">
+                   {habit.target_frequency}
+                 </p>
               </div>
 
               {/* Streak */}
               <div className="text-right">
-                <p className="text-lg font-bold text-white font-mono">
+                <p className="text-lg font-bold font-mono text-desert-text">
                   {habit.streak}
                 </p>
-                <p className="text-xs text-gray-500">
-                  day{habit.streak !== 1 ? "s" : ""} streak
-                </p>
+                 <p className="text-xs text-desert-text-3">
+                   day{habit.streak !== 1 ? "s" : ""} streak
+                 </p>
               </div>
 
               {/* Status */}
               <div
                 className={`w-3 h-3 rounded-full shrink-0 ${
-                  habit.completed_today ? "bg-green-500" : "bg-gray-700"
+                  habit.completed_today ? "bg-desert-success" : "bg-desert-surface-hover"
                 }`}
               />
             </div>

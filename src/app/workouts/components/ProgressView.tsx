@@ -159,11 +159,11 @@ export default function ProgressView({ sessions }: ProgressViewProps) {
 
   const getRpeDotColor = (rpe: string) => {
     switch (rpe) {
-      case 'easy': return 'bg-green-400';
-      case 'med': return 'bg-amber-400';
-      case 'hard': return 'bg-red-400';
-      case 'fail': return 'bg-purple-400';
-      default: return 'bg-gray-400';
+      case 'easy': return 'bg-desert-success';
+      case 'med': return 'bg-desert-accent';
+      case 'hard': return 'bg-desert-danger';
+      case 'fail': return 'bg-desert-mystic';
+      default: return 'bg-desert-text-3';
     }
   };
 
@@ -172,40 +172,40 @@ export default function ProgressView({ sessions }: ProgressViewProps) {
       {/* Section 1: Metrics row */}
       <div className="grid grid-cols-3 gap-4">
         {/* Sessions count */}
-        <div className="bg-gray-900 rounded-lg p-4">
-          <div className="text-xs text-gray-500 uppercase tracking-wider font-mono mb-1">
+        <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
+          <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">
             Sessions
           </div>
-          <div className="text-2xl font-mono font-semibold text-white">
+          <div className="font-mono font-bold text-2xl text-desert-text tracking-tight">
             {metrics.totalSessions}
           </div>
         </div>
 
         {/* Compound RIR 2 */}
-        <div className="bg-gray-900 rounded-lg p-4">
-          <div className="text-xs text-gray-500 uppercase tracking-wider font-mono mb-1">
+        <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
+          <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">
             Compound RIR 2
           </div>
-          <div className="text-2xl font-mono font-semibold text-white">
+          <div className="font-mono font-bold text-2xl text-desert-text tracking-tight">
             {metrics.compoundPercent}%
           </div>
         </div>
 
         {/* Iso RIR 0-1 */}
-        <div className="bg-gray-900 rounded-lg p-4">
-          <div className="text-xs text-gray-500 uppercase tracking-wider font-mono mb-1">
+        <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
+          <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">
             Iso RIR 0-1
           </div>
-          <div className="text-2xl font-mono font-semibold text-white">
+          <div className="font-mono font-bold text-2xl text-desert-text tracking-tight">
             {metrics.isoPercent}%
           </div>
         </div>
       </div>
 
       {/* Metrics hint */}
-      <div className="text-xs text-gray-500 font-mono">
-        <span className="text-blue-400">■</span> Compound: aim ≥60% at RIR 2 (Med) · 
-        <span className="text-green-400">■</span> Isolation: aim ≥60% at RIR 0-1 (Hard/Fail)
+      <div className="font-mono text-xs text-desert-text-3">
+        <span className="text-desert-celestial">■</span> Compound: aim ≥60% at RIR 2 (Med) ·
+        <span className="text-desert-success">■</span> Isolation: aim ≥60% at RIR 0-1 (Hard/Fail)
       </div>
 
       {/* Section 2: Filter pills */}
@@ -214,10 +214,10 @@ export default function ProgressView({ sessions }: ProgressViewProps) {
           <button
             key={opt.value}
             onClick={() => setFilter(opt.value)}
-            className={`rounded-full px-3 py-1 text-xs font-mono cursor-pointer transition-colors whitespace-nowrap ${
+            className={`rounded-sm px-3 py-1 text-xs font-mono cursor-pointer transition-colors duration-150 whitespace-nowrap ${
               filter === opt.value
-                ? "bg-white text-gray-950 border border-white"
-                : "border border-gray-700 text-gray-400 hover:text-white"
+                ? "bg-desert-surface border border-desert-border text-desert-text"
+                : "text-desert-text-3 hover:text-desert-text-2 px-3 py-1"
             }`}
           >
             {opt.label}
@@ -227,35 +227,35 @@ export default function ProgressView({ sessions }: ProgressViewProps) {
 
       {/* Section 3: Progress bars */}
       {exerciseData.length === 0 ? (
-        <div className="bg-gray-900 rounded-lg p-8 text-center">
-          <p className="text-gray-500 font-mono">No data yet</p>
+        <div className="bg-desert-surface border border-desert-border rounded-sm p-8 text-center">
+          <p className="text-desert-text-3 font-mono">No data yet</p>
         </div>
       ) : (
-        <div className="bg-gray-900 rounded-lg p-4 space-y-1">
+        <div className="bg-desert-surface border border-desert-border rounded-sm p-4 space-y-1">
           {exerciseData.map((ex, idx) => (
-            <div key={ex.exerciseId} className={`py-3 ${idx < exerciseData.length - 1 ? 'border-b border-gray-800' : ''}`}>
+            <div key={ex.exerciseId} className={`py-3 ${idx < exerciseData.length - 1 ? 'border-b border-desert-border' : ''}`}>
               {/* Row 1 */}
               <div className="flex items-center gap-3">
                 {/* Exercise name */}
-                <div className="text-sm text-white min-w-[120px] truncate" title={ex.name}>
+                <div className="font-mono text-sm text-desert-text min-w-[120px] truncate" title={ex.name}>
                   {ex.name}
                 </div>
 
                 {/* Type badge */}
                 <span className={`text-xs rounded px-1.5 py-0.5 font-mono ${
                   ex.type === 'compound'
-                    ? 'bg-blue-900/50 text-blue-400 border border-blue-800'
-                    : 'bg-green-900/50 text-green-400 border border-green-800'
+                    ? 'bg-desert-celestial-dim border border-desert-celestial text-desert-celestial'
+                    : 'bg-desert-success-dim border border-desert-success text-desert-success'
                 }`}>
                   {ex.type === 'compound' ? 'Compound' : 'Iso'}
                 </span>
 
                 {/* Progress bar */}
                 <div className="flex-1">
-                  <div className="bg-gray-800 rounded-full h-1.5 overflow-hidden">
+                  <div className="bg-desert-border rounded-full h-2 overflow-hidden">
                     <div
                       className={`h-full ${
-                        ex.type === 'compound' ? 'bg-blue-400' : 'bg-green-400'
+                        ex.type === 'compound' ? 'bg-desert-celestial' : 'bg-desert-success'
                       }`}
                       style={{ width: `${overallMax > 0 ? (ex.maxWeight / overallMax) * 100 : 0}%` }}
                     />
@@ -263,12 +263,12 @@ export default function ProgressView({ sessions }: ProgressViewProps) {
                 </div>
 
                 {/* Max weight label */}
-                <div className="text-sm font-mono text-gray-400 min-w-[60px] text-right flex items-center justify-end gap-1">
+                <div className="font-mono text-sm text-desert-text-2 min-w-[60px] text-right flex items-center justify-end gap-1">
                   {ex.maxWeight > (ex.prevWeight || 0) && (
-                    <span className="text-green-400">↑</span>
+                    <span className="text-desert-success">↑</span>
                   )}
                   {ex.maxWeight < (ex.prevWeight || 0) && (
-                    <span className="text-red-400">↓</span>
+                    <span className="text-desert-danger">↓</span>
                   )}
                   {ex.maxWeight.toFixed(1)}
                 </div>
@@ -292,12 +292,12 @@ export default function ProgressView({ sessions }: ProgressViewProps) {
       )}
 
       {/* Section 4: Legend */}
-      <div className="text-xs text-gray-500 font-mono">
-        Dots = last 3 sessions: 
-        <span className="text-green-400">● easy</span> · 
-        <span className="text-amber-400">● med</span> · 
-        <span className="text-red-400">● hard</span> · 
-        <span className="text-purple-400">● fail</span>
+      <div className="font-mono text-xs text-desert-text-3">
+        Dots = last 3 sessions:
+        <span className="text-desert-success">● easy</span> ·
+        <span className="text-desert-accent">● med</span> ·
+        <span className="text-desert-danger">● hard</span> ·
+        <span className="text-desert-mystic">● fail</span>
       </div>
     </div>
   );

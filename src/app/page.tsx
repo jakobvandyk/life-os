@@ -13,10 +13,10 @@ interface DashboardData {
 }
 
 const priorityColors: Record<string, string> = {
-  urgent: "text-red-400",
-  high: "text-orange-400",
-  medium: "text-blue-400",
-  low: "text-gray-400",
+  urgent: "text-desert-danger",
+  high: "text-desert-danger",
+  medium: "text-desert-warning",
+  low: "text-desert-success",
 };
 
 const moodEmoji = ["", "😞", "😐", "🙂", "😊", "🤩"];
@@ -185,7 +185,7 @@ export default function Dashboard() {
   if (!data) {
     return (
       <div className="flex items-center justify-center h-full">
-        <p className="text-gray-500">Loading...</p>
+        <p className="text-desert-text-3">Loading...</p>
       </div>
     );
   }
@@ -200,48 +200,48 @@ export default function Dashboard() {
   });
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="bg-desert-bg min-h-screen p-6 space-y-6 relative z-10">
       <div className="mt-6">
-        <h1 className="text-3xl font-bold text-white">{getGreeting()}, {userName} 👋</h1>
-        <p className="text-gray-500 mt-1">{todayFormatted} · Week {weekNumber}</p>
+        <h1 className="font-pixel text-lg text-desert-text">{getGreeting()}, {userName} 👋</h1>
+        <p className="text-desert-text-3 mt-1">{todayFormatted} · Week {weekNumber}</p>
       </div>
 
       {/* Stats Row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <div className="bg-gray-900 rounded-lg p-5">
-          <p className="text-2xl font-bold text-white font-mono">
+        <div className="bg-desert-surface rounded-sm p-5">
+          <p className="font-mono font-bold text-3xl tracking-tight text-desert-text">
             {data.taskStats.active}
           </p>
-          <p className="text-sm text-gray-500">Active Tasks</p>
+          <p className="text-sm text-desert-text-3">Active Tasks</p>
         </div>
-        <div className="bg-gray-900 rounded-lg p-5">
-          <p className="text-2xl font-bold text-green-400 font-mono">
+        <div className="bg-desert-surface rounded-sm p-5">
+          <p className="font-mono font-bold text-3xl tracking-tight text-desert-success">
             {data.taskStats.completed_this_week}
           </p>
-          <p className="text-sm text-gray-500">Done This Week</p>
+          <p className="text-sm text-desert-text-3">Done This Week</p>
         </div>
-        <div className="bg-gray-900 rounded-lg p-5">
-          <p className="text-2xl font-bold text-red-400 font-mono">
+        <div className="bg-desert-surface rounded-sm p-5">
+          <p className="font-mono font-bold text-3xl tracking-tight text-desert-danger">
             {data.taskStats.overdue}
           </p>
-          <p className="text-sm text-gray-500">Overdue</p>
+          <p className="text-sm text-desert-text-3">Overdue</p>
         </div>
-        <div className="bg-gray-900 rounded-lg p-5">
-          <p className="text-2xl font-bold text-amber-400 font-mono">
+        <div className="bg-desert-surface rounded-sm p-5">
+          <p className="font-mono font-bold text-3xl tracking-tight text-desert-accent">
             ${data.spending.month_expenses.toFixed(0)}
           </p>
-          <p className="text-sm text-gray-500">Spent This Month</p>
+          <p className="text-sm text-desert-text-3">Spent This Month</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Today's Tasks */}
-        <div className="bg-gray-900 rounded-lg p-5">
-          <h2 className="text-lg font-semibold text-white mb-4">
+        <div className="bg-desert-surface rounded-sm p-5">
+          <h2 className="font-mono font-bold text-base tracking-[0.06em] uppercase text-desert-text mb-4">
             📋 Today&apos;s Focus
           </h2>
           {data.todayTasks.length === 0 ? (
-            <p className="text-gray-600 text-sm">
+            <p className="text-desert-text-3 text-sm">
               No tasks due. Add some in Tasks →
             </p>
           ) : (
@@ -253,7 +253,7 @@ export default function Dashboard() {
                   >
                     ●
                   </span>
-                  <span className="text-gray-300">{task.title}</span>
+                  <span className="text-desert-text">{task.title}</span>
                 </li>
               ))}
             </ul>
@@ -261,12 +261,12 @@ export default function Dashboard() {
         </div>
 
         {/* Habits */}
-        <div className="bg-gray-900 rounded-lg p-5">
-          <h2 className="text-lg font-semibold text-white mb-4">
+        <div className="bg-desert-surface rounded-sm p-5">
+          <h2 className="font-mono font-bold text-base tracking-[0.06em] uppercase text-desert-text mb-4">
             🔁 Today&apos;s Habits
           </h2>
           {data.habits.length === 0 ? (
-            <p className="text-gray-600 text-sm">
+            <p className="text-desert-text-3 text-sm">
               No habits yet. Add some in Habits →
             </p>
           ) : (
@@ -276,7 +276,7 @@ export default function Dashboard() {
                   <span>{habit.done_today ? "✅" : "⬜"}</span>
                   <span
                     className={
-                      habit.done_today ? "text-gray-400 line-through" : "text-gray-300"
+                      habit.done_today ? "text-desert-text-2 line-through" : "text-desert-text"
                     }
                   >
                     {habit.icon} {habit.name}
@@ -288,12 +288,12 @@ export default function Dashboard() {
         </div>
 
         {/* Goals */}
-        <div className="bg-gray-900 rounded-lg p-5">
-          <h2 className="text-lg font-semibold text-white mb-4">
+        <div className="bg-desert-surface rounded-sm p-5">
+          <h2 className="font-mono font-bold text-base tracking-[0.06em] uppercase text-desert-text mb-4">
             🎯 Active Goals
           </h2>
           {data.goals.length === 0 ? (
-            <p className="text-gray-600 text-sm">
+            <p className="text-desert-text-3 text-sm">
               No goals yet. Add some in Goals →
             </p>
           ) : (
@@ -301,14 +301,14 @@ export default function Dashboard() {
               {data.goals.map((goal, i) => (
                 <li key={i}>
                   <div className="flex justify-between text-sm mb-1">
-                    <span className="text-gray-300">{goal.title}</span>
-                    <span className="text-gray-500 font-mono">
+                    <span className="text-desert-text">{goal.title}</span>
+                    <span className="text-desert-text-3 font-mono">
                       {Math.round(goal.progress)}%
                     </span>
                   </div>
-                  <div className="w-full bg-gray-800 rounded-full h-2">
+                  <div className="w-full bg-desert-border rounded-full h-2">
                     <div
-                      className="bg-amber-400 h-2 rounded-full transition-all"
+                      className="bg-desert-accent h-2 rounded-full transition-all"
                       style={{ width: `${Math.min(goal.progress, 100)}%` }}
                     />
                   </div>
@@ -319,12 +319,12 @@ export default function Dashboard() {
         </div>
 
         {/* Recent Mood */}
-        <div className="bg-gray-900 rounded-lg p-5">
-          <h2 className="text-lg font-semibold text-white mb-4">
+        <div className="bg-desert-surface rounded-sm p-5">
+          <h2 className="font-mono font-bold text-base tracking-[0.06em] uppercase text-desert-text mb-4">
             📔 Recent Mood
           </h2>
           {data.recentJournal.length === 0 ? (
-            <p className="text-gray-600 text-sm">
+            <p className="text-desert-text-3 text-sm">
               No journal entries yet. Start in Journal →
             </p>
           ) : (
@@ -334,10 +334,10 @@ export default function Dashboard() {
                   key={i}
                   className="flex items-center justify-between text-sm"
                 >
-                  <span className="text-gray-500 text-xs font-mono">{entry.date}</span>
+                  <span className="text-desert-text-3 text-xs font-mono">{entry.date}</span>
                   <div className="flex gap-2">
                     <span>{moodEmoji[entry.mood] || "—"}</span>
-                    <span className="text-gray-600 font-mono">
+                    <span className="text-desert-text-3 font-mono">
                       ⚡{entry.energy || "—"}
                     </span>
                   </div>

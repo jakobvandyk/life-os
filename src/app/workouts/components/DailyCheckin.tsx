@@ -295,19 +295,19 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
   };
 
   const getReadinessColor = (value: number | null) => {
-    if (value === null) return "border-gray-700 text-gray-500";
-    if (value >= 1 && value <= 3) return "bg-red-900/50 border-red-500 text-red-400";
-    if (value >= 4 && value <= 6) return "bg-amber-900/50 border-amber-500 text-amber-400";
-    if (value >= 7 && value <= 10) return "bg-green-900/50 border-green-500 text-green-400";
-    return "border-gray-700 text-gray-500";
+    if (value === null) return "border-desert-border-strong text-desert-text-3";
+    if (value >= 1 && value <= 3) return "bg-desert-danger-dim border-desert-danger text-desert-danger";
+    if (value >= 4 && value <= 6) return "bg-desert-accent-glow border-desert-accent text-desert-accent";
+    if (value >= 7 && value <= 10) return "bg-desert-success-dim border-desert-success text-desert-success";
+    return "border-desert-border-strong text-desert-text-3";
   };
 
   const getShinColor = (value: number | null) => {
-    if (value === null) return "border-gray-700 text-gray-500";
-    if (value >= 0 && value <= 2) return "bg-green-900/50 border-green-500 text-green-400";
-    if (value >= 3 && value <= 5) return "bg-amber-900/50 border-amber-500 text-amber-400";
-    if (value >= 6 && value <= 10) return "bg-red-900/50 border-red-500 text-red-400";
-    return "border-gray-700 text-gray-500";
+    if (value === null) return "border-desert-border-strong text-desert-text-3";
+    if (value >= 0 && value <= 2) return "bg-desert-success-dim border-desert-success text-desert-success";
+    if (value >= 3 && value <= 5) return "bg-desert-accent-glow border-desert-accent text-desert-accent";
+    if (value >= 6 && value <= 10) return "bg-desert-danger-dim border-desert-danger text-desert-danger";
+    return "border-desert-border-strong text-desert-text-3";
   };
 
   const toggleReadiness = (value: number) => {
@@ -338,14 +338,14 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
     const lastY = height - ((values[values.length - 1] - min) / range) * (height - 2 * padding) - padding;
 
     return (
-      <svg viewBox={`0 0 ${width} ${height}`} className="w-full" preserveAspectRatio="none">
+      <svg viewBox={`0 0 ${width} ${height}`} className="w-full text-desert-text" preserveAspectRatio="none">
         <polyline
           points={points}
           fill="none"
-          stroke="white"
+          stroke="currentColor"
           strokeWidth="1.5"
         />
-        <circle cx={lastX} cy={lastY} r="3" fill="white" />
+        <circle cx={lastX} cy={lastY} r="3" fill="currentColor" />
       </svg>
     );
   };
@@ -372,19 +372,19 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
   return (
     <div className="space-y-6">
       {error && (
-        <div className="bg-red-900/50 border border-red-500 text-red-400 rounded-lg p-3 text-sm">
+        <div className="bg-desert-danger-dim border border-desert-danger text-desert-danger rounded-sm p-3 text-sm">
           {error}
         </div>
       )}
 
       {/* Section 1: Today's Form */}
-      <div className="bg-gray-900 rounded-lg p-5">
-        <h2 className="text-lg font-semibold text-white mb-4">Today's Check-in</h2>
+      <div className="bg-desert-surface border border-desert-border rounded-sm p-5">
+        <h2 className="font-mono font-bold text-base tracking-[0.06em] uppercase text-desert-text mb-4">Today's Check-in</h2>
 
         {/* Row 1: Weight, Sleep, HRV */}
         <div className="grid grid-cols-3 gap-4 mb-4">
           <div>
-            <label className="block text-xs text-gray-500 uppercase tracking-wider font-mono mb-2">
+            <label className="block text-xs text-desert-text-3 uppercase tracking-wider font-mono mb-2">
               Weight (kg)
             </label>
             <input
@@ -393,11 +393,11 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
               placeholder="90.5"
               value={weight}
               onChange={(e) => setWeight(e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500"
+              className="w-full bg-desert-bg border border-desert-border-strong rounded-sm px-3 py-2 text-desert-text placeholder:text-desert-text-3 focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent"
             />
           </div>
           <div>
-            <label className="block text-xs text-gray-500 uppercase tracking-wider font-mono mb-2">
+            <label className="block text-xs text-desert-text-3 uppercase tracking-wider font-mono mb-2">
               Sleep (hrs)
             </label>
             <input
@@ -406,11 +406,11 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
               placeholder="7.5"
               value={sleep}
               onChange={(e) => setSleep(e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500"
+              className="w-full bg-desert-bg border border-desert-border-strong rounded-sm px-3 py-2 text-desert-text placeholder:text-desert-text-3 focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent"
             />
           </div>
           <div>
-            <label className="block text-xs text-gray-500 uppercase tracking-wider font-mono mb-2">
+            <label className="block text-xs text-desert-text-3 uppercase tracking-wider font-mono mb-2">
               HRV
             </label>
             <input
@@ -419,14 +419,14 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
               placeholder="52"
               value={hrv}
               onChange={(e) => setHrv(e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500"
+              className="w-full bg-desert-bg border border-desert-border-strong rounded-sm px-3 py-2 text-desert-text placeholder:text-desert-text-3 focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent"
             />
           </div>
         </div>
 
         {/* Row 2: Readiness Scale */}
         <div className="mb-4">
-          <label className="block text-xs text-gray-500 uppercase tracking-wider font-mono mb-3">
+          <label className="block text-xs text-desert-text-3 uppercase tracking-wider font-mono mb-3">
             Readiness (1 = wrecked · 10 = great)
           </label>
           <div className="flex flex-wrap gap-2">
@@ -435,7 +435,7 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
                 key={value}
                 type="button"
                 onClick={() => toggleReadiness(value)}
-                className={`w-10 h-10 rounded-lg border font-mono text-sm font-medium transition-colors ${getReadinessColor(readiness === value ? value : null)}`}
+                className={`w-10 h-10 rounded-sm border font-mono text-sm font-medium transition-colors duration-150 ${getReadinessColor(readiness === value ? value : null)}`}
               >
                 {value}
               </button>
@@ -446,7 +446,7 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
         {/* Row 3: Shin Pain Toggle */}
         <div className="mb-4">
           <div className="flex items-center justify-between mb-2">
-            <label className="text-sm text-gray-300">Shin pain today</label>
+            <label className="text-sm text-desert-text">Shin pain today</label>
             <button
               type="button"
               onClick={() => {
@@ -456,14 +456,14 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
               className="relative inline-block w-10 h-5"
             >
               <span
-                className={`absolute inline-block w-4 h-4 bg-white rounded-full transition-transform ${
+                className={`absolute inline-block w-4 h-4 bg-desert-surface-hover rounded-full transition-transform ${
                   shinEnabled ? "translate-x-5" : "translate-x-0.5"
                 }`}
                 style={{ top: "2px", left: shinEnabled ? "calc(100% - 17px)" : "2px" }}
               />
               <div
                 className={`w-full h-full rounded-full transition-colors ${
-                  shinEnabled ? "bg-amber-500" : "bg-gray-700"
+                  shinEnabled ? "bg-desert-accent" : "bg-desert-surface"
                 }`}
               />
             </button>
@@ -476,7 +476,7 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
                     key={value}
                     type="button"
                     onClick={() => toggleShin(value)}
-                    className={`w-10 h-10 rounded-lg border font-mono text-sm font-medium transition-colors ${getShinColor(shin === value ? value : null)}`}
+                    className={`w-10 h-10 rounded-sm border font-mono text-sm font-medium transition-colors ${getShinColor(shin === value ? value : null)}`}
                   >
                     {value}
                   </button>
@@ -489,7 +489,7 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
         {/* Row 4: Waist Toggle */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-2">
-            <label className="text-sm text-gray-300">Log waist cm</label>
+            <label className="font-sans text-sm text-desert-text">Log waist cm</label>
             <button
               type="button"
               onClick={() => {
@@ -499,14 +499,14 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
               className="relative inline-block w-10 h-5"
             >
               <span
-                className={`absolute inline-block w-4 h-4 bg-white rounded-full transition-transform ${
+                className={`absolute inline-block w-4 h-4 bg-desert-surface-hover rounded-full transition-transform ${
                   waistEnabled ? "translate-x-5" : "translate-x-0.5"
                 }`}
                 style={{ top: "2px", left: waistEnabled ? "calc(100% - 17px)" : "2px" }}
               />
               <div
                 className={`w-full h-full rounded-full transition-colors ${
-                  waistEnabled ? "bg-amber-500" : "bg-gray-700"
+                  waistEnabled ? "bg-desert-accent" : "bg-desert-surface"
                 }`}
               />
             </button>
@@ -518,7 +518,7 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
               placeholder="85.0"
               value={waist}
               onChange={(e) => setWaist(e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500"
+              className="w-full bg-desert-bg border border-desert-border-strong rounded-sm px-3 py-2 text-desert-text font-sans placeholder:text-desert-text-3 focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent"
             />
           )}
         </div>
@@ -527,7 +527,7 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
         <button
           onClick={handleSave}
           disabled={loading}
-          className="w-full bg-amber-500 hover:bg-amber-600 disabled:bg-amber-500/50 text-gray-950 font-mono font-medium py-3 rounded-lg transition-colors"
+          className="w-full bg-desert-accent hover:bg-desert-accent-glow disabled:bg-desert-accent/50 text-desert-bg font-mono font-semibold uppercase tracking-wider text-sm rounded-sm py-2 px-4 transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? "Saving..." : todayCheckin ? "Update today" : "Save check-in"}
         </button>
@@ -536,79 +536,79 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
       {/* Section 2: Trends */}
       <div className="grid grid-cols-3 gap-4">
         {/* 7-day avg weight */}
-        <div className="bg-gray-900 rounded-lg p-4">
-          <div className="text-xs text-gray-500 uppercase tracking-wider font-mono mb-1">
+        <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
+          <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">
             7-day avg weight
           </div>
-          <div className="text-2xl font-mono font-semibold text-white">
+          <div className="font-mono font-bold text-2xl text-desert-text tracking-tight">
             {avg7Day !== null ? `${avg7Day.toFixed(1)}kg` : "—"}
           </div>
-          <div className="text-xs font-mono text-gray-400 mt-1">
+          <div className="font-mono text-xs text-desert-text-2 mt-1">
             {trend.arrow} {trend.diff}kg vs prev
           </div>
         </div>
 
         {/* Streak */}
-        <div className="bg-gray-900 rounded-lg p-4">
-          <div className="text-xs text-gray-500 uppercase tracking-wider font-mono mb-1">
+        <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
+          <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">
             Streak
           </div>
-          <div className="text-2xl font-mono font-semibold text-white">
+          <div className="font-mono font-bold text-2xl text-desert-text tracking-tight">
             {streak} day{streak !== 1 ? "s" : ""}
           </div>
-          <div className="text-xs font-mono text-gray-400 mt-1">
+          <div className="font-mono text-xs text-desert-text-2 mt-1">
             consecutive check-ins
           </div>
         </div>
 
         {/* Latest HRV */}
-        <div className="bg-gray-900 rounded-lg p-4">
-          <div className="text-xs text-gray-500 uppercase tracking-wider font-mono mb-1">
+        <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
+          <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">
             Latest HRV
           </div>
-          <div className="text-2xl font-mono font-semibold text-white">
+          <div className="font-mono font-bold text-2xl text-desert-text tracking-tight">
             {latestHrv !== undefined ? latestHrv : "—"}
           </div>
-          <div className="text-xs font-mono text-gray-400 mt-1">
+          <div className="font-mono text-xs text-desert-text-2 mt-1">
             ms
           </div>
         </div>
 
         {/* Readiness */}
-        <div className="bg-gray-900 rounded-lg p-4">
-          <div className="text-xs text-gray-500 uppercase tracking-wider font-mono mb-1">
+        <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
+          <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">
             Readiness
           </div>
-          <div className="text-2xl font-mono font-semibold text-white">
+          <div className="font-mono font-bold text-2xl text-desert-text tracking-tight">
             {latestReadiness !== undefined ? `${latestReadiness}/10` : "—"}
           </div>
-          <div className="text-xs font-mono text-gray-400 mt-1">
+          <div className="font-mono text-xs text-desert-text-2 mt-1">
             latest
           </div>
         </div>
 
         {/* Sleep */}
-        <div className="bg-gray-900 rounded-lg p-4">
-          <div className="text-xs text-gray-500 uppercase tracking-wider font-mono mb-1">
+        <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
+          <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">
             Sleep
           </div>
-          <div className="text-2xl font-mono font-semibold text-white">
+          <div className="font-mono font-bold text-2xl text-desert-text tracking-tight">
             {latestSleep !== undefined ? `${latestSleep}h` : "—"}
           </div>
-          <div className="text-xs font-mono text-gray-400 mt-1">
+          <div className="font-mono text-xs text-desert-text-2 mt-1">
             latest
           </div>
         </div>
 
         {/* Total Entries */}
-        <div className="bg-gray-900 rounded-lg p-4">
-          <div className="text-xs text-gray-500 uppercase tracking-wider font-mono mb-1">
+        <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
+          <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">
             Total entries
           </div>
-          <div className="text-2xl font-mono font-semibold text-white">
+          <div className="font-mono font-bold text-2xl text-desert-text tracking-tight">
             {totalEntries}
           </div>
-          <div className="text-xs font-mono text-gray-400 mt-1">
+          <div className="font-mono text-xs text-desert-text-2 mt-1">
             all time
           </div>
         </div>
@@ -616,12 +616,12 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
 
       {/* Section 3: Sparkline */}
       {sparklineData.length >= 2 && (
-        <div className="bg-gray-900 rounded-lg p-4">
+        <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
           <div className="flex justify-between items-center mb-3">
-            <div className="text-xs text-gray-500 uppercase tracking-wider font-mono">
+            <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest">
               Weight — last 14 days
             </div>
-            <div className="text-xs font-mono text-gray-400">
+            <div className="font-mono text-xs text-desert-text-2">
               {avg7Day !== null ? `${avg7Day.toFixed(1)}kg avg` : "—"}
             </div>
           </div>
@@ -632,10 +632,10 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
       {/* Section 4: History */}
       <div>
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold text-white">History</h2>
+          <h2 className="font-mono font-bold text-base tracking-[0.06em] uppercase text-desert-text">History</h2>
           <button
             onClick={() => openEditModal()}
-            className="bg-gray-800 hover:bg-gray-700 text-white text-sm font-mono px-4 py-2 rounded-lg transition-colors"
+            className="bg-desert-surface border border-desert-border text-desert-text-2 font-mono text-sm rounded-sm py-2 px-4 hover:bg-desert-surface-hover hover:border-desert-border-strong transition-colors duration-150"
           >
             + Add past date
           </button>
@@ -643,29 +643,22 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
 
         <div className="space-y-2">
           {pastEntries.length === 0 ? (
-            <p className="text-gray-500 text-sm">No past entries</p>
+            <p className="font-sans text-sm text-desert-text-3">No past entries</p>
           ) : (
             pastEntries.map((entry) => (
-              <div key={entry.id} className="bg-gray-900 rounded-lg p-4">
-                <div className="flex justify-between items-start mb-2">
-                  <div className="text-sm font-mono text-white">
-                    {new Date(entry.date + "T00:00:00").toLocaleDateString("en-US", {
-                      weekday: "short",
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
-                  </div>
-                  <button
-                    onClick={() => openEditModal(entry)}
-                    className="text-xs text-gray-400 hover:text-white font-mono transition-colors"
-                  >
-                    Edit
-                  </button>
+              <div key={entry.id} className="bg-desert-surface border border-desert-border rounded-sm p-4 hover:bg-desert-surface-hover hover:border-desert-border-strong transition-colors duration-150 cursor-pointer" onClick={() => openEditModal(entry)}>
+                <div className="flex justify-between items-baseline mb-3">
+                  <span className="font-mono font-medium text-sm tracking-[0.04em] uppercase text-desert-text-2">
+                    {new Date(entry.date + "T12:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
+                  </span>
                 </div>
-                <div className="text-xs text-gray-400 font-mono">
-                  {formatHistoryPill(entry)}
-                </div>
+
+                {/* Card body - checkin summary */}
+                {formatHistoryPill(entry) && (
+                  <p className="font-sans text-sm text-desert-text-2 leading-relaxed">
+                    {formatHistoryPill(entry)}
+                  </p>
+                )}
               </div>
             ))
           )}
@@ -676,16 +669,16 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
       {modalOpen && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-end justify-center" onClick={closeModal}>
           <div
-            className="bg-gray-900 rounded-t-lg p-6 w-full max-h-[90vh] overflow-y-auto"
+            className="bg-desert-surface border border-desert-border rounded-t-sm p-6 w-full max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-white">
+              <h3 className="font-mono font-medium text-sm tracking-[0.04em] uppercase text-desert-text-2">
                 {editingEntry ? "Edit entry" : "New entry"}
               </h3>
               <button
                 onClick={closeModal}
-                className="text-gray-400 hover:text-white text-2xl"
+                className="text-desert-text-2 hover:text-desert-text text-2xl"
               >
                 ×
               </button>
@@ -693,7 +686,7 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
 
             {!editingEntry && (
               <div className="mb-4">
-                <label className="block text-xs text-gray-500 uppercase tracking-wider font-mono mb-2">
+                <label className="block font-mono text-xs text-desert-text-3 uppercase tracking-wider mb-2">
                   Date
                 </label>
                 <input
@@ -701,17 +694,17 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
                   max={todayStr}
                   value={pastDate}
                   onChange={(e) => setPastDate(e.target.value)}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-amber-500"
+                  className="w-full bg-desert-bg border border-desert-border-strong rounded-sm px-3 py-2 text-desert-text font-sans focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent"
                 />
               </div>
             )}
 
             {editingEntry && (
               <div className="mb-4">
-                <label className="block text-xs text-gray-500 uppercase tracking-wider font-mono mb-2">
+                <label className="block font-mono text-xs text-desert-text-3 uppercase tracking-wider mb-2">
                   Date
                 </label>
-                <div className="text-sm text-white font-mono">
+                <div className="font-mono text-sm text-desert-text">
                   {new Date(editingEntry.date + "T00:00:00").toLocaleDateString("en-US", {
                     weekday: "short",
                     month: "short",
@@ -724,7 +717,7 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
 
             <div className="space-y-4">
               <div>
-                <label className="block text-xs text-gray-500 uppercase tracking-wider font-mono mb-2">
+                <label className="block font-mono text-xs text-desert-text-3 uppercase tracking-wider mb-2">
                   Weight (kg)
                 </label>
                 <input
@@ -733,12 +726,12 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
                   placeholder="90.5"
                   value={weight}
                   onChange={(e) => setWeight(e.target.value)}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500"
+                  className="w-full bg-desert-bg border border-desert-border-strong rounded-sm px-3 py-2 text-desert-text font-sans placeholder:text-desert-text-3 focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent"
                 />
               </div>
 
               <div>
-                <label className="block text-xs text-gray-500 uppercase tracking-wider font-mono mb-2">
+                <label className="block font-mono text-xs text-desert-text-3 uppercase tracking-wider mb-2">
                   Sleep (hrs)
                 </label>
                 <input
@@ -747,12 +740,12 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
                   placeholder="7.5"
                   value={sleep}
                   onChange={(e) => setSleep(e.target.value)}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500"
+                  className="w-full bg-desert-bg border border-desert-border-strong rounded-sm px-3 py-2 text-desert-text font-sans placeholder:text-desert-text-3 focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent"
                 />
               </div>
 
               <div>
-                <label className="block text-xs text-gray-500 uppercase tracking-wider font-mono mb-2">
+                <label className="block font-mono text-xs text-desert-text-3 uppercase tracking-wider mb-2">
                   HRV
                 </label>
                 <input
@@ -761,12 +754,12 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
                   placeholder="52"
                   value={hrv}
                   onChange={(e) => setHrv(e.target.value)}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500"
+                  className="w-full bg-desert-bg border border-desert-border-strong rounded-sm px-3 py-2 text-desert-text font-sans placeholder:text-desert-text-3 focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent"
                 />
               </div>
 
               <div>
-                <label className="block text-xs text-gray-500 uppercase tracking-wider font-mono mb-3">
+                <label className="block font-mono text-xs text-desert-text-3 uppercase tracking-wider mb-3">
                   Readiness (1 = wrecked · 10 = great)
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -775,7 +768,7 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
                       key={value}
                       type="button"
                       onClick={() => toggleReadiness(value)}
-                      className={`w-10 h-10 rounded-lg border font-mono text-sm font-medium transition-colors ${getReadinessColor(readiness === value ? value : null)}`}
+                      className={`w-10 h-10 rounded-sm border font-mono text-sm font-medium transition-colors duration-150 ${getReadinessColor(readiness === value ? value : null)}`}
                     >
                       {value}
                     </button>
@@ -785,7 +778,7 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
 
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-sm text-gray-300">Shin pain today</label>
+                  <label className="font-sans text-sm text-desert-text">Shin pain today</label>
                   <button
                     type="button"
                     onClick={() => {
@@ -795,14 +788,14 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
                     className="relative inline-block w-10 h-5"
                   >
                     <span
-                      className={`absolute inline-block w-4 h-4 bg-white rounded-full transition-transform ${
+                      className={`absolute inline-block w-4 h-4 bg-desert-surface-hover rounded-full transition-transform ${
                         shinEnabled ? "translate-x-5" : "translate-x-0.5"
                       }`}
                       style={{ top: "2px", left: shinEnabled ? "calc(100% - 17px)" : "2px" }}
                     />
                     <div
                       className={`w-full h-full rounded-full transition-colors ${
-                        shinEnabled ? "bg-amber-500" : "bg-gray-700"
+                        shinEnabled ? "bg-desert-accent" : "bg-desert-surface"
                       }`}
                     />
                   </button>
@@ -814,7 +807,7 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
                         key={value}
                         type="button"
                         onClick={() => toggleShin(value)}
-                        className={`w-10 h-10 rounded-lg border font-mono text-sm font-medium transition-colors ${getShinColor(shin === value ? value : null)}`}
+                        className={`w-10 h-10 rounded-sm border font-mono text-sm font-medium transition-colors ${getShinColor(shin === value ? value : null)}`}
                       >
                         {value}
                       </button>
@@ -825,7 +818,7 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
 
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-sm text-gray-300">Log waist cm</label>
+                  <label className="font-sans text-sm text-desert-text">Log waist cm</label>
                   <button
                     type="button"
                     onClick={() => {
@@ -835,14 +828,14 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
                     className="relative inline-block w-10 h-5"
                   >
                     <span
-                      className={`absolute inline-block w-4 h-4 bg-white rounded-full transition-transform ${
+                      className={`absolute inline-block w-4 h-4 bg-desert-surface-hover rounded-full transition-transform ${
                         waistEnabled ? "translate-x-5" : "translate-x-0.5"
                       }`}
                       style={{ top: "2px", left: waistEnabled ? "calc(100% - 17px)" : "2px" }}
                     />
                     <div
                       className={`w-full h-full rounded-full transition-colors ${
-                        waistEnabled ? "bg-amber-500" : "bg-gray-700"
+                        waistEnabled ? "bg-desert-accent" : "bg-desert-surface"
                       }`}
                     />
                   </button>
@@ -854,7 +847,7 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
                     placeholder="85.0"
                     value={waist}
                     onChange={(e) => setWaist(e.target.value)}
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500"
+                    className="w-full bg-desert-bg border border-desert-border-strong rounded-sm px-3 py-2 text-desert-text font-sans placeholder:text-desert-text-3 focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent"
                   />
                 )}
               </div>
@@ -864,7 +857,7 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
               <button
                 onClick={handleModalSave}
                 disabled={loading}
-                className="flex-1 bg-amber-500 hover:bg-amber-600 disabled:bg-amber-500/50 text-gray-950 font-mono font-medium py-3 rounded-lg transition-colors"
+                className="flex-1 bg-desert-accent hover:bg-desert-accent-glow disabled:bg-desert-accent/50 text-desert-bg font-mono font-semibold uppercase tracking-wider text-sm rounded-sm py-2 px-4 transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? "Saving..." : editingEntry ? "Update entry" : "Save entry"}
               </button>
@@ -872,7 +865,7 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
                 <button
                   onClick={handleDelete}
                   disabled={loading}
-                  className="px-6 py-3 border border-red-500 text-red-400 hover:bg-red-900/30 font-mono text-sm rounded-lg transition-colors disabled:opacity-50"
+                  className="px-4 py-2 bg-desert-danger-dim border border-desert-danger text-desert-danger font-mono text-sm rounded-sm hover:bg-desert-danger transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Delete
                 </button>

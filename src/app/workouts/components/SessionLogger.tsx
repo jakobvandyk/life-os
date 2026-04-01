@@ -72,19 +72,19 @@ export default function SessionLogger({ userId, onRefetch }: SessionLoggerProps)
     const entry = exerciseEntries[exerciseId];
     const isSelected = entry?.rpe === rpeValue;
     
-    const baseClass = "px-3 py-2 rounded text-xs font-medium border transition-colors ";
-    const unselectedClass = "bg-gray-800 border-gray-700 text-gray-500 hover:border-gray-600 hover:text-gray-400";
+    const baseClass = "px-3 py-2 rounded-sm text-xs font-medium border transition-colors duration-150 ";
+    const unselectedClass = "bg-desert-bg border-desert-border-strong text-desert-text-3 hover:border-desert-border hover:text-desert-text-2";
     
     if (isSelected) {
       switch (rpeValue) {
         case 'easy':
-          return baseClass + "bg-green-900/50 border-green-500 text-green-400";
+          return baseClass + "bg-desert-success-dim border-desert-success text-desert-success";
         case 'med':
-          return baseClass + "bg-amber-900/50 border-amber-500 text-amber-400";
+          return baseClass + "bg-desert-accent-glow border-desert-accent text-desert-accent";
         case 'hard':
-          return baseClass + "bg-red-900/50 border-red-500 text-red-400";
+          return baseClass + "bg-desert-danger-dim border-desert-danger text-desert-danger";
         case 'fail':
-          return baseClass + "bg-purple-900/50 border-purple-500 text-purple-400";
+          return baseClass + "bg-desert-mystic-dim border-desert-mystic text-desert-mystic";
         default:
           return baseClass + unselectedClass;
       }
@@ -161,16 +161,16 @@ export default function SessionLogger({ userId, onRefetch }: SessionLoggerProps)
   if (!selectedSession) {
     return (
       <div className="space-y-4">
-        <h2 className="text-xl font-bold text-white">Select Session Type</h2>
+        <h2 className="font-mono font-bold text-base tracking-[0.06em] uppercase text-desert-text">Select Session Type</h2>
         <div className="grid grid-cols-2 gap-4">
           {(Object.entries(SESSIONS) as [SessionTypeKey, SessionType][]).map(([key, session]) => (
             <button
               key={key}
               onClick={() => handleSessionSelect(key)}
-              className="bg-gray-900 rounded-lg p-4 text-left hover:bg-gray-800 transition-colors cursor-pointer"
+              className="bg-desert-surface border border-desert-border rounded-sm p-4 text-left hover:bg-desert-surface-hover hover:border-desert-border-strong transition-colors duration-150 cursor-pointer"
             >
-              <div className="font-bold text-white">{session.label}</div>
-              <div className="text-sm text-gray-400 mt-1">{session.hint}</div>
+              <div className="font-mono font-bold text-sm text-desert-text">{session.label}</div>
+              <div className="text-sm text-desert-text-3 mt-1">{session.hint}</div>
             </button>
           ))}
         </div>
@@ -186,30 +186,30 @@ export default function SessionLogger({ userId, onRefetch }: SessionLoggerProps)
       {/* Back button */}
       <button
         onClick={handleBackToPicker}
-        className="text-gray-400 hover:text-white text-sm font-medium flex items-center gap-2"
+        className="text-desert-text-3 hover:text-desert-text text-sm font-mono transition-colors duration-150 flex items-center gap-2"
       >
         ← Back
       </button>
 
       {/* Session label */}
-      <h2 className="text-xl font-bold text-white">{session.label}</h2>
+      <h2 className="font-mono font-bold text-base tracking-[0.06em] uppercase text-desert-text">{session.label}</h2>
 
       {/* Warmup banner */}
-      <div className={`p-4 rounded-lg border ${
+      <div className={`p-4 rounded-sm border ${
         session.warmupType === 'shoulder'
-          ? 'bg-red-900/30 border-red-800 text-red-300'
-          : 'bg-blue-900/30 border-blue-800 text-blue-300'
+          ? 'bg-desert-danger-dim border-desert-danger text-desert-danger'
+          : 'bg-desert-celestial-dim border-desert-celestial text-desert-celestial'
       }`}>
-        <div className="font-semibold mb-1">Warm-up</div>
-        <div className="text-sm">{session.warmup}</div>
+        <div className="font-mono font-semibold mb-1">Warm-up</div>
+        <div className="text-sm font-sans">{session.warmup}</div>
       </div>
 
       {/* RIR Legend */}
       <div className="flex gap-3 text-xs">
-        <span className="bg-blue-900/50 text-blue-400 border border-blue-800 px-2 py-1 rounded">
+        <span className="bg-desert-celestial-dim border border-desert-celestial px-2 py-1 rounded-sm font-mono">
           Compound → RIR 2
         </span>
-        <span className="bg-green-900/50 text-green-400 border border-green-800 px-2 py-1 rounded">
+        <span className="bg-desert-success-dim border border-desert-success px-2 py-1 rounded-sm font-mono">
           Isolation → RIR 0-1
         </span>
       </div>
@@ -222,26 +222,26 @@ export default function SessionLogger({ userId, onRefetch }: SessionLoggerProps)
           const showIsoFeedback = exercise.type === 'iso' && (entry.rpe === 'hard' || entry.rpe === 'fail');
 
           return (
-            <div key={exercise.id} className="bg-gray-900 rounded-lg p-4 space-y-3">
+            <div key={exercise.id} className="bg-desert-surface border border-desert-border rounded-sm p-4 space-y-3">
               {/* Exercise header */}
               <div className="flex items-start justify-between">
                 <div>
-                  <div className="font-bold text-white">{exercise.name}</div>
+                  <div className="font-mono font-bold text-sm text-desert-text">{exercise.name}</div>
                   <div className="flex items-center gap-2 mt-1">
-                    <span className={`text-xs rounded px-1 ${
+                    <span className={`text-xs rounded px-1 font-mono ${
                       exercise.type === 'compound'
-                        ? 'bg-blue-900/50 text-blue-400 border border-blue-800'
-                        : 'bg-green-900/50 text-green-400 border border-green-800'
+                        ? 'bg-desert-celestial-dim border border-desert-celestial text-desert-celestial'
+                        : 'bg-desert-success-dim border border-desert-success text-desert-success'
                     }`}>
                       {exercise.type === 'compound' ? 'Compound' : 'Isolation'}
                     </span>
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs text-desert-text-3">
                       Target: {exercise.sets}×{exercise.reps}
                     </span>
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs text-desert-text-3">
                       {exercise.type === 'compound' 
-                        ? <span className="text-blue-400">2-3 min rest</span>
-                        : <span className="text-green-400">1-2 min rest</span>
+                        ? <span className="text-desert-celestial">2-3 min rest</span>
+                        : <span className="text-desert-success">1-2 min rest</span>
                       }
                     </span>
                   </div>
@@ -252,43 +252,43 @@ export default function SessionLogger({ userId, onRefetch }: SessionLoggerProps)
               <div className="flex items-end gap-4">
                 {/* Weight */}
                 <div className="flex-1">
-                  <label className="block text-xs text-gray-500 mb-1">Weight ({exercise.unit})</label>
+                  <label className="block text-xs text-desert-text-3 mb-1 font-mono">Weight ({exercise.unit})</label>
                   <input
                     type="number"
                     step="any"
                     value={entry.weight}
                     onChange={(e) => handleEntryChange(exercise.id, 'weight', e.target.value)}
-                    className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-center font-mono text-white focus:outline-none focus:border-amber-500"
+                    className="w-full bg-desert-bg border border-desert-border-strong rounded-sm px-3 py-2 text-center font-mono text-desert-text focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent"
                     placeholder="0"
                   />
                 </div>
 
                 {/* Sets */}
                 <div className="w-20">
-                  <label className="block text-xs text-gray-500 mb-1">Sets</label>
+                  <label className="block text-xs text-desert-text-3 mb-1 font-mono">Sets</label>
                   <input
                     type="number"
                     value={entry.sets}
                     onChange={(e) => handleEntryChange(exercise.id, 'sets', e.target.value)}
-                    className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-center font-mono text-white focus:outline-none focus:border-amber-500"
+                    className="w-full bg-desert-bg border border-desert-border-strong rounded-sm px-3 py-2 text-center font-mono text-desert-text focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent"
                   />
                 </div>
 
                 {/* Reps */}
                 <div className="w-20">
-                  <label className="block text-xs text-gray-500 mb-1">Reps</label>
+                  <label className="block text-xs text-desert-text-3 mb-1 font-mono">Reps</label>
                   <input
                     type="number"
                     value={entry.reps}
                     onChange={(e) => handleEntryChange(exercise.id, 'reps', e.target.value)}
-                    className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-center font-mono text-white focus:outline-none focus:border-amber-500"
+                    className="w-full bg-desert-bg border border-desert-border-strong rounded-sm px-3 py-2 text-center font-mono text-desert-text focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent"
                   />
                 </div>
               </div>
 
-              {/* RPE buttons */}
+               {/* RPE buttons */}
               <div>
-                <label className="block text-xs text-gray-500 mb-2">Effort (RPE)</label>
+                <label className="block text-xs text-desert-text-3 mb-2 font-mono">Effort (RPE)</label>
                 <div className="grid grid-cols-2 gap-2">
                   {[
                     { key: 'easy', label: 'Easy' },
@@ -308,12 +308,12 @@ export default function SessionLogger({ userId, onRefetch }: SessionLoggerProps)
 
                 {/* Inline feedback */}
                 {showFailureWarning && (
-                  <div className="text-red-400 text-sm mt-2">
+                  <div className="text-desert-danger text-sm mt-2 font-mono">
                     Compound failure — reduce weight next session
                   </div>
                 )}
                 {showIsoFeedback && (
-                  <div className="text-green-400 text-sm mt-2">
+                  <div className="text-desert-success text-sm mt-2 font-mono">
                     Good — target zone for isolation work
                   </div>
                 )}
@@ -325,11 +325,11 @@ export default function SessionLogger({ userId, onRefetch }: SessionLoggerProps)
 
       {/* Session notes */}
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">Session Notes</label>
+        <label className="block text-sm font-mono text-desert-text-2 mb-2">Session Notes</label>
         <textarea
           value={sessionNotes}
           onChange={(e) => setSessionNotes(e.target.value)}
-          className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-amber-500 resize-none"
+          className="w-full bg-desert-bg border border-desert-border-strong rounded-sm px-4 py-3 text-desert-text font-sans focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent resize-none"
           rows={3}
           placeholder="Optional notes about this session..."
         />
@@ -339,7 +339,7 @@ export default function SessionLogger({ userId, onRefetch }: SessionLoggerProps)
       <button
         onClick={handleSaveSession}
         disabled={saving}
-        className="w-full bg-amber-500 hover:bg-amber-600 text-gray-950 font-mono py-3 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full bg-desert-accent hover:bg-desert-accent-glow text-desert-bg font-mono font-semibold uppercase tracking-wider text-sm rounded-sm py-2 px-4 transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {saving ? "Saving..." : "Save session"}
       </button>

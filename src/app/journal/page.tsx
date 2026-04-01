@@ -30,7 +30,7 @@ const energyOptions = [
 ];
 
 const textareaClass =
-  "w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-amber-500 resize-none";
+  "w-full bg-desert-bg border border-desert-border-strong rounded-sm px-4 py-3 text-desert-text text-sm placeholder:text-desert-text-3 focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent transition-colors resize-none";
 
 export default function JournalPage() {
   const [selectedDate, setSelectedDate] = useState(
@@ -141,11 +141,11 @@ export default function JournalPage() {
   );
 
   return (
-    <div className="p-6">
+    <div className="bg-desert-bg min-h-screen p-6 relative z-10">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white">📔 Journal</h1>
-        <p className="text-gray-500 mt-1">Daily reflection & check-in</p>
+          <h1 className="font-pixel text-lg text-desert-text">📔 Journal</h1>
+          <p className="text-desert-text-3 mt-1">Daily reflection & check-in</p>
       </div>
 
       <div className="grid grid-cols-3 gap-6">
@@ -155,7 +155,7 @@ export default function JournalPage() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => goToDate(-1)}
-              className="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-400 rounded-lg text-sm transition-colors"
+              className="px-3 py-1.5 bg-desert-surface hover:bg-desert-surface-hover text-desert-text-3 rounded-sm text-sm transition-colors"
             >
               ← Prev
             </button>
@@ -163,42 +163,42 @@ export default function JournalPage() {
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-white text-sm focus:outline-none focus:border-amber-500"
+              className="bg-desert-surface border border-desert-border rounded-sm px-3 py-1.5 text-desert-text text-sm focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent transition-colors"
             />
             <button
               onClick={() => goToDate(1)}
               disabled={isToday}
-              className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
+              className={`px-3 py-1.5 rounded-sm text-sm transition-colors ${
                 isToday
-                  ? "bg-gray-800 text-gray-600 cursor-not-allowed"
-                  : "bg-gray-800 hover:bg-gray-700 text-gray-400"
+                  ? "bg-desert-surface text-desert-text-3 cursor-not-allowed"
+                  : "bg-desert-surface hover:bg-desert-surface-hover text-desert-text-3"
               }`}
             >
               Next →
             </button>
             {isToday && (
-              <span className="text-xs text-amber-400 font-medium">Today</span>
+              <span className="text-xs text-desert-accent font-medium">Today</span>
             )}
           </div>
 
-          <p className="text-lg text-gray-300 font-medium">{displayDate}</p>
+          <p className="text-base font-mono text-desert-text">{displayDate}</p>
 
           {/* Mood Selector */}
           <div>
-            <p className="text-sm text-gray-400 mb-2">How are you feeling?</p>
+            <p className="text-sm font-mono text-desert-text-3 mb-2">How are you feeling?</p>
             <div className="flex gap-2">
               {moodOptions.map((opt) => (
                 <button
                   key={opt.value}
                   onClick={() => setMood(opt.value)}
-                  className={`flex flex-col items-center gap-1 px-4 py-3 rounded-lg transition-all ${
+                  className={`flex flex-col items-center gap-1 px-4 py-3 rounded-sm transition-all ${
                     mood === opt.value
-                      ? "bg-amber-500/30 border-2 border-amber-500 scale-105"
-                      : "bg-gray-900 border-2 border-gray-700 hover:border-gray-600"
+                      ? "bg-desert-accent/30 border-2 border-desert-accent scale-105"
+                      : "bg-desert-surface border-2 border-desert-border hover:border-desert-border-strong"
                   }`}
                 >
                   <span className="text-2xl">{opt.emoji}</span>
-                  <span className="text-xs text-gray-400">{opt.label}</span>
+                  <span className="text-xs text-desert-text-3">{opt.label}</span>
                 </button>
               ))}
             </div>
@@ -206,20 +206,20 @@ export default function JournalPage() {
 
           {/* Energy Selector */}
           <div>
-            <p className="text-sm text-gray-400 mb-2">Energy level?</p>
+            <p className="text-sm font-mono text-desert-text-3 mb-2">Energy level?</p>
             <div className="flex gap-2">
               {energyOptions.map((opt) => (
                 <button
                   key={opt.value}
                   onClick={() => setEnergy(opt.value)}
-                  className={`flex flex-col items-center gap-1 px-4 py-3 rounded-lg transition-all ${
+                  className={`flex flex-col items-center gap-1 px-4 py-3 rounded-sm transition-all ${
                     energy === opt.value
-                      ? "bg-amber-500/30 border-2 border-amber-500 scale-105"
-                      : "bg-gray-900 border-2 border-gray-700 hover:border-gray-600"
+                      ? "bg-desert-accent/30 border-2 border-desert-accent scale-105"
+                      : "bg-desert-surface border-2 border-desert-border hover:border-desert-border-strong"
                   }`}
                 >
                   <span className="text-2xl">{opt.emoji}</span>
-                  <span className="text-xs text-gray-400">{opt.label}</span>
+                  <span className="text-xs text-desert-text-3">{opt.label}</span>
                 </button>
               ))}
             </div>
@@ -227,7 +227,7 @@ export default function JournalPage() {
 
           {/* Gratitude */}
           <div>
-            <p className="text-sm text-gray-400 mb-2">
+            <p className="text-sm font-mono text-desert-text-3 mb-2">
               🙏 What are you grateful for today?
             </p>
             <textarea
@@ -241,7 +241,7 @@ export default function JournalPage() {
 
           {/* Wins */}
           <div>
-            <p className="text-sm text-gray-400 mb-2">🏆 Wins & accomplishments</p>
+            <p className="text-sm font-mono text-desert-text-3 mb-2">🏆 Wins & accomplishments</p>
             <textarea
               value={wins}
               onChange={(e) => setWins(e.target.value)}
@@ -253,7 +253,7 @@ export default function JournalPage() {
 
           {/* Reflection */}
           <div>
-            <p className="text-sm text-gray-400 mb-2">💭 Reflection</p>
+            <p className="text-sm font-mono text-desert-text-3 mb-2">💭 Reflection</p>
             <textarea
               value={reflection}
               onChange={(e) => setReflection(e.target.value)}
@@ -267,12 +267,12 @@ export default function JournalPage() {
           <button
             onClick={saveEntry}
             disabled={saving}
-            className={`w-full py-3 rounded-lg text-sm font-medium transition-all ${
+            className={`w-full py-3 rounded-sm text-sm font-mono transition-all ${
               saved
-                ? "bg-green-600 text-white"
+                ? "bg-desert-success text-desert-text"
                 : saving
-                ? "bg-gray-700 text-gray-400"
-                : "bg-amber-500 hover:bg-amber-400 text-white"
+                ? "bg-desert-surface text-desert-text-3"
+                : "bg-desert-accent hover:bg-desert-accent-hover text-desert-text"
             }`}
           >
             {saved ? "✓ Saved!" : saving ? "Saving..." : "Save Entry"}
@@ -281,25 +281,25 @@ export default function JournalPage() {
 
         {/* Recent Entries — Right Column */}
         <div>
-          <h2 className="text-sm font-medium text-gray-400 mb-3 uppercase tracking-wider">
+          <h2 className="text-sm font-mono text-desert-text-3 mb-3 uppercase tracking-wider">
             Recent Entries
           </h2>
           {recentEntries.length === 0 ? (
-            <p className="text-gray-600 text-sm">No entries yet.</p>
+            <p className="text-desert-text-3 text-sm">No entries yet.</p>
           ) : (
             <div className="space-y-2">
               {recentEntries.map((e) => (
                 <button
                   key={e.id}
                   onClick={() => setSelectedDate(e.date)}
-                  className={`w-full text-left p-3 rounded-lg transition-colors ${
+                  className={`w-full text-left p-3 rounded-sm transition-colors ${
                     e.date === selectedDate
-                    ? "bg-amber-500/20 border border-amber-500/30"
-                    : "bg-gray-900 border border-gray-700 hover:border-gray-600"
+                    ? "bg-desert-accent/20 border border-desert-accent/30"
+                    : "bg-desert-surface border border-desert-border hover:border-desert-border-strong"
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-300">
+                    <span className="text-sm font-mono text-desert-text">
                       {new Date(e.date + "T12:00:00").toLocaleDateString("en-NZ", {
                         month: "short",
                         day: "numeric",
@@ -320,7 +320,7 @@ export default function JournalPage() {
                     </div>
                   </div>
                   {e.gratitude && (
-                    <p className="text-xs text-gray-500 mt-1 truncate">
+                    <p className="text-xs text-desert-text-3 mt-1 truncate">
                       {e.gratitude}
                     </p>
                   )}

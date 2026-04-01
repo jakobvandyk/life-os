@@ -14,13 +14,13 @@ interface HistoryViewProps {
 function getRPEColor(rpe: string | null): string {
   switch (rpe) {
     case "easy":
-      return "bg-green-900/50 text-green-400 border border-green-800";
+      return "bg-desert-success-dim border-desert-success text-desert-success";
     case "med":
-      return "bg-amber-900/50 text-amber-400 border border-amber-800";
+      return "bg-desert-accent-glow border-desert-accent text-desert-accent";
     case "hard":
-      return "bg-red-900/50 text-red-400 border border-red-800";
+      return "bg-desert-danger-dim border-desert-danger text-desert-danger";
     case "fail":
-      return "bg-purple-900/50 text-purple-400 border border-purple-800";
+      return "bg-desert-mystic-dim border-desert-mystic text-desert-mystic";
     default:
       return "";
   }
@@ -56,8 +56,8 @@ export default function HistoryView(props: HistoryViewProps) {
   if (sessions.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12">
-        <p className="text-gray-500 font-mono text-sm">No sessions yet</p>
-        <p className="text-gray-600 text-xs mt-1">
+        <p className="font-sans text-sm text-desert-text-3">No sessions yet</p>
+        <p className="font-sans text-xs text-desert-text-3 mt-1">
           Log your first workout from the Log tab
         </p>
       </div>
@@ -66,7 +66,7 @@ export default function HistoryView(props: HistoryViewProps) {
 
   return (
     <div className="space-y-3">
-      <h2 className="text-xl font-semibold text-white">History</h2>
+      <h2 className="font-mono font-bold text-base tracking-[0.06em] uppercase text-desert-text">History</h2>
 
       {sessions.map((session) => {
         const sessionExercises = exercisesBySession[session.id] || [];
@@ -92,28 +92,28 @@ export default function HistoryView(props: HistoryViewProps) {
           return (
             <span key={ex.id}>
               {ex.name}{" "}
-              <span className="font-mono text-white">{weightStr}</span>{" "}
-              <span className="font-mono text-gray-400">{setsReps}</span>{" "}
+              <span className="font-mono text-desert-text">{weightStr}</span>{" "}
+              <span className="font-mono text-desert-text-2">{setsReps}</span>{" "}
               {rpeBadge}
             </span>
           );
         });
 
         return (
-          <div key={session.id} className="bg-gray-900 rounded-lg p-5">
+          <div key={session.id} className="bg-desert-surface border border-desert-border rounded-sm p-4 hover:bg-desert-surface-hover hover:border-desert-border-strong transition-colors duration-150">
             {/* Card header */}
             <div className="flex justify-between items-baseline mb-3">
-              <span className="text-base font-semibold text-white">
+              <span className="font-mono font-medium text-sm tracking-[0.04em] uppercase text-desert-text-2">
                 {session.label}
               </span>
-              <span className="text-xs font-mono text-gray-500">
+              <span className="font-mono text-xs text-desert-text-3">
                 {formatDate(session.date)}
               </span>
             </div>
 
             {/* Card body - exercise summary */}
             {exercisesWithWeight.length > 0 && (
-              <p className="text-sm text-gray-400 leading-relaxed">
+              <p className="font-sans text-sm text-desert-text-2 leading-relaxed">
                 {exerciseParts.reduce((acc, part, index) => {
                   if (index === 0) return [part];
                   return [...acc, " · ", part];
@@ -124,8 +124,8 @@ export default function HistoryView(props: HistoryViewProps) {
             {/* Card footer - notes */}
             {session.notes && session.notes.trim() !== "" && (
               <>
-                <div className="border-t border-gray-800 mt-3 pt-3" />
-                <p className="text-sm text-gray-500 italic">{session.notes}</p>
+                <div className="border-t border-desert-border mt-3 pt-3" />
+                <p className="font-sans text-sm text-desert-text-3 italic">{session.notes}</p>
               </>
             )}
           </div>

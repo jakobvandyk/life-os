@@ -29,32 +29,32 @@ export default function MetricCards({ metrics }: { metrics: Metrics }) {
     {
       label: "Net Worth",
       value: fmt(m.netWorthAud),
-      color: "text-white",
+      color: "text-desert-text",
     },
     {
       label: "Monthly Surplus",
       value: fmt(m.monthlySurplusAud),
-      color: m.monthlySurplusAud >= 0 ? "text-green-400" : "text-red-400",
+      color: m.monthlySurplusAud >= 0 ? "text-desert-success" : "text-desert-danger",
     },
     {
       label: "Savings Rate",
       value: `${m.savingsRate.toFixed(1)}%`,
       color:
         m.savingsRate >= 20
-          ? "text-green-400"
+          ? "text-desert-success"
           : m.savingsRate >= 0
-          ? "text-amber-400"
-          : "text-red-400",
+          ? "text-desert-accent"
+          : "text-desert-danger",
     },
     {
       label: "Runway (months)",
       value: m.runwayMonths >= 999 ? "∞" : m.runwayMonths.toFixed(1),
-      color: "text-blue-400",
+      color: "text-desert-celestial",
     },
     {
       label: "Passive Income/mo",
       value: fmt(m.monthlyPassiveAud),
-      color: "text-purple-400",
+      color: "text-desert-mystic",
     },
   ];
 
@@ -63,10 +63,10 @@ export default function MetricCards({ metrics }: { metrics: Metrics }) {
       {cards.map((card) => (
         <div
           key={card.label}
-          className="bg-gray-900 rounded-lg p-4"
+          className="bg-desert-surface border border-desert-border rounded-sm p-4"
         >
           <p className={`text-xl font-bold font-mono ${card.color}`}>{card.value}</p>
-          <p className="text-xs text-gray-500">{card.label}</p>
+          <p className="font-mono text-xs text-desert-text-3 uppercase tracking-widest">{card.label}</p>
         </div>
       ))}
     </div>

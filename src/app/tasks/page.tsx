@@ -14,10 +14,10 @@ interface Task {
 }
 
 const priorityColors: Record<string, string> = {
-  urgent: "bg-red-500/20 text-red-400 border-red-500/30",
-  high: "bg-orange-500/20 text-orange-400 border-orange-500/30",
-  medium: "bg-blue-500/20 text-blue-400 border-blue-500/30",
-  low: "bg-gray-500/20 text-gray-400 border-gray-500/30",
+  urgent: "bg-desert-danger-dim text-desert-danger border border-desert-danger/30",
+  high: "bg-desert-danger-dim text-desert-danger border border-desert-danger/30",
+  medium: "bg-desert-warning-dim text-desert-warning border border-desert-warning/30",
+  low: "bg-desert-success-dim text-desert-success border border-desert-success/30",
 };
 
 const statusLabels: Record<string, string> = {
@@ -93,47 +93,47 @@ export default function TasksPage() {
   const doneTasks = tasks.filter((t) => t.status === "done");
 
   return (
-    <div className="p-6">
+    <div className="bg-desert-bg min-h-screen p-6 relative z-10">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-white">📋 Tasks</h1>
-          <p className="text-gray-500 mt-1">
+          <h1 className="font-pixel text-lg text-desert-text">📋 Tasks</h1>
+          <p className="text-desert-text-3 mt-1">
             {activeTasks.length} active · {doneTasks.length} completed
           </p>
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-white text-sm font-medium rounded-lg transition-colors"
+          className="px-4 py-2 bg-desert-accent text-desert-bg font-mono font-semibold uppercase tracking-wider text-sm rounded-sm hover:bg-desert-accent-glow transition-colors duration-150"
         >
           + New Task
         </button>
       </div>
 
       {showForm && (
-        <div className="bg-gray-900 rounded-lg p-5 mb-6">
+        <div className="bg-desert-surface rounded-sm p-5 mb-6">
           <div className="space-y-3">
-            <input
-              type="text"
-              placeholder="Task title..."
-              value={newTask.title}
-              onChange={(e) => setNewTask({...newTask, title: e.target.value })}
-              onKeyDown={(e) => e.key === "Enter" && addTask()}
-              autoFocus
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500"
-            />
-            <textarea
-              placeholder="Description (optional)"
-              value={newTask.description}
-              onChange={(e) => setNewTask({...newTask, description: e.target.value })}
-              rows={2}
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-amber-500"
-            />
+              <input
+                type="text"
+                placeholder="Task title..."
+                value={newTask.title}
+                onChange={(e) => setNewTask({...newTask, title: e.target.value })}
+                onKeyDown={(e) => e.key === "Enter" && addTask()}
+                autoFocus
+                className="w-full bg-desert-bg border border-desert-border-strong rounded-sm px-4 py-2 text-desert-text placeholder:text-desert-text-3 focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent transition-colors"
+              />
+              <textarea
+                placeholder="Description (optional)"
+                value={newTask.description}
+                onChange={(e) => setNewTask({...newTask, description: e.target.value })}
+                rows={2}
+                className="w-full bg-desert-bg border border-desert-border-strong rounded-sm px-4 py-2 text-desert-text placeholder:text-desert-text-3 focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent transition-colors"
+              />
             <div className="flex gap-3">
-              <select
-                value={newTask.priority}
-                onChange={(e) => setNewTask({...newTask, priority: e.target.value })}
-                className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500"
-              >
+                <select
+                  value={newTask.priority}
+                  onChange={(e) => setNewTask({...newTask, priority: e.target.value })}
+                  className="bg-desert-bg border border-desert-border-strong rounded-sm px-3 py-2 text-desert-text text-sm focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent transition-colors"
+                >
                 <option value="urgent">🔴 Urgent</option>
                 <option value="high">🟠 High</option>
                 <option value="medium">🔵 Medium</option>
@@ -143,20 +143,20 @@ export default function TasksPage() {
                 type="date"
                 value={newTask.due_date}
                 onChange={(e) => setNewTask({...newTask, due_date: e.target.value })}
-                className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500"
+                className="bg-desert-bg border border-desert-border-strong rounded-sm px-3 py-2 text-desert-text text-sm focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent transition-colors"
               />
-              <button
-                onClick={addTask}
-                className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-white text-sm font-medium rounded-lg transition-colors"
-              >
-                Add Task
-              </button>
-              <button
-                onClick={() => setShowForm(false)}
-                className="px-4 py-2 text-gray-400 hover:text-white text-sm transition-colors"
-              >
-                Cancel
-              </button>
+                <button
+                  onClick={addTask}
+                  className="px-4 py-2 bg-desert-accent text-desert-bg font-mono font-semibold uppercase tracking-wider text-sm rounded-sm hover:bg-desert-accent-glow transition-colors duration-150"
+                >
+                  Add Task
+                </button>
+                <button
+                  onClick={() => setShowForm(false)}
+                  className="px-4 py-2 text-desert-text-3 hover:text-desert-text text-sm transition-colors duration-150"
+                >
+                  Cancel
+                </button>
             </div>
           </div>
         </div>
@@ -167,11 +167,11 @@ export default function TasksPage() {
           <button
             key={f}
             onClick={() => setFilter(f)}
-            className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
-              filter === f
-                ? "bg-amber-500 text-white"
-                : "bg-gray-800 text-gray-400 hover:text-white"
-            }`}
+          className={`px-3 py-1.5 rounded-sm text-sm transition-colors duration-150 ${
+            filter === f
+              ? "bg-desert-accent text-desert-bg"
+              : "bg-desert-surface-hover text-desert-text-2 hover:text-desert-text"
+          }`}
           >
             {f === "all" ? "All" : statusLabels[f]}
           </button>
@@ -179,15 +179,15 @@ export default function TasksPage() {
       </div>
 
       {tasks.length === 0 ? (
-        <div className="bg-gray-900 rounded-lg p-12 text-center">
-          <p className="text-gray-500">No tasks yet. Create your first one!</p>
+        <div className="bg-desert-surface rounded-sm p-12 text-center">
+          <p className="text-desert-text-3">No tasks yet. Create your first one!</p>
         </div>
       ) : (
         <div className="space-y-2">
           {tasks.map((task) => (
             <div
               key={task.id}
-              className={`bg-gray-900 rounded-lg p-4 flex items-center gap-4 group hover:border-gray-700 transition-colors ${
+              className={`bg-desert-surface rounded-sm p-4 flex items-center gap-4 group hover:border-desert-border-strong transition-colors ${
                 task.status === "done" ? "opacity-50" : ""
               }`}
             >
@@ -197,25 +197,25 @@ export default function TasksPage() {
                 }
                 className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
                   task.status === "done"
-                    ? "bg-green-500 border-green-500"
-                    : "border-gray-600 hover:border-amber-500"
+                    ? "bg-desert-success border-desert-success"
+                    : "border-desert-border-strong hover:border-desert-accent"
                 }`}
               >
                 {task.status === "done" && (
-                  <span className="text-white text-xs">✓</span>
+                  <span className="text-desert-bg text-xs">✓</span>
                 )}
               </button>
 
               <div className="flex-1 min-w-0">
                 <p
                   className={`text-sm font-medium ${
-                    task.status === "done" ? "text-gray-500 line-through" : "text-white"
+                    task.status === "done" ? "text-desert-text-3 line-through" : "text-desert-text"
                   }`}
                 >
                   {task.title}
                 </p>
                 {task.description && (
-                  <p className="text-xs text-gray-500 mt-0.5 truncate">{task.description}</p>
+                  <p className="text-xs text-desert-text-3 mt-0.5 truncate">{task.description}</p>
                 )}
               </div>
 
@@ -229,8 +229,8 @@ export default function TasksPage() {
                 <span
                   className={`text-xs font-mono ${
                     new Date(task.due_date) < new Date() && task.status !== "done"
-                      ? "text-red-400"
-                      : "text-gray-500"
+                      ? "text-desert-danger"
+                      : "text-desert-text-3"
                   }`}
                 >
                   {(() => {
@@ -248,9 +248,9 @@ export default function TasksPage() {
                     if (diffDays < 0 && task.status !== "done") {
                       return `${Math.abs(diffDays)}d overdue`;
                     } else if (diffDays === 0) {
-                      return <span className="text-amber-400">today</span>;
+                      return <span className="text-desert-accent">today</span>;
                     } else if (diffDays === 1) {
-                      return <span className="text-green-400">tomorrow</span>;
+                      return <span className="text-desert-success">tomorrow</span>;
                     } else if (diffDays > 0 && diffDays <= 7) {
                       return dueDate.toLocaleDateString("en-NZ", { weekday: "short" });
                     } else {
@@ -267,7 +267,7 @@ export default function TasksPage() {
                 <select
                   value={task.status}
                   onChange={(e) => updateStatus(task.id, e.target.value)}
-                  className="bg-gray-800 border border-gray-700 rounded-md px-2 py-1 text-xs text-gray-400 focus:outline-none opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="bg-desert-bg border border-desert-border-strong rounded-md px-2 py-1 text-xs text-desert-text-3 focus:outline-none opacity-0 group-hover:opacity-100 transition-opacity"
                 >
                   <option value="todo">To Do</option>
                   <option value="in_progress">In Progress</option>
@@ -277,7 +277,7 @@ export default function TasksPage() {
 
               <button
                 onClick={() => deleteTask(task.id)}
-                className="text-gray-600 hover:text-red-400 text-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                className="text-desert-text-3 hover:text-desert-danger text-sm opacity-0 group-hover:opacity-100 transition-opacity"
               >
                 ✕
               </button>

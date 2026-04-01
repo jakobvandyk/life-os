@@ -13,23 +13,23 @@ interface TaxFlag {
 }
 
 const priorityColors: Record<string, string> = {
-  urgent: "bg-red-500/20 text-red-400 border-red-500/30",
-  high: "bg-orange-500/20 text-orange-400 border-orange-500/30",
-  medium: "bg-blue-500/20 text-blue-400 border-blue-500/30",
-  low: "bg-gray-500/20 text-gray-400 border-gray-500/30",
+  urgent: "bg-desert-danger-dim text-desert-danger border-desert-danger",
+  high: "bg-desert-warning-dim text-desert-warning border-desert-warning",
+  medium: "bg-desert-celestial-dim text-desert-celestial border-desert-celestial",
+  low: "bg-desert-surface-hover text-desert-text-3 border-desert-border",
 };
 
 const jurisdictionColors: Record<string, string> = {
-  AU: "bg-green-500/20 text-green-400",
-  NZ: "bg-blue-500/20 text-blue-400",
-  US: "bg-amber-500/20 text-amber-400",
-  multi: "bg-purple-500/20 text-purple-400",
+  AU: "bg-desert-success-dim text-desert-success",
+  NZ: "bg-desert-celestial-dim text-desert-celestial",
+  US: "bg-desert-accent-glow text-desert-accent",
+  multi: "bg-desert-mystic-dim text-desert-mystic",
 };
 
 const inputClass =
-  "w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-amber-500";
+  "w-full bg-desert-bg border border-desert-border-strong rounded-sm px-3 py-2 text-desert-text text-sm placeholder:text-desert-text-3 focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent transition-colors";
 const selectClass =
-  "bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500";
+  "bg-desert-bg border border-desert-border-strong rounded-sm px-3 py-2 text-desert-text text-sm focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent transition-colors";
 
 export default function TaxFlagsTab({
   taxFlags,
@@ -85,14 +85,14 @@ export default function TaxFlagsTab({
       {/* Header */}
       <div className="flex justify-between items-center mb-4">
         <div>
-          <h2 className="text-lg font-semibold text-white">Tax & Compliance Flags</h2>
-          <p className="text-sm text-gray-500">
+          <h2 className="font-mono font-bold text-base tracking-[0.06em] uppercase text-desert-text">Tax & Compliance Flags</h2>
+          <p className="text-sm text-desert-text-3">
             {taxFlags.length} open item{taxFlags.length !== 1 ? "s" : ""}
           </p>
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-white text-sm font-medium rounded-lg transition-colors"
+          className="px-4 py-2 bg-desert-accent hover:bg-desert-accent-glow text-desert-bg font-mono font-semibold uppercase tracking-wider text-sm rounded-sm transition-colors duration-150"
         >
           + Add Flag
         </button>
@@ -100,7 +100,7 @@ export default function TaxFlagsTab({
 
       {/* Add Form */}
       {showForm && (
-        <div className="bg-gray-900 rounded-lg p-5 mb-6 space-y-3">
+        <div className="bg-desert-surface rounded-sm p-5 mb-6 space-y-3">
           <input
             type="text"
             placeholder="Flag title (e.g. Multi-jurisdiction tax filing)"
@@ -118,7 +118,7 @@ export default function TaxFlagsTab({
           />
           <div className="flex gap-3 items-center">
             <div>
-              <span className="text-xs text-gray-500 mr-2">Jurisdiction:</span>
+              <span className="text-xs text-desert-text-3 mr-2">Jurisdiction:</span>
               <select
                 value={form.jurisdiction}
                 onChange={(e) => setForm({...form, jurisdiction: e.target.value })}
@@ -131,7 +131,7 @@ export default function TaxFlagsTab({
               </select>
             </div>
             <div>
-              <span className="text-xs text-gray-500 mr-2">Priority:</span>
+              <span className="text-xs text-desert-text-3 mr-2">Priority:</span>
               <select
                 value={form.priority}
                 onChange={(e) => setForm({...form, priority: e.target.value })}
@@ -146,13 +146,13 @@ export default function TaxFlagsTab({
             <div className="flex-1" />
             <button
               onClick={addFlag}
-              className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-white text-sm font-medium rounded-lg transition-colors"
+              className="px-4 py-2 bg-desert-accent hover:bg-desert-accent-glow text-desert-bg font-mono font-semibold uppercase tracking-wider text-sm rounded-sm transition-colors duration-150"
             >
               Add Flag
             </button>
             <button
               onClick={() => setShowForm(false)}
-              className="px-4 py-2 text-gray-400 hover:text-white text-sm transition-colors"
+              className="px-4 py-2 text-desert-text-3 hover:text-desert-text text-sm transition-colors"
             >
               Cancel
             </button>
@@ -162,25 +162,25 @@ export default function TaxFlagsTab({
 
       {/* Empty State */}
       {taxFlags.length === 0 ? (
-        <div className="bg-gray-900 rounded-lg p-12 text-center">
-          <p className="text-gray-500 text-lg mb-2">🎉 All clear!</p>
-          <p className="text-gray-600 text-sm">No open tax or compliance flags.</p>
+        <div className="bg-desert-surface rounded-sm p-12 text-center">
+          <p className="text-desert-text-3 text-lg mb-2">🎉 All clear!</p>
+          <p className="text-desert-text-3 text-sm">No open tax or compliance flags.</p>
         </div>
       ) : (
         <div className="space-y-2">
           {taxFlags.map((flag) => (
             <div
               key={flag.id}
-              className="bg-gray-900 rounded-lg p-4 hover:border-gray-700 transition-colors"
+              className="bg-desert-surface border border-desert-border rounded-sm p-4 hover:border-desert-border-strong transition-colors duration-150"
             >
               <div className="flex items-start gap-4">
                 {/* Content */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <p className="text-sm font-medium text-white">{flag.title}</p>
+                    <p className="font-mono font-medium text-sm text-desert-text">{flag.title}</p>
                   </div>
                   {flag.notes && (
-                    <p className="text-xs text-gray-500 mt-1 whitespace-pre-wrap">
+                    <p className="text-xs text-desert-text-3 mt-1 whitespace-pre-wrap">
                       {flag.notes}
                     </p>
                   )}
@@ -205,13 +205,13 @@ export default function TaxFlagsTab({
                 {/* Actions */}
                 <button
                   onClick={() => resolveFlag(flag.id)}
-                  className="px-3 py-1 bg-green-600/20 hover:bg-green-600/40 text-green-400 text-xs font-medium rounded-lg transition-colors shrink-0"
+                  className="px-3 py-1 bg-desert-success-dim hover:bg-desert-success-dim/40 text-desert-success text-xs font-medium rounded-sm transition-colors shrink-0"
                 >
                   ✓ Resolve
                 </button>
                 <button
                   onClick={() => deleteFlag(flag.id)}
-                  className="text-gray-600 hover:text-red-400 text-sm transition-colors shrink-0"
+                  className="text-desert-text-3 hover:text-desert-danger text-sm transition-colors shrink-0"
                 >
                   ✕
                 </button>

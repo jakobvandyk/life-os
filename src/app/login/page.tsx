@@ -29,18 +29,18 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-desert-bg flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
 
         <div className="mb-8 text-center">
-          <p className="text-2xl font-medium text-white tracking-tight">⚡ Life OS</p>
-          <p className="text-sm text-gray-500 mt-1 font-mono">personal dashboard</p>
+          <p className="font-pixel text-desert-accent text-lg tracking-tight">⚡ LIFE OS</p>
+          <p className="font-mono text-desert-text-3 text-xs tracking-wider uppercase mt-1">personal dashboard</p>
         </div>
 
-        <form onSubmit={handleLogin} className="bg-gray-900 rounded-lg p-6 space-y-4">
+        <form onSubmit={handleLogin} className="bg-desert-surface border border-desert-border rounded-sm p-6 space-y-4 shadow-lg shadow-black/20">
 
           <div>
-            <label className="block text-xs text-gray-500 uppercase tracking-widest mb-1.5 font-mono">
+            <label className="block font-mono text-desert-text-3 text-xs uppercase tracking-widest mb-1.5">
               Email
             </label>
             <input
@@ -49,13 +49,13 @@ export default function LoginPage() {
               onChange={e => setEmail(e.target.value)}
               required
               autoFocus
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-amber-500 transition-colors"
+              className="w-full bg-desert-bg border border-desert-border-strong rounded-sm px-3 py-2.5 text-desert-text text-sm placeholder:text-desert-text-3 focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent transition-colors"
               placeholder="you@example.com"
             />
           </div>
 
           <div>
-            <label className="block text-xs text-gray-500 uppercase tracking-widest mb-1.5 font-mono">
+            <label className="block font-mono text-desert-text-3 text-xs uppercase tracking-widest mb-1.5">
               Password
             </label>
             <input
@@ -63,13 +63,13 @@ export default function LoginPage() {
               value={password}
               onChange={e => setPassword(e.target.value)}
               required
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2.5 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-amber-500 transition-colors"
+              className="w-full bg-desert-bg border border-desert-border-strong rounded-sm px-3 py-2.5 text-desert-text text-sm placeholder:text-desert-text-3 focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent transition-colors"
               placeholder="••••••••"
             />
           </div>
 
           {error && (
-            <p className="text-sm text-red-400 font-mono bg-red-950/40 border border-red-900/50 rounded-lg px-3 py-2">
+            <p className="font-mono text-sm text-desert-danger bg-desert-danger-dim border border-desert-danger/30 rounded-sm px-3 py-2">
               {error}
             </p>
           )}
@@ -77,7 +77,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-amber-500 hover:bg-amber-400 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg py-2.5 transition-colors font-mono tracking-wide"
+            className="w-full bg-desert-accent hover:bg-desert-accent-glow disabled:opacity-50 disabled:cursor-not-allowed text-desert-bg text-sm font-medium rounded-sm py-3 px-6 transition-colors font-mono tracking-wide"
           >
             {loading ? 'Signing in…' : 'Sign in'}
           </button>

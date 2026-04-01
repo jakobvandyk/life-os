@@ -133,23 +133,23 @@ export default function GoalsPage() {
   };
 
   const inputClass =
-    "w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-amber-500";
+    "w-full bg-desert-surface border border-desert-border rounded-sm px-3 py-2 text-desert-text text-sm placeholder:text-desert-text-3 focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent transition-colors";
   const selectClass =
-    "bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500";
+    "bg-desert-surface border border-desert-border rounded-sm px-3 py-2 text-desert-text text-sm focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent transition-colors";
 
   return (
-    <div className="p-6">
+    <div className="bg-desert-bg min-h-screen p-6 relative z-10">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-white">🎯 Goals</h1>
-          <p className="text-gray-500 mt-1">
+          <h1 className="font-pixel text-lg text-desert-text">🎯 Goals</h1>
+          <p className="text-desert-text-3 mt-1">
             {goals.length} active goal{goals.length !== 1 ? "s" : ""}
           </p>
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-white text-sm font-medium rounded-lg transition-colors"
+          className="px-4 py-2 bg-desert-accent hover:bg-desert-accent-hover text-desert-text text-sm font-mono rounded-sm transition-colors"
         >
           + New Goal
         </button>
@@ -157,7 +157,7 @@ export default function GoalsPage() {
 
       {/* Add Goal Form */}
       {showForm && (
-        <div className="bg-gray-900 rounded-lg p-5 mb-6 space-y-4">
+        <div className="bg-desert-surface rounded-sm p-5 mb-6 space-y-4">
           <input
             type="text"
             placeholder="Goal title (e.g. Improve fitness)"
@@ -186,7 +186,7 @@ export default function GoalsPage() {
 
           {/* Key Results */}
           <div>
-            <p className="text-sm text-gray-400 mb-2">Key Results</p>
+            <p className="text-sm font-mono text-desert-text-3 mb-2">Key Results</p>
             <div className="space-y-2">
               {form.keyResults.map((kr, i) => (
                 <div key={i} className="flex gap-2 items-center">
@@ -214,7 +214,7 @@ export default function GoalsPage() {
                   {form.keyResults.length > 1 && (
                     <button
                       onClick={() => removeKRRow(i)}
-                      className="text-gray-600 hover:text-red-400 text-sm"
+                      className="text-desert-text-3 hover:text-desert-danger text-sm"
                     >
                       ✕
                     </button>
@@ -224,7 +224,7 @@ export default function GoalsPage() {
             </div>
             <button
               onClick={addKRRow}
-              className="mt-2 text-sm text-amber-400 hover:text-amber-300 transition-colors"
+              className="mt-2 text-sm text-desert-accent hover:text-desert-accent-hover transition-colors"
             >
               + Add key result
             </button>
@@ -233,13 +233,13 @@ export default function GoalsPage() {
           <div className="flex gap-2 justify-end">
             <button
               onClick={addGoal}
-              className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-white text-sm font-medium rounded-lg transition-colors"
+              className="px-4 py-2 bg-desert-accent hover:bg-desert-accent-hover text-desert-text text-sm font-mono rounded-sm transition-colors"
             >
               Create Goal
             </button>
             <button
               onClick={() => setShowForm(false)}
-              className="px-4 py-2 text-gray-400 hover:text-white text-sm transition-colors"
+              className="px-4 py-2 text-desert-text-3 hover:text-desert-text text-sm transition-colors"
             >
               Cancel
             </button>
@@ -249,9 +249,9 @@ export default function GoalsPage() {
 
       {/* Goals List */}
       {goals.length === 0 ? (
-        <div className="bg-gray-900 rounded-lg p-12 text-center">
-          <p className="text-gray-500 text-lg mb-2">No goals yet</p>
-          <p className="text-gray-600 text-sm">
+        <div className="bg-desert-surface rounded-sm p-12 text-center">
+          <p className="text-desert-text-3 text-lg mb-2">No goals yet</p>
+          <p className="text-desert-text-3 text-sm">
             Set a goal with measurable key results to track your progress.
           </p>
         </div>
@@ -262,31 +262,31 @@ export default function GoalsPage() {
             return (
               <div
                 key={goal.id}
-                className="bg-gray-900 rounded-lg p-5 hover:border-gray-700 transition-colors"
+                className="bg-desert-surface rounded-sm p-5 border border-desert-border hover:border-desert-border-strong transition-colors"
               >
                 {/* Goal Header */}
                 <div className="flex items-start justify-between mb-3">
                   <div>
-                    <h3 className="text-lg font-semibold text-white">
-                      {goal.title}
-                    </h3>
-                    {goal.description && (
-                      <p className="text-sm text-gray-500 mt-0.5">
-                        {goal.description}
-                      </p>
-                    )}
+                     <h3 className="text-base font-mono font-bold text-desert-text">
+                       {goal.title}
+                     </h3>
+                     {goal.description && (
+                       <p className="text-sm text-desert-text-3 mt-0.5">
+                         {goal.description}
+                       </p>
+                     )}
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="text-xs text-gray-500 bg-gray-800 px-2 py-1 rounded-md">
-                      {goal.timeframe}
-                    </span>
+                     <span className="text-xs text-desert-text-3 bg-desert-surface border border-desert-border px-2 py-1 rounded-sm">
+                       {goal.timeframe}
+                     </span>
                     <span
-                      className={`text-lg font-bold ${
+                      className={`text-lg font-bold font-mono ${
                         progress >= 100
-                          ? "text-green-400"
+                          ? "text-desert-success"
                           : progress >= 50
-                          ? "text-amber-400"
-                          : "text-amber-400"
+                          ? "text-desert-accent"
+                          : "text-desert-accent"
                       }`}
                     >
                       {Math.round(progress)}%
@@ -295,14 +295,14 @@ export default function GoalsPage() {
                 </div>
 
                 {/* Overall Progress Bar */}
-                <div className="w-full bg-gray-800 rounded-full h-2 mb-4">
+                <div className="w-full bg-desert-border rounded-full h-2 mb-4">
                   <div
                     className={`h-2 rounded-full transition-all duration-500 ${
                       progress >= 100
-                        ? "bg-green-500"
+                        ? "bg-desert-success"
                         : progress >= 50
-                        ? "bg-amber-400"
-                        : "bg-amber-500"
+                        ? "bg-desert-accent"
+                        : "bg-desert-accent"
                     }`}
                     style={{ width: `${Math.min(progress, 100)}%` }}
                   />
@@ -319,43 +319,43 @@ export default function GoalsPage() {
                       return (
                         <div key={kr.id}>
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-sm text-gray-300">
+                            <span className="text-sm font-mono text-desert-text">
                               {kr.title}
                             </span>
                             <div className="flex items-center gap-2">
                               {editingKR === kr.id ? (
                                 <div className="flex items-center gap-1">
-                                  <input
-                                    type="number"
-                                    step="any"
-                                    value={krValue}
-                                    onChange={(e) => setKrValue(e.target.value)}
-                                    onKeyDown={(e) =>
-                                      e.key === "Enter" &&
-                                      updateKRProgress(kr.id)
-                                    }
-                                    className="w-20 bg-gray-800 border border-amber-500 rounded px-2 py-0.5 text-white text-sm text-right"
-                                    autoFocus
-                                  />
-                                  <span className="text-xs text-gray-500">
+                                    <input
+                                      type="number"
+                                      step="any"
+                                      value={krValue}
+                                      onChange={(e) => setKrValue(e.target.value)}
+                                      onKeyDown={(e) =>
+                                        e.key === "Enter" &&
+                                        updateKRProgress(kr.id)
+                                      }
+                                      className="w-20 bg-desert-surface border border-desert-accent rounded px-2 py-0.5 text-desert-text text-sm text-right focus:outline-none focus:ring-1 focus:ring-desert-accent"
+                                      autoFocus
+                                    />
+                                  <span className="text-xs text-desert-text-3">
                                     / {kr.target} {kr.unit}
                                   </span>
-                                  <button
-                                    onClick={() => updateKRProgress(kr.id)}
-                                    className="text-green-400 text-xs"
-                                  >
-                                    ✓
-                                  </button>
-                                  <button
-                                    onClick={() => setEditingKR(null)}
-                                    className="text-gray-500 text-xs"
-                                  >
-                                    ✕
-                                  </button>
+                                    <button
+                                      onClick={() => updateKRProgress(kr.id)}
+                                      className="text-desert-success text-xs"
+                                    >
+                                      ✓
+                                    </button>
+                                    <button
+                                      onClick={() => setEditingKR(null)}
+                                      className="text-desert-text-3 text-xs"
+                                    >
+                                      ✕
+                                    </button>
                                 </div>
                               ) : (
                                 <span
-                                  className="text-sm text-gray-400 cursor-pointer hover:text-amber-400 transition-colors"
+                                  className="text-sm text-desert-text-3 cursor-pointer hover:text-desert-accent transition-colors"
                                   onClick={() => {
                                     setEditingKR(kr.id);
                                     setKrValue(kr.current.toString());
@@ -366,9 +366,9 @@ export default function GoalsPage() {
                               )}
                             </div>
                           </div>
-                          <div className="w-full bg-gray-800 rounded-full h-1.5">
+                          <div className="w-full bg-desert-border rounded-full h-1.5">
                             <div
-                              className="bg-amber-400/70 h-1.5 rounded-full transition-all"
+                              className="bg-desert-accent/70 h-1.5 rounded-full transition-all"
                               style={{ width: `${krPct}%` }}
                             />
                           </div>

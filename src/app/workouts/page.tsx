@@ -121,17 +121,17 @@ export default function WorkoutsPage() {
   if (loading && !userId) {
     return (
       <div className="flex items-center justify-center h-full">
-        <p className="text-gray-500">Loading...</p>
+        <p className="text-desert-text-3">Loading...</p>
       </div>
     );
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="bg-desert-bg min-h-screen p-6 space-y-6 relative z-10">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-white">Workouts</h1>
-        <p className="text-gray-500 mt-1">
+        <h1 className="font-pixel text-lg text-desert-text">Workouts</h1>
+        <p className="text-desert-text-3 mt-1">
           Strength training · Session tracking
         </p>
       </div>
@@ -147,10 +147,10 @@ export default function WorkoutsPage() {
           <button
             key={t.key}
             onClick={() => setActiveTab(t.key)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            className={`px-4 py-2 rounded-sm text-sm font-mono uppercase tracking-wider transition-colors duration-150 ${
               activeTab === t.key
-                ? "bg-amber-500 text-gray-950"
-                : "text-gray-400 hover:text-white"
+                ? "bg-desert-surface border border-desert-border text-desert-text"
+                : "text-desert-text-3 hover:text-desert-text-2"
             }`}
           >
             {t.label}

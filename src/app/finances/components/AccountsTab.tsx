@@ -29,9 +29,9 @@ function fmt(cents: number, c = "AUD") {
 }
 
 const inputClass =
-  "w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-amber-500";
+  "w-full bg-desert-bg border border-desert-border-strong rounded-sm px-3 py-2 text-desert-text text-sm placeholder:text-desert-text-3 focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent transition-colors";
 const selectClass =
-  "bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-amber-500";
+  "bg-desert-bg border border-desert-border-strong rounded-sm px-3 py-2 text-desert-text text-sm focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent transition-colors";
 
 const TIERS = [
   { key: "immediate", label: "💧 Immediate", order: 0 },
@@ -113,10 +113,10 @@ export default function AccountsTab({
     <div>
       {/* Header */}
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-semibold text-white">Accounts</h2>
+        <h2 className="font-mono font-bold text-base tracking-[0.06em] uppercase text-desert-text">Accounts</h2>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-white text-sm font-medium rounded-lg transition-colors"
+          className="px-4 py-2 bg-desert-accent hover:bg-desert-accent-glow text-desert-bg font-mono font-semibold uppercase tracking-wider text-sm rounded-sm transition-colors duration-150"
         >
           + Add Account
         </button>
@@ -124,7 +124,7 @@ export default function AccountsTab({
 
       {/* Add Form */}
       {showForm && (
-        <div className="bg-gray-900 rounded-lg p-5 mb-6 space-y-3">
+        <div className="bg-desert-surface rounded-sm p-5 mb-6 space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <input
               type="text"
@@ -212,20 +212,20 @@ export default function AccountsTab({
             />
           </div>
           <div className="flex items-center gap-4">
-            <label className="flex items-center gap-2 text-sm text-gray-400 cursor-pointer">
+            <label className="flex items-center gap-2 text-sm text-desert-text-3 cursor-pointer">
               <input
                 type="checkbox"
                 checked={form.tax_advantaged}
                 onChange={(e) => setForm({...form, tax_advantaged: e.target.checked })}
-                className="rounded bg-gray-800 border-gray-700"
+                className="rounded bg-desert-bg border border-desert-border"
               />
               Tax advantaged
             </label>
             <div className="flex-1" />
-            <button onClick={addAccount} className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-white text-sm font-medium rounded-lg transition-colors">
+            <button onClick={addAccount} className="px-4 py-2 bg-desert-accent hover:bg-desert-accent-glow text-desert-bg font-mono font-semibold uppercase tracking-wider text-sm rounded-sm transition-colors duration-150">
               Add Account
             </button>
-            <button onClick={() => setShowForm(false)} className="px-4 py-2 text-gray-400 hover:text-white text-sm transition-colors">
+            <button onClick={() => setShowForm(false)} className="px-4 py-2 text-desert-text-3 hover:text-desert-text text-sm transition-colors">
               Cancel
             </button>
           </div>
@@ -234,8 +234,8 @@ export default function AccountsTab({
 
       {/* Empty State */}
       {accounts.length === 0 && (
-        <div className="bg-gray-900 rounded-lg p-12 text-center">
-          <p className="text-gray-500">No accounts yet. Add your first one!</p>
+        <div className="bg-desert-surface rounded-sm p-12 text-center">
+          <p className="text-desert-text-3">No accounts yet. Add your first one!</p>
         </div>
       )}
 
@@ -245,18 +245,18 @@ export default function AccountsTab({
         if (tierAccounts.length === 0) return null;
         return (
           <div key={key} className="mb-6">
-            <h3 className="text-sm font-medium text-gray-400 mb-2 uppercase tracking-wider">
+            <h3 className="font-mono text-sm text-desert-text-2 mb-2 uppercase tracking-wider">
               {label}
             </h3>
             <div className="space-y-2">
               {tierAccounts.map((a) => (
                 <div
                   key={a.id}
-                  className="bg-gray-900 rounded-lg p-4 flex items-center gap-4 group hover:border-gray-700 transition-colors"
+                  className="bg-desert-surface border border-desert-border rounded-sm p-4 flex items-center gap-4 group hover:border-desert-border-strong transition-colors duration-150"
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-white">{a.name}</p>
-                    <p className="text-xs text-gray-500">
+                    <p className="font-mono font-medium text-sm text-desert-text">{a.name}</p>
+                    <p className="text-xs text-desert-text-3">
                       {a.institution} · {a.asset_class.replace(/_/g, " ")}
                       {a.tax_advantaged ? " · 🛡️ Tax advantaged" : ""}
                     </p>
@@ -270,29 +270,29 @@ export default function AccountsTab({
                           value={balVal}
                           onChange={(e) => setBalVal(e.target.value)}
                           onKeyDown={(e) => e.key === "Enter" && saveBal(a.id)}
-                          className="w-32 bg-gray-800 border border-amber-500 rounded px-2 py-1 text-white text-sm text-right"
+                          className="w-32 bg-desert-bg border border-desert-accent rounded px-2 py-1 text-desert-text text-sm text-right focus:outline-none focus:ring-1 focus:ring-desert-accent"
                           autoFocus
                         />
-                        <button onClick={() => saveBal(a.id)} className="text-green-400 text-xs">✓</button>
-                        <button onClick={() => setEditBal(null)} className="text-gray-500 text-xs">✕</button>
+                        <button onClick={() => saveBal(a.id)} className="text-desert-success text-xs">✓</button>
+                        <button onClick={() => setEditBal(null)} className="text-desert-text-3 text-xs">✕</button>
                       </div>
                     ) : (
                       <p
-                        className="text-lg font-bold text-white font-mono cursor-pointer hover:text-amber-400 transition-colors"
+                        className="text-lg font-bold font-mono text-desert-text cursor-pointer hover:text-desert-accent transition-colors"
                         onClick={() => { setEditBal(a.id); setBalVal((a.balance / 100).toFixed(2)); }}
                       >
                         {fmt(a.balance, a.currency)}
                       </p>
                     )}
                     {a.interest_rate_pa && (
-                      <p className="text-xs text-green-400">
+                      <p className="text-xs text-desert-success">
                         {(a.interest_rate_pa * 100).toFixed(2)}% p.a.
                       </p>
                     )}
                   </div>
                   <button
                     onClick={() => deleteAccount(a.id)}
-                    className="text-gray-600 hover:text-red-400 text-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="text-desert-text-3 hover:text-desert-danger text-sm opacity-0 group-hover:opacity-100 transition-opacity"
                   >
                     ✕
                   </button>
@@ -306,25 +306,25 @@ export default function AccountsTab({
       {/* Credit Accounts */}
       {creditAccounts.length > 0 && (
         <div className="mb-6">
-          <h3 className="text-sm font-medium text-gray-400 mb-2 uppercase tracking-wider">
+          <h3 className="font-mono text-sm text-desert-text-2 mb-2 uppercase tracking-wider">
             💳 Credit / Liabilities
           </h3>
           <div className="space-y-2">
             {creditAccounts.map((a) => (
               <div
                 key={a.id}
-                className="bg-gray-900 rounded-lg p-4 flex items-center gap-4 group hover:border-gray-700 transition-colors"
+                className="bg-desert-surface border border-desert-border rounded-sm p-4 flex items-center gap-4 group hover:border-desert-border-strong transition-colors duration-150"
               >
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-white">{a.name}</p>
-                  <p className="text-xs text-gray-500">{a.institution}</p>
+                  <p className="font-mono font-medium text-sm text-desert-text">{a.name}</p>
+                  <p className="text-xs text-desert-text-3">{a.institution}</p>
                 </div>
-                <p className="text-lg font-bold text-red-400">
+                <p className="text-lg font-bold font-mono text-desert-danger">
                   {fmt(a.balance, a.currency)}
                 </p>
                 <button
                   onClick={() => deleteAccount(a.id)}
-                  className="text-gray-600 hover:text-red-400 text-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="text-desert-text-3 hover:text-desert-danger text-sm opacity-0 group-hover:opacity-100 transition-opacity"
                 >
                   ✕
                 </button>

@@ -2,11 +2,33 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { createClient } from "@/lib/supabase-server";
 import Sidebar from "@/components/Sidebar";
+import { Press_Start_2P, IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
 
 export const metadata: Metadata = {
   title: "Life OS",
   description: "Your personal operating system",
 };
+
+const pressStart = Press_Start_2P({
+  subsets: ["latin"],
+  weight: ["400"],
+  variable: "--font-pixel",
+  display: "swap",
+});
+
+const plexMono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  variable: "--font-mono",
+  display: "swap",
+});
+
+const plexSans = IBM_Plex_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-sans",
+  display: "swap",
+});
 
 export default async function RootLayout({
   children,
@@ -21,12 +43,12 @@ export default async function RootLayout({
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </head>
-      <body className="bg-gray-950 text-white antialiased">
+      <body className={`${pressStart.variable} ${plexMono.variable} ${plexSans.variable} font-sans antialiased`}>
         <div className="flex h-screen">
           <Sidebar user={user} />
 
           {/* Main Content */}
-          <main className="flex-1 overflow-y-auto p-4 md:p-6">
+          <main className="relative z-10 flex-1 overflow-y-auto p-4 md:p-6">
             {children}
           </main>
         </div>
