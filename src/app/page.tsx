@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
 interface DashboardData {
@@ -10,6 +11,7 @@ interface DashboardData {
   spending: { month_expenses: number; month_income: number };
   goals: { title: string; progress: number }[];
   recentJournal: { date: string; mood: number; energy: number }[];
+  streak: number;
 }
 
 const priorityColors: Record<string, string> = {
@@ -20,12 +22,51 @@ const priorityColors: Record<string, string> = {
 };
 
 const moodEmoji = ["", "😞", "😐", "🙂", "😊", "🤩"];
+const energyEmoji = ["", "🪫", "😴", "⚡", "🔥", "🚀"];
 
-function getGreeting(): string {
+// D5: Contextual greeting messages
+function getGreeting(data: DashboardData | null): { text: string; sub: string } {
   const hour = new Date().getHours();
-  if (hour >= 5 && hour < 12) return 'Good morning';
-  if (hour >= 12 && hour < 18) return 'Good afternoon';
-  return 'Good evening';
+  const base =
+    hour >= 5 && hour < 12
+      ? "Good morning"
+      : hour >= 12 && hour < 18
+      ? "Good afternoon"
+      : "Good evening";
+
+  if (!data) return { text: base, sub: "" };
+
+  // Contextual sub-messages based on state
+  if (data.taskStats.overdue > 0) {
+    return {
+      text: base,
+      sub: `You have ${data.taskStats.overdue} overdue task${data.taskStats.overdue > 1 ? "s" : ""} — let's clear the deck.`,
+    };
+  }
+
+  const habitsLeft = data.habits.filter((h) => !h.done_today).length;
+  const habitsDone = data.habits.filter((h) => h.done_today).length;
+
+  if (habitsDone === data.habits.length && data.habits.length > 0) {
+    return { text: base, sub: "All habits done today. Solid work." };
+  }
+
+  if (data.taskStats.completed_this_week >= 10) {
+    return { text: base, sub: `${data.taskStats.completed_this_week} tasks crushed this week.` };
+  }
+
+  if (habitsLeft > 0) {
+    return {
+      text: base,
+      sub: `${habitsLeft} habit${habitsLeft > 1 ? "s" : ""} left today.`,
+    };
+  }
+
+  if (data.todayTasks.length === 0) {
+    return { text: base, sub: "Clear schedule today. Time for deep work?" };
+  }
+
+  return { text: base, sub: `${data.todayTasks.length} task${data.todayTasks.length > 1 ? "s" : ""} on deck.` };
 }
 
 function getISOWeek(date: Date): number {
@@ -33,7 +74,7 @@ function getISOWeek(date: Date): number {
   const dayNum = d.getUTCDay() || 7;
   d.setUTCDate(d.getUTCDate() + 4 - dayNum);
   const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-  return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+  return Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
 }
 
 export default function Dashboard() {
@@ -42,13 +83,15 @@ export default function Dashboard() {
 
   useEffect(() => {
     async function fetchUser() {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (user) {
-        // Try to get name from user metadata or use email prefix
-        const name = user.user_metadata?.full_name ||
-                     user.user_metadata?.name ||
-                     user.email?.split('@')[0] ||
-                     'there';
+        const name =
+          user.user_metadata?.full_name ||
+          user.user_metadata?.name ||
+          user.email?.split("@")[0] ||
+          "there";
         setUserName(name);
       }
     }
@@ -57,28 +100,27 @@ export default function Dashboard() {
 
   useEffect(() => {
     async function fetchDashboardData() {
-      const todayISO = new Date().toISOString().split('T')[0];
+      const todayISO = new Date().toISOString().split("T")[0];
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
       const sevenDaysAgoISO = sevenDaysAgo.toISOString();
 
-      // Task Stats
       const { count: activeCount } = await supabase
-        .from('tasks')
-        .select('*', { count: 'exact', head: true })
-        .neq('status', 'done');
+        .from("tasks")
+        .select("*", { count: "exact", head: true })
+        .neq("status", "done");
 
       const { count: completedThisWeekCount } = await supabase
-        .from('tasks')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'done')
-        .gte('completed_at', sevenDaysAgoISO);
+        .from("tasks")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "done")
+        .gte("completed_at", sevenDaysAgoISO);
 
       const { count: overdueCount } = await supabase
-        .from('tasks')
-        .select('*', { count: 'exact', head: true })
-        .lt('due_date', todayISO)
-        .neq('status', 'done');
+        .from("tasks")
+        .select("*", { count: "exact", head: true })
+        .lt("due_date", todayISO)
+        .neq("status", "done");
 
       const taskStats = {
         active: activeCount || 0,
@@ -86,7 +128,6 @@ export default function Dashboard() {
         overdue: overdueCount || 0,
       };
 
-      // Today Tasks
       const priorityOrder: Record<string, number> = {
         urgent: 1,
         high: 2,
@@ -95,87 +136,101 @@ export default function Dashboard() {
       };
 
       const { data: todayTasksRawData } = await supabase
-        .from('tasks')
-        .select('id, title, priority, due_date')
+        .from("tasks")
+        .select("id, title, priority, due_date")
         .or(`due_date.lte.${todayISO},due_date.is.null`)
-        .neq('status', 'done');
+        .neq("status", "done");
 
-      const todayTasks = todayTasksRawData
-        ?.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority])
-        .slice(0, 10) || [];
+      const todayTasks =
+        todayTasksRawData
+          ?.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority])
+          .slice(0, 8) || [];
 
-      // Habits
       const { data: habitsRawData } = await supabase
-        .from('habits')
-        .select('id, name, icon')
-        .eq('active', true);
+        .from("habits")
+        .select("id, name, icon")
+        .eq("active", true);
 
       const { data: habitLogsRawData } = await supabase
-        .from('habit_logs')
-        .select('habit_id')
-        .eq('date', todayISO);
+        .from("habit_logs")
+        .select("habit_id")
+        .eq("date", todayISO);
 
-      const todayDoneHabitIds = new Set(
-        habitLogsRawData?.map(log => log.habit_id)
-      );
+      const todayDoneHabitIds = new Set(habitLogsRawData?.map((log) => log.habit_id));
 
-      const habits = habitsRawData?.map(habit => ({
-        name: habit.name,
-        icon: habit.icon,
-        done_today: todayDoneHabitIds.has(habit.id),
-      })) || [];
+      const habits =
+        habitsRawData?.map((habit) => ({
+          name: habit.name,
+          icon: habit.icon,
+          done_today: todayDoneHabitIds.has(habit.id),
+        })) || [];
 
-      // Spending
-      const startOfMonth = new Date();
-      startOfMonth.setDate(1);
-      startOfMonth.setHours(0, 0, 0, 0);
-      const endOfMonth = new Date(startOfMonth.getFullYear(), startOfMonth.getMonth() + 1, 0);
-      endOfMonth.setHours(23, 59, 59, 999);
+      // Calculate habit streak (consecutive days with all habits done)
+      let streak = 0;
+      if (habitsRawData && habitsRawData.length > 0) {
+        const { data: recentLogs } = await supabase
+          .from("habit_logs")
+          .select("habit_id, date")
+          .gte("date", new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0])
+          .order("date", { ascending: false });
+
+        const habitCount = habitsRawData.length;
+        const logsByDate: Record<string, Set<number>> = {};
+        (recentLogs || []).forEach((l) => {
+          if (!logsByDate[l.date]) logsByDate[l.date] = new Set();
+          logsByDate[l.date].add(l.habit_id);
+        });
+
+        const checkDate = new Date();
+        for (let i = 0; i < 30; i++) {
+          const dateStr = checkDate.toISOString().split("T")[0];
+          if (logsByDate[dateStr] && logsByDate[dateStr].size >= habitCount) {
+            streak++;
+            checkDate.setDate(checkDate.getDate() - 1);
+          } else {
+            break;
+          }
+        }
+      }
 
       const { data: expensesData } = await supabase
-        .from('finance_expenses')
-        .select('amount')
-        .gte('created_at', startOfMonth.toISOString())
-        .lte('created_at', endOfMonth.toISOString());
+        .from("finance_expenses")
+        .select("amount");
 
       const { data: incomeData } = await supabase
-        .from('finance_income')
-        .select('amount')
-        .gte('created_at', startOfMonth.toISOString())
-        .lte('created_at', endOfMonth.toISOString());
+        .from("finance_income")
+        .select("amount");
 
-      const month_expenses = expensesData?.reduce((sum, item) => sum + item.amount, 0) || 0;
-      const month_income = incomeData?.reduce((sum, item) => sum + item.amount, 0) || 0;
+      const month_expenses =
+        expensesData?.reduce((sum, item) => sum + item.amount, 0) || 0;
+      const month_income =
+        incomeData?.reduce((sum, item) => sum + item.amount, 0) || 0;
 
-      const spending = { month_expenses, month_income };
-
-      // Goals
       const { data: goalsData } = await supabase
-        .from('goals')
-        .select('title, percent_complete')
-        .eq('status', 'active');
+        .from("goals")
+        .select("title, percent_complete")
+        .eq("status", "active");
 
-      const goals = goalsData?.map(goal => ({
-        title: goal.title,
-        progress: goal.percent_complete
-      })) || [];
+      const goals =
+        goalsData?.map((goal) => ({
+          title: goal.title,
+          progress: goal.percent_complete,
+        })) || [];
 
-      // Recent Journal
       const { data: recentJournalData } = await supabase
-        .from('journal_entries')
-        .select('date, mood, energy')
-        .order('date', { ascending: false })
+        .from("journal_entries")
+        .select("date, mood, energy")
+        .order("date", { ascending: false })
         .limit(7);
-      
-      const recentJournal = recentJournalData || [];
 
       setData({
         taskStats,
         todayTasks,
         habits,
-        spending,
+        spending: { month_expenses, month_income },
         goals,
-        recentJournal,
+        recentJournal: recentJournalData || [],
+        streak,
       });
     }
 
@@ -198,154 +253,233 @@ export default function Dashboard() {
     month: "long",
     day: "numeric",
   });
+  const greeting = getGreeting(data);
+  const habitsDone = data.habits.filter((h) => h.done_today).length;
+  const habitsTotal = data.habits.length;
 
   return (
-    <div className="bg-desert-bg min-h-screen p-6 space-y-6 relative z-10">
-      <div className="mt-6">
-        <h1 className="font-pixel text-lg text-desert-text">{getGreeting()}, {userName} 👋</h1>
-        <p className="text-desert-text-3 mt-1">{todayFormatted} · Week {weekNumber}</p>
+    <div className="bg-desert-bg min-h-screen p-6 relative z-10">
+      {/* D4: Header banner */}
+      <div className="mb-8 pb-6 border-b border-desert-border">
+        <h1 className="font-pixel text-lg text-desert-text">
+          {greeting.text}, {userName}
+        </h1>
+        <p className="text-desert-text-3 mt-1">
+          {todayFormatted} · Week {weekNumber}
+        </p>
+        {greeting.sub && (
+          <p className="text-desert-text-2 text-sm mt-2">{greeting.sub}</p>
+        )}
       </div>
 
-      {/* Stats Row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <div className="bg-desert-surface rounded-sm p-5">
-          <p className="font-mono font-bold text-3xl tracking-tight text-desert-text">
-            {data.taskStats.active}
-          </p>
-          <p className="text-sm text-desert-text-3">Active Tasks</p>
+      {/* D2: Bento grid layout */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {/* Row 1: Stat cards — 4 across */}
+        <div className="bg-desert-surface border border-desert-border rounded-sm p-4 hover:border-desert-border-strong transition-colors duration-150">
+          <p className="font-mono font-bold text-2xl text-desert-text">{data.taskStats.active}</p>
+          <p className="text-xs text-desert-text-3 font-mono uppercase tracking-wider mt-1">Active Tasks</p>
         </div>
-        <div className="bg-desert-surface rounded-sm p-5">
-          <p className="font-mono font-bold text-3xl tracking-tight text-desert-success">
+        <div className="bg-desert-surface border border-desert-border rounded-sm p-4 hover:border-desert-border-strong transition-colors duration-150">
+          <p className="font-mono font-bold text-2xl text-desert-success">
             {data.taskStats.completed_this_week}
           </p>
-          <p className="text-sm text-desert-text-3">Done This Week</p>
+          <p className="text-xs text-desert-text-3 font-mono uppercase tracking-wider mt-1">Done This Week</p>
         </div>
-        <div className="bg-desert-surface rounded-sm p-5">
-          <p className="font-mono font-bold text-3xl tracking-tight text-desert-danger">
+        <div className="bg-desert-surface border border-desert-border rounded-sm p-4 hover:border-desert-border-strong transition-colors duration-150">
+          <p
+            className={`font-mono font-bold text-2xl ${
+              data.taskStats.overdue > 0 ? "text-desert-danger" : "text-desert-text"
+            }`}
+          >
             {data.taskStats.overdue}
           </p>
-          <p className="text-sm text-desert-text-3">Overdue</p>
+          <p className="text-xs text-desert-text-3 font-mono uppercase tracking-wider mt-1">Overdue</p>
         </div>
-        <div className="bg-desert-surface rounded-sm p-5">
-          <p className="font-mono font-bold text-3xl tracking-tight text-desert-accent">
-            ${data.spending.month_expenses.toFixed(0)}
+        <div className="bg-desert-surface border border-desert-border rounded-sm p-4 hover:border-desert-border-strong transition-colors duration-150">
+          <p className="font-mono font-bold text-2xl text-desert-accent">
+            {data.streak > 0 ? `${data.streak}d` : "—"}
           </p>
-          <p className="text-sm text-desert-text-3">Spent This Month</p>
+          <p className="text-xs text-desert-text-3 font-mono uppercase tracking-wider mt-1">Habit Streak</p>
         </div>
-      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Today's Tasks */}
-        <div className="bg-desert-surface rounded-sm p-5">
-          <h2 className="font-mono font-bold text-base tracking-[0.06em] uppercase text-desert-text mb-4">
-            📋 Today&apos;s Focus
+        {/* Row 2: Today's Focus (wide) + Habits */}
+        <Link
+          href="/tasks"
+          className="col-span-2 bg-desert-surface border border-desert-border rounded-sm p-5 hover:border-desert-border-strong hover:bg-desert-surface-hover transition-all duration-150 group"
+        >
+          <h2 className="font-mono font-bold text-xs tracking-[0.06em] uppercase text-desert-text-2 mb-3 group-hover:text-desert-text transition-colors">
+            ☐ Today&apos;s Focus
           </h2>
           {data.todayTasks.length === 0 ? (
-            <p className="text-desert-text-3 text-sm">
-              No tasks due. Add some in Tasks →
-            </p>
+            <p className="text-desert-text-3 text-sm">Clear schedule</p>
           ) : (
-            <ul className="space-y-2">
-              {data.todayTasks.map((task) => (
+            <ul className="space-y-1.5">
+              {data.todayTasks.slice(0, 6).map((task) => (
                 <li key={task.id} className="flex items-center gap-2 text-sm">
-                  <span
-                    className={`text-xs font-medium ${priorityColors[task.priority]}`}
-                  >
-                    ●
-                  </span>
-                  <span className="text-desert-text">{task.title}</span>
+                  <span className={`text-xs ${priorityColors[task.priority]}`}>●</span>
+                  <span className="text-desert-text truncate">{task.title}</span>
                 </li>
               ))}
+              {data.todayTasks.length > 6 && (
+                <li className="text-desert-text-3 text-xs font-mono">
+                  +{data.todayTasks.length - 6} more
+                </li>
+              )}
             </ul>
           )}
-        </div>
+        </Link>
 
-        {/* Habits */}
-        <div className="bg-desert-surface rounded-sm p-5">
-          <h2 className="font-mono font-bold text-base tracking-[0.06em] uppercase text-desert-text mb-4">
-            🔁 Today&apos;s Habits
-          </h2>
+        <Link
+          href="/habits"
+          className="col-span-2 bg-desert-surface border border-desert-border rounded-sm p-5 hover:border-desert-border-strong hover:bg-desert-surface-hover transition-all duration-150 group"
+        >
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="font-mono font-bold text-xs tracking-[0.06em] uppercase text-desert-text-2 group-hover:text-desert-text transition-colors">
+              ↻ Habits
+            </h2>
+            {habitsTotal > 0 && (
+              <span className="font-mono text-xs text-desert-text-3">
+                {habitsDone}/{habitsTotal}
+              </span>
+            )}
+          </div>
           {data.habits.length === 0 ? (
-            <p className="text-desert-text-3 text-sm">
-              No habits yet. Add some in Habits →
-            </p>
+            <p className="text-desert-text-3 text-sm">No habits yet</p>
           ) : (
-            <ul className="space-y-2">
-              {data.habits.map((habit, i) => (
-                <li key={i} className="flex items-center gap-2 text-sm">
-                  <span>{habit.done_today ? "✅" : "⬜"}</span>
+            <>
+              {/* Progress bar */}
+              <div className="w-full bg-desert-border rounded-full h-1.5 mb-3">
+                <div
+                  className={`h-1.5 rounded-full transition-all duration-500 ${
+                    habitsDone === habitsTotal && habitsTotal > 0
+                      ? "bg-desert-success"
+                      : "bg-desert-accent"
+                  }`}
+                  style={{
+                    width: `${habitsTotal > 0 ? (habitsDone / habitsTotal) * 100 : 0}%`,
+                  }}
+                />
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {data.habits.map((habit, i) => (
                   <span
-                    className={
-                      habit.done_today ? "text-desert-text-2 line-through" : "text-desert-text"
-                    }
+                    key={i}
+                    className={`text-lg transition-opacity duration-150 ${
+                      habit.done_today ? "opacity-100" : "opacity-30"
+                    }`}
+                    title={`${habit.name}: ${habit.done_today ? "done" : "not done"}`}
                   >
-                    {habit.icon} {habit.name}
+                    {habit.icon}
                   </span>
-                </li>
-              ))}
-            </ul>
+                ))}
+              </div>
+            </>
           )}
-        </div>
+        </Link>
 
-        {/* Goals */}
-        <div className="bg-desert-surface rounded-sm p-5">
-          <h2 className="font-mono font-bold text-base tracking-[0.06em] uppercase text-desert-text mb-4">
-            🎯 Active Goals
+        {/* Row 3: Goals (wide) + Mood (compact) */}
+        <Link
+          href="/goals"
+          className="col-span-2 md:col-span-3 bg-desert-surface border border-desert-border rounded-sm p-5 hover:border-desert-border-strong hover:bg-desert-surface-hover transition-all duration-150 group"
+        >
+          <h2 className="font-mono font-bold text-xs tracking-[0.06em] uppercase text-desert-text-2 mb-3 group-hover:text-desert-text transition-colors">
+            ◎ Goals
           </h2>
           {data.goals.length === 0 ? (
-            <p className="text-desert-text-3 text-sm">
-              No goals yet. Add some in Goals →
-            </p>
+            <p className="text-desert-text-3 text-sm">No active goals</p>
           ) : (
-            <ul className="space-y-3">
-              {data.goals.map((goal, i) => (
-                <li key={i}>
+            <div className="space-y-2.5">
+              {data.goals.slice(0, 4).map((goal, i) => (
+                <div key={i}>
                   <div className="flex justify-between text-sm mb-1">
-                    <span className="text-desert-text">{goal.title}</span>
-                    <span className="text-desert-text-3 font-mono">
+                    <span className="text-desert-text truncate pr-4">{goal.title}</span>
+                    <span className="text-desert-text-3 font-mono text-xs shrink-0">
                       {Math.round(goal.progress)}%
                     </span>
                   </div>
-                  <div className="w-full bg-desert-border rounded-full h-2">
+                  <div className="w-full bg-desert-border rounded-full h-1.5">
                     <div
-                      className="bg-desert-accent h-2 rounded-full transition-all"
+                      className="bg-desert-accent h-1.5 rounded-full transition-all duration-500"
                       style={{ width: `${Math.min(goal.progress, 100)}%` }}
                     />
                   </div>
-                </li>
+                </div>
               ))}
-            </ul>
+            </div>
           )}
-        </div>
+        </Link>
 
-        {/* Recent Mood */}
-        <div className="bg-desert-surface rounded-sm p-5">
-          <h2 className="font-mono font-bold text-base tracking-[0.06em] uppercase text-desert-text mb-4">
-            📔 Recent Mood
+        <Link
+          href="/journal"
+          className="col-span-2 md:col-span-1 bg-desert-surface border border-desert-border rounded-sm p-5 hover:border-desert-border-strong hover:bg-desert-surface-hover transition-all duration-150 group"
+        >
+          <h2 className="font-mono font-bold text-xs tracking-[0.06em] uppercase text-desert-text-2 mb-3 group-hover:text-desert-text transition-colors">
+            ✎ Mood
           </h2>
           {data.recentJournal.length === 0 ? (
-            <p className="text-desert-text-3 text-sm">
-              No journal entries yet. Start in Journal →
-            </p>
+            <p className="text-desert-text-3 text-sm">No entries</p>
           ) : (
-            <ul className="space-y-2">
-              {data.recentJournal.map((entry, i) => (
-                <li
-                  key={i}
-                  className="flex items-center justify-between text-sm"
-                >
-                  <span className="text-desert-text-3 text-xs font-mono">{entry.date}</span>
-                  <div className="flex gap-2">
-                    <span>{moodEmoji[entry.mood] || "—"}</span>
-                    <span className="text-desert-text-3 font-mono">
-                      ⚡{entry.energy || "—"}
-                    </span>
+            <div className="space-y-1.5">
+              {data.recentJournal.slice(0, 5).map((entry, i) => (
+                <div key={i} className="flex items-center justify-between">
+                  <span className="text-desert-text-3 text-[10px] font-mono">
+                    {new Date(entry.date + "T12:00:00").toLocaleDateString("en-NZ", {
+                      weekday: "short",
+                    })}
+                  </span>
+                  <div className="flex gap-1.5">
+                    <span className="text-sm">{moodEmoji[entry.mood] || "—"}</span>
+                    <span className="text-sm">{energyEmoji[entry.energy] || "—"}</span>
                   </div>
-                </li>
+                </div>
               ))}
-            </ul>
+            </div>
           )}
-        </div>
+        </Link>
+
+        {/* Row 4: Quick links */}
+        <Link
+          href="/finances"
+          className="bg-desert-surface border border-desert-border rounded-sm p-4 hover:border-desert-border-strong hover:bg-desert-surface-hover transition-all duration-150 group"
+        >
+          <p className="font-mono font-bold text-xs tracking-[0.06em] uppercase text-desert-text-2 group-hover:text-desert-text transition-colors">
+            $ Finances
+          </p>
+          <p className="font-mono text-lg text-desert-text mt-2">
+            ${(data.spending.month_income / 100).toLocaleString("en-NZ", { maximumFractionDigits: 0 })}
+          </p>
+          <p className="text-[10px] text-desert-text-3 font-mono uppercase">Income/mo</p>
+        </Link>
+
+        <Link
+          href="/calendar"
+          className="bg-desert-surface border border-desert-border rounded-sm p-4 hover:border-desert-border-strong hover:bg-desert-surface-hover transition-all duration-150 group"
+        >
+          <p className="font-mono font-bold text-xs tracking-[0.06em] uppercase text-desert-text-2 group-hover:text-desert-text transition-colors">
+            ▦ Calendar
+          </p>
+          <p className="text-desert-text-3 text-sm mt-2">View schedule →</p>
+        </Link>
+
+        <Link
+          href="/review"
+          className="bg-desert-surface border border-desert-border rounded-sm p-4 hover:border-desert-border-strong hover:bg-desert-surface-hover transition-all duration-150 group"
+        >
+          <p className="font-mono font-bold text-xs tracking-[0.06em] uppercase text-desert-text-2 group-hover:text-desert-text transition-colors">
+            ⟳ Review
+          </p>
+          <p className="text-desert-text-3 text-sm mt-2">Weekly check-in →</p>
+        </Link>
+
+        <Link
+          href="/chat"
+          className="bg-desert-surface border border-desert-border rounded-sm p-4 hover:border-desert-border-strong hover:bg-desert-surface-hover transition-all duration-150 group"
+        >
+          <p className="font-mono font-bold text-xs tracking-[0.06em] uppercase text-desert-text-2 group-hover:text-desert-text transition-colors">
+            ⟡ AI Chat
+          </p>
+          <p className="text-desert-text-3 text-sm mt-2">Ask anything →</p>
+        </Link>
       </div>
     </div>
   );

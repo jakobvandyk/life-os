@@ -142,7 +142,7 @@ export default function GoalsPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="font-pixel text-lg text-desert-text">🎯 Goals</h1>
+          <h1 className="font-pixel text-lg text-desert-text">◎ Goals</h1>
           <p className="text-desert-text-3 mt-1">
             {goals.length} active goal{goals.length !== 1 ? "s" : ""}
           </p>

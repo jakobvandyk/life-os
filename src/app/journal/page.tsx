@@ -143,8 +143,8 @@ export default function JournalPage() {
   return (
     <div className="bg-desert-bg min-h-screen p-6 relative z-10">
       {/* Header */}
-      <div className="mb-8">
-          <h1 className="font-pixel text-lg text-desert-text">📔 Journal</h1>
+      <div className="mb-8 pb-6 border-b border-desert-border">
+          <h1 className="font-pixel text-lg text-desert-text">✎ Journal</h1>
           <p className="text-desert-text-3 mt-1">Daily reflection & check-in</p>
       </div>
 

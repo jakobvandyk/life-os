@@ -286,9 +286,9 @@ export default function CalendarPage() {
   return (
     <div className="bg-desert-bg min-h-screen p-6 relative z-10">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-8 pb-6 border-b border-desert-border">
         <div>
-          <h1 className="font-pixel text-lg text-desert-text">📅 Calendar</h1>
+          <h1 className="font-pixel text-lg text-desert-text">▦ Calendar</h1>
           <p className="text-desert-text-3 mt-1">Events, tasks, and goals</p>
         </div>
         <div className="flex items-center gap-3">
