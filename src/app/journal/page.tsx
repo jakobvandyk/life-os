@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { queueWrite } from "@/lib/sync";
+import PixelIcon from "@/components/PixelIcon";
 
 interface JournalEntry {
   id: number;
@@ -146,7 +147,7 @@ export default function JournalPage() {
     <div className="bg-desert-bg min-h-screen p-6 relative z-10">
       {/* Header */}
       <div className="mb-8 pb-6 border-b border-desert-border">
-          <h1 className="font-pixel text-lg text-desert-text">✎ Journal</h1>
+          <h1 className="font-pixel text-lg text-desert-text flex items-center gap-3"><PixelIcon name="journal" size={18} className="text-desert-accent" /> Journal</h1>
           <p className="text-desert-text-3 mt-1">Daily reflection & check-in</p>
       </div>
 

@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
 import { queueWrite } from "@/lib/sync";
+import PixelIcon from "@/components/PixelIcon";
 
 interface Tag {
   id: number;
@@ -239,7 +240,7 @@ export default function KnowledgePage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8 pb-6 border-b border-desert-border">
         <div>
-          <h1 className="font-pixel text-lg text-desert-text">≡ Knowledge Base</h1>
+          <h1 className="font-pixel text-lg text-desert-text flex items-center gap-3"><PixelIcon name="knowledge" size={18} className="text-desert-accent" /> Knowledge Base</h1>
           <p className="text-desert-text-3 mt-1">
             {notes.length} note{notes.length !== 1 ? "s" : ""}
           </p>

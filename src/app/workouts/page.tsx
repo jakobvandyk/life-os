@@ -7,6 +7,7 @@ import DailyView from "./components/DailyView";
 import ProgressView from "./components/ProgressView";
 import HistoryView from "./components/HistoryView";
 import { Checkin } from "./components/DailyCheckin";
+import PixelIcon from "@/components/PixelIcon";
 
 export interface WorkoutSession {
   id: string;
@@ -130,7 +131,7 @@ export default function WorkoutsPage() {
     <div className="bg-desert-bg min-h-screen p-6 space-y-6 relative z-10">
       {/* Header */}
       <div className="pb-6 border-b border-desert-border">
-        <h1 className="font-pixel text-lg text-desert-text">▲ Workouts</h1>
+        <h1 className="font-pixel text-lg text-desert-text flex items-center gap-3"><PixelIcon name="workouts" size={18} className="text-desert-accent" /> Workouts</h1>
         <p className="text-desert-text-3 mt-1">
           Strength training · Session tracking
         </p>

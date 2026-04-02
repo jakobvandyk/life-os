@@ -5,26 +5,26 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import SignOutButton from "@/components/SignOutButton";
 import SyncStatus from "@/components/SyncStatus";
+import PixelIcon, { ICON_NAMES } from "@/components/PixelIcon";
 import { User } from "@supabase/supabase-js";
 
 interface SidebarProps {
   user: User | null;
 }
 
-// D3: Pixel art style text icons — monospace single-char glyphs
 const navItems = [
-  { href: "/", label: "Dashboard", icon: "◈" },
-  { href: "/tasks", label: "Tasks", icon: "☐" },
-  { href: "/habits", label: "Habits", icon: "↻" },
-  { href: "/workouts", label: "Workouts", icon: "▲" },
-  { href: "/journal", label: "Journal", icon: "✎" },
-  { href: "/goals", label: "Goals", icon: "◎" },
-  { href: "/finances", label: "Finances", icon: "$" },
-  { href: "/calendar", label: "Calendar", icon: "▦" },
-  { href: "/knowledge", label: "Knowledge", icon: "≡" },
-  { href: "/review", label: "Review", icon: "⟳" },
-  { href: "/chat", label: "AI Chat", icon: "⟡" },
-  { href: "/settings", label: "Settings", icon: "⚙" },
+  { href: "/", label: "Dashboard" },
+  { href: "/tasks", label: "Tasks" },
+  { href: "/habits", label: "Habits" },
+  { href: "/workouts", label: "Workouts" },
+  { href: "/journal", label: "Journal" },
+  { href: "/goals", label: "Goals" },
+  { href: "/finances", label: "Finances" },
+  { href: "/calendar", label: "Calendar" },
+  { href: "/knowledge", label: "Knowledge" },
+  { href: "/review", label: "Review" },
+  { href: "/chat", label: "AI Chat" },
+  { href: "/settings", label: "Settings" },
 ];
 
 function NavList({
@@ -49,15 +49,15 @@ function NavList({
               }`}
               onClick={onNav}
             >
-              <span
-                className={`font-mono text-sm transition-colors duration-150 ${
+              <PixelIcon
+                name={ICON_NAMES[item.href] || "dashboard"}
+                size={14}
+                className={`transition-colors duration-150 ${
                   active
                     ? "text-desert-accent"
                     : "text-desert-text-3 group-hover:text-desert-accent"
                 }`}
-              >
-                {item.icon}
-              </span>
+              />
               <span className="font-pixel text-[10px]">{item.label}</span>
             </Link>
           </li>

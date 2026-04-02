@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import PixelIcon from "@/components/PixelIcon";
 
 interface DashboardData {
   taskStats: { active: number; completed_this_week: number; overdue: number };
@@ -307,8 +308,8 @@ export default function Dashboard() {
           href="/tasks"
           className="col-span-2 bg-desert-surface border border-desert-border rounded-sm p-5 hover:border-desert-border-strong hover:bg-desert-surface-hover transition-all duration-150 group"
         >
-          <h2 className="font-mono font-bold text-xs tracking-[0.06em] uppercase text-desert-text-2 mb-3 group-hover:text-desert-text transition-colors">
-            ☐ Today&apos;s Focus
+          <h2 className="font-mono font-bold text-xs tracking-[0.06em] uppercase text-desert-text-2 mb-3 group-hover:text-desert-text transition-colors flex items-center gap-2">
+            <PixelIcon name="tasks" size={12} /> Today&apos;s Focus
           </h2>
           {data.todayTasks.length === 0 ? (
             <p className="text-desert-text-3 text-sm">Clear schedule</p>
@@ -334,8 +335,8 @@ export default function Dashboard() {
           className="col-span-2 bg-desert-surface border border-desert-border rounded-sm p-5 hover:border-desert-border-strong hover:bg-desert-surface-hover transition-all duration-150 group"
         >
           <div className="flex items-center justify-between mb-3">
-            <h2 className="font-mono font-bold text-xs tracking-[0.06em] uppercase text-desert-text-2 group-hover:text-desert-text transition-colors">
-              ↻ Habits
+            <h2 className="font-mono font-bold text-xs tracking-[0.06em] uppercase text-desert-text-2 group-hover:text-desert-text transition-colors flex items-center gap-2">
+              <PixelIcon name="habits" size={12} /> Habits
             </h2>
             {habitsTotal > 0 && (
               <span className="font-mono text-xs text-desert-text-3">
@@ -382,8 +383,8 @@ export default function Dashboard() {
           href="/goals"
           className="col-span-2 md:col-span-3 bg-desert-surface border border-desert-border rounded-sm p-5 hover:border-desert-border-strong hover:bg-desert-surface-hover transition-all duration-150 group"
         >
-          <h2 className="font-mono font-bold text-xs tracking-[0.06em] uppercase text-desert-text-2 mb-3 group-hover:text-desert-text transition-colors">
-            ◎ Goals
+          <h2 className="font-mono font-bold text-xs tracking-[0.06em] uppercase text-desert-text-2 mb-3 group-hover:text-desert-text transition-colors flex items-center gap-2">
+            <PixelIcon name="goals" size={12} /> Goals
           </h2>
           {data.goals.length === 0 ? (
             <p className="text-desert-text-3 text-sm">No active goals</p>
@@ -413,8 +414,8 @@ export default function Dashboard() {
           href="/journal"
           className="col-span-2 md:col-span-1 bg-desert-surface border border-desert-border rounded-sm p-5 hover:border-desert-border-strong hover:bg-desert-surface-hover transition-all duration-150 group"
         >
-          <h2 className="font-mono font-bold text-xs tracking-[0.06em] uppercase text-desert-text-2 mb-3 group-hover:text-desert-text transition-colors">
-            ✎ Mood
+          <h2 className="font-mono font-bold text-xs tracking-[0.06em] uppercase text-desert-text-2 mb-3 group-hover:text-desert-text transition-colors flex items-center gap-2">
+            <PixelIcon name="journal" size={12} /> Mood
           </h2>
           {data.recentJournal.length === 0 ? (
             <p className="text-desert-text-3 text-sm">No entries</p>
@@ -442,8 +443,8 @@ export default function Dashboard() {
           href="/finances"
           className="bg-desert-surface border border-desert-border rounded-sm p-4 hover:border-desert-border-strong hover:bg-desert-surface-hover transition-all duration-150 group"
         >
-          <p className="font-mono font-bold text-xs tracking-[0.06em] uppercase text-desert-text-2 group-hover:text-desert-text transition-colors">
-            $ Finances
+          <p className="font-mono font-bold text-xs tracking-[0.06em] uppercase text-desert-text-2 group-hover:text-desert-text transition-colors flex items-center gap-2">
+            <PixelIcon name="finances" size={12} /> Finances
           </p>
           <p className="font-mono text-lg text-desert-text mt-2">
             ${(data.spending.month_income / 100).toLocaleString("en-NZ", { maximumFractionDigits: 0 })}
@@ -455,8 +456,8 @@ export default function Dashboard() {
           href="/calendar"
           className="bg-desert-surface border border-desert-border rounded-sm p-4 hover:border-desert-border-strong hover:bg-desert-surface-hover transition-all duration-150 group"
         >
-          <p className="font-mono font-bold text-xs tracking-[0.06em] uppercase text-desert-text-2 group-hover:text-desert-text transition-colors">
-            ▦ Calendar
+          <p className="font-mono font-bold text-xs tracking-[0.06em] uppercase text-desert-text-2 group-hover:text-desert-text transition-colors flex items-center gap-2">
+            <PixelIcon name="calendar" size={12} /> Calendar
           </p>
           <p className="text-desert-text-3 text-sm mt-2">View schedule →</p>
         </Link>
@@ -465,8 +466,8 @@ export default function Dashboard() {
           href="/review"
           className="bg-desert-surface border border-desert-border rounded-sm p-4 hover:border-desert-border-strong hover:bg-desert-surface-hover transition-all duration-150 group"
         >
-          <p className="font-mono font-bold text-xs tracking-[0.06em] uppercase text-desert-text-2 group-hover:text-desert-text transition-colors">
-            ⟳ Review
+          <p className="font-mono font-bold text-xs tracking-[0.06em] uppercase text-desert-text-2 group-hover:text-desert-text transition-colors flex items-center gap-2">
+            <PixelIcon name="review" size={12} /> Review
           </p>
           <p className="text-desert-text-3 text-sm mt-2">Weekly check-in →</p>
         </Link>
@@ -475,8 +476,8 @@ export default function Dashboard() {
           href="/chat"
           className="bg-desert-surface border border-desert-border rounded-sm p-4 hover:border-desert-border-strong hover:bg-desert-surface-hover transition-all duration-150 group"
         >
-          <p className="font-mono font-bold text-xs tracking-[0.06em] uppercase text-desert-text-2 group-hover:text-desert-text transition-colors">
-            ⟡ AI Chat
+          <p className="font-mono font-bold text-xs tracking-[0.06em] uppercase text-desert-text-2 group-hover:text-desert-text transition-colors flex items-center gap-2">
+            <PixelIcon name="chat" size={12} /> AI Chat
           </p>
           <p className="text-desert-text-3 text-sm mt-2">Ask anything →</p>
         </Link>
