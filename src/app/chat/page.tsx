@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabase";
+import { queueWrite } from "@/lib/sync";
 
 interface ChatMessage {
   id?: number;
@@ -153,6 +154,14 @@ export default function ChatPage() {
       content,
       type: "ai_response",
     });
+    if (error) {
+      await queueWrite("kb_notes", "insert", {
+        user_id: userId,
+        title: `AI Chat — ${new Date().toLocaleDateString("en-NZ")}`,
+        content,
+        type: "ai_response",
+      });
+    }
     if (!error) alert("Saved to Knowledge Base");
   };
 

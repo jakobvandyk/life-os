@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { queueWrite } from "@/lib/sync";
 
 interface KeyResult {
   id: number;
@@ -68,19 +69,34 @@ export default function GoalsPage() {
 
     if (goalError) {
       console.error("Error adding goal:", goalError);
+      await queueWrite("goals", "insert", {
+        title: form.title,
+        description: form.description,
+        timeframe: form.timeframe,
+        user_id: userId,
+      });
       return;
     }
 
     if (goalData && goalData.length > 0) {
       const newGoalId = goalData[0].id;
       for (const kr of keyResults) {
-        await supabase.from("key_results").insert({
+        const { error: krError } = await supabase.from("key_results").insert({
           goal_id: newGoalId,
           title: kr.title,
           target: kr.target,
           unit: kr.unit,
           user_id: userId,
         });
+        if (krError) {
+          await queueWrite("key_results", "insert", {
+            goal_id: newGoalId,
+            title: kr.title,
+            target: kr.target,
+            unit: kr.unit,
+            user_id: userId,
+          });
+        }
       }
     }
     setForm({
@@ -118,6 +134,7 @@ export default function GoalsPage() {
     const { error } = await supabase.from("key_results").update({ current: val }).eq("id", krId);
     if (error) {
       console.error("Error updating key result progress:", error);
+      await queueWrite("key_results", "update", { id: krId, current: val });
     }
     setEditingKR(null);
     fetchGoals();

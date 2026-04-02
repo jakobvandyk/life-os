@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { queueWrite } from "@/lib/sync";
 import { SESSIONS, SessionTypeKey, ExerciseDef, SessionType } from "../constants";
 
 interface ExerciseEntry {
@@ -108,42 +109,50 @@ export default function SessionLogger({ userId, onRefetch }: SessionLoggerProps)
       const today = new Date().toISOString().split('T')[0];
 
       // Insert session
+      const sessionPayload = {
+        user_id: userId,
+        type: selectedSession,
+        label: session.label,
+        date: today,
+        notes: sessionNotes || null
+      };
       const { data: sessionResult, error: sessionError } = await supabase
         .from("workout_sessions")
-        .insert({
-          user_id: userId,
-          type: selectedSession,
-          label: session.label,
-          date: today,
-          notes: sessionNotes || null
-        })
+        .insert(sessionPayload)
         .select("id")
         .single();
 
-      if (sessionError) throw sessionError;
+      if (sessionError) {
+        await queueWrite("workout_sessions", "insert", sessionPayload);
+        // Can't insert exercises without session ID when offline
+      } else {
+        const sessionId = sessionResult.id;
 
-      const sessionId = sessionResult.id;
+        // Insert exercises
+        const exerciseInserts = session.exercises
+          .filter(ex => exerciseEntries[ex.id]?.weight && exerciseEntries[ex.id].weight !== "")
+          .map(ex => ({
+            user_id: userId,
+            session_id: sessionId,
+            exercise_id: ex.id,
+            name: ex.name,
+            weight: parseFloat(exerciseEntries[ex.id].weight),
+            sets: exerciseEntries[ex.id].sets,
+            reps: exerciseEntries[ex.id].reps,
+            rpe: exerciseEntries[ex.id].rpe || null
+          }));
 
-      // Insert exercises
-      const exerciseInserts = session.exercises
-        .filter(ex => exerciseEntries[ex.id]?.weight && exerciseEntries[ex.id].weight !== "")
-        .map(ex => ({
-          user_id: userId,
-          session_id: sessionId,
-          exercise_id: ex.id,
-          name: ex.name,
-          weight: parseFloat(exerciseEntries[ex.id].weight),
-          sets: exerciseEntries[ex.id].sets,
-          reps: exerciseEntries[ex.id].reps,
-          rpe: exerciseEntries[ex.id].rpe || null
-        }));
+        if (exerciseInserts.length > 0) {
+          const { error: exercisesError } = await supabase
+            .from("workout_exercises")
+            .insert(exerciseInserts);
 
-      if (exerciseInserts.length > 0) {
-        const { error: exercisesError } = await supabase
-          .from("workout_exercises")
-          .insert(exerciseInserts);
-
-        if (exercisesError) throw exercisesError;
+          if (exercisesError) {
+            for (const ex of exerciseInserts) {
+              await queueWrite("workout_exercises", "insert", ex);
+            }
+          }
+        }
       }
 
       // Reset form and refetch

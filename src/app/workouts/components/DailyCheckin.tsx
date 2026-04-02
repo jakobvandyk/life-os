@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
+import { queueWrite } from "@/lib/sync";
 
 export interface Checkin {
   id?: string;
@@ -158,7 +159,7 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
         .from("workout_checkins")
         .upsert(payload, { onConflict: "user_id,date" });
 
-      if (error) throw error;
+      if (error) await queueWrite("workout_checkins", "insert", payload);
 
       onRefetch();
       // Reset form if it's a new entry (not update)
@@ -233,7 +234,7 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
         .from("workout_checkins")
         .upsert(payload, { onConflict: "user_id,date" });
 
-      if (error) throw error;
+      if (error) await queueWrite("workout_checkins", "insert", payload);
 
       closeModal();
       onRefetch();
@@ -272,7 +273,7 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
         .eq("user_id", userId)
         .eq("date", editingEntry.date);
 
-      if (error) throw error;
+      if (error) await queueWrite("workout_checkins", "delete", { id: editingEntry.id });
 
       closeModal();
       onRefetch();

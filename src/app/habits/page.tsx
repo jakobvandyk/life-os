@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { queueWrite } from "@/lib/sync";
 
 interface Habit {
   id: number;
@@ -87,19 +88,15 @@ export default function HabitsPage() {
   }, [userId]);
 
   const addHabit = async () => {
-    if (!newHabit.name.trim() || !userId) return; // Guard against null userId
-
-    const { error } = await supabase.from("habits").insert({
+    if (!newHabit.name.trim() || !userId) return;
+    const payload = {
       name: newHabit.name,
       icon: newHabit.icon,
       target_frequency: newHabit.target_frequency,
-      user_id: userId, // Include user_id
-    });
-
-    if (error) {
-      console.error("Error adding habit:", error);
-      return;
-    }
+      user_id: userId,
+    };
+    const { error } = await supabase.from("habits").insert(payload);
+    if (error) await queueWrite("habits", "insert", payload);
 
     setNewHabit({ name: "", icon: "✅", target_frequency: "daily" });
     setShowForm(false);
@@ -107,7 +104,7 @@ export default function HabitsPage() {
   };
 
   const toggleHabit = async (id: number) => {
-    if (!userId) return; // Guard against null userId
+    if (!userId) return;
 
     const today = new Date().toISOString().split('T')[0];
 
@@ -119,12 +116,18 @@ export default function HabitsPage() {
       .eq("user_id", userId);
 
     if (checkError) {
-      console.error("Error checking habit log:", checkError);
+      // Offline — optimistically toggle, queue the insert
+      await queueWrite("habit_logs", "insert", {
+        habit_id: id,
+        user_id: userId,
+        date: today,
+        value: 1,
+      });
+      fetchHabits();
       return;
     }
 
     if (existingLog && existingLog.length > 0) {
-      // If exists, delete it
       const { error: deleteError } = await supabase
         .from("habit_logs")
         .delete()
@@ -132,23 +135,11 @@ export default function HabitsPage() {
         .eq("date", today)
         .eq("user_id", userId);
 
-      if (deleteError) {
-        console.error("Error deleting habit log:", deleteError);
-        return;
-      }
+      if (deleteError) await queueWrite("habit_logs", "delete", { id: existingLog[0].id });
     } else {
-      // If not, insert
-      const { error: insertError } = await supabase.from("habit_logs").insert({
-        habit_id: id,
-        user_id: userId, // Include user_id
-        date: today,
-        value: 1,
-      });
-
-      if (insertError) {
-        console.error("Error inserting habit log:", insertError);
-        return;
-      }
+      const payload = { habit_id: id, user_id: userId, date: today, value: 1 };
+      const { error: insertError } = await supabase.from("habit_logs").insert(payload);
+      if (insertError) await queueWrite("habit_logs", "insert", payload);
     }
 
     fetchHabits();

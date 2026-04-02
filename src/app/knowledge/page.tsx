@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
+import { queueWrite } from "@/lib/sync";
 
 interface Tag {
   id: number;
@@ -141,6 +142,14 @@ export default function KnowledgePage() {
 
       if (error || !data) {
         console.error("Error creating note:", error);
+        await queueWrite("kb_notes", "insert", {
+          user_id: userId,
+          title: form.title,
+          content: form.content,
+          type: form.type,
+          source_url: form.source_url || null,
+          pinned: form.pinned,
+        });
         return;
       }
       noteId = data.id;
@@ -159,6 +168,15 @@ export default function KnowledgePage() {
 
       if (error) {
         console.error("Error updating note:", error);
+        await queueWrite("kb_notes", "update", {
+          id: editing.id,
+          title: form.title,
+          content: form.content,
+          type: form.type,
+          source_url: form.source_url || null,
+          pinned: form.pinned,
+          updated_at: new Date().toISOString(),
+        });
         return;
       }
       noteId = editing.id;
@@ -187,6 +205,7 @@ export default function KnowledgePage() {
       .eq("user_id", userId);
     if (error) {
       console.error("Error deleting note:", error);
+      await queueWrite("kb_notes", "delete", { id: editing.id });
       return;
     }
     closeEditor();
@@ -200,6 +219,7 @@ export default function KnowledgePage() {
       .insert({ user_id: userId, name: newTagName.trim() });
     if (error) {
       console.error("Error adding tag:", error);
+      await queueWrite("kb_tags", "insert", { user_id: userId, name: newTagName.trim() });
       return;
     }
     setNewTagName("");

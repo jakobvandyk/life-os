@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { queueWrite } from "@/lib/sync";
 
 interface TaxFlag {
   id: number;
@@ -56,7 +57,14 @@ export default function TaxFlagsTab({
       resolved_at: null,
       user_id: userId,
     });
-    if (error) console.error("Error adding tax flag:", error);
+    if (error) {
+      console.error("Error adding tax flag:", error);
+      await queueWrite("finance_tax_flags", "insert", {
+        ...form,
+        resolved_at: null,
+        user_id: userId,
+      });
+    }
     setForm({ title: "", jurisdiction: "AU", priority: "medium", notes: "" });
     setShowForm(false);
     onRefresh();
@@ -69,14 +77,20 @@ export default function TaxFlagsTab({
       .update({ resolved_at: new Date().toISOString() })
       .eq("id", id)
       .eq("user_id", userId);
-    if (error) console.error("Error resolving tax flag:", error);
+    if (error) {
+      console.error("Error resolving tax flag:", error);
+      await queueWrite("finance_tax_flags", "update", { id, resolved_at: new Date().toISOString() });
+    }
     onRefresh();
   };
 
   const deleteFlag = async (id: number) => {
     if (!userId) return;
     const { error } = await supabase.from("finance_tax_flags").delete().eq("id", id).eq("user_id", userId);
-    if (error) console.error("Error deleting tax flag:", error);
+    if (error) {
+      console.error("Error deleting tax flag:", error);
+      await queueWrite("finance_tax_flags", "delete", { id });
+    }
     onRefresh();
   };
 

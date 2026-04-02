@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { queueWrite } from "@/lib/sync";
 
 interface Task {
   id: number;
@@ -61,13 +62,15 @@ export default function TasksPage() {
 
   const addTask = async () => {
     if (!newTask.title.trim() || !userId) return;
-    await supabase.from("tasks").insert({
+    const payload = {
       title: newTask.title,
       description: newTask.description || "",
       priority: newTask.priority,
       due_date: newTask.due_date || null,
       user_id: userId,
-    });
+    };
+    const { error } = await supabase.from("tasks").insert(payload);
+    if (error) await queueWrite("tasks", "insert", payload);
     setNewTask({ title: "", description: "", priority: "medium", due_date: "" });
     setShowForm(false);
     fetchTasks();
@@ -80,12 +83,14 @@ export default function TasksPage() {
     } else {
       updates.completed_at = null;
     }
-    await supabase.from("tasks").update(updates).eq("id", id);
+    const { error } = await supabase.from("tasks").update(updates).eq("id", id);
+    if (error) await queueWrite("tasks", "update", { id, ...updates });
     fetchTasks();
   };
 
   const deleteTask = async (id: number) => {
-    await supabase.from("tasks").delete().eq("id", id);
+    const { error } = await supabase.from("tasks").delete().eq("id", id);
+    if (error) await queueWrite("tasks", "delete", { id });
     fetchTasks();
   };
 

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { queueWrite } from "@/lib/sync";
 
 interface Account {
   id: number;
@@ -75,7 +76,17 @@ export default function AccountsTab({
         : null,
       user_id: userId,
     });
-    if (error) console.error("Error adding account:", error);
+    if (error) {
+      console.error("Error adding account:", error);
+      await queueWrite("finance_accounts", "insert", {
+        ...form,
+        balance: form.balance ? Math.round(parseFloat(form.balance) * 100) : 0,
+        interest_rate_pa: form.interest_rate_pa
+          ? parseFloat(form.interest_rate_pa) / 100
+          : null,
+        user_id: userId,
+      });
+    }
     setForm({
       name: "", institution: "", currency: "AUD", liquidity_tier: "immediate",
       asset_class: "cash_equivalents", account_type: "savings", balance: "",
@@ -94,7 +105,10 @@ export default function AccountsTab({
       .update({ balance: cents })
       .eq("id", id)
       .eq("user_id", userId);
-    if (error) console.error("Error saving balance:", error);
+    if (error) {
+      console.error("Error saving balance:", error);
+      await queueWrite("finance_accounts", "update", { id, balance: cents });
+    }
     setEditBal(null);
     onRefresh();
   };
@@ -102,7 +116,10 @@ export default function AccountsTab({
   const deleteAccount = async (id: number) => {
     if (!userId) return;
     const { error } = await supabase.from("finance_accounts").delete().eq("id", id).eq("user_id", userId);
-    if (error) console.error("Error deleting account:", error);
+    if (error) {
+      console.error("Error deleting account:", error);
+      await queueWrite("finance_accounts", "delete", { id });
+    }
     onRefresh();
   };
 

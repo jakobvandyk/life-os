@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { queueWrite } from "@/lib/sync";
 
 interface JournalEntry {
   id: number;
@@ -102,23 +103,24 @@ export default function JournalPage() {
   }, [selectedDate]);
 
   const saveEntry = async () => {
-    if (!userId) return; // Guard
+    if (!userId) return;
     setSaving(true);
+    const payload = {
+      user_id: userId,
+      date: selectedDate,
+      mood,
+      energy,
+      gratitude,
+      reflection,
+      wins,
+    };
     const { error } = await supabase.from("journal_entries").upsert(
-      {
-        user_id: userId,
-        date: selectedDate,
-        mood,
-        energy,
-        gratitude,
-        reflection,
-        wins,
-      },
+      payload,
       { onConflict: "user_id,date" }
     );
 
     if (error) {
-      console.error("Error saving entry:", error);
+      await queueWrite("journal_entries", "insert", payload);
     }
 
     setSaving(false);

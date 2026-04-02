@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
+import { queueWrite } from "@/lib/sync";
 
 interface CalendarEvent {
   id: number;
@@ -245,6 +246,16 @@ export default function CalendarPage() {
 
     if (error) {
       console.error("Error adding event:", error);
+      await queueWrite("calendar_events", "insert", {
+        user_id: userId,
+        title: form.title,
+        date: form.date,
+        start_time: form.all_day ? null : form.start_time || null,
+        end_time: form.all_day ? null : form.end_time || null,
+        all_day: form.all_day,
+        notes: form.notes || null,
+        type: "event",
+      });
       return;
     }
 
@@ -263,6 +274,7 @@ export default function CalendarPage() {
       .eq("user_id", userId);
     if (error) {
       console.error("Error deleting event:", error);
+      await queueWrite("calendar_events", "delete", { id: numId });
       return;
     }
     setSelectedDate(null);

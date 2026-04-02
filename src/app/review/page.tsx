@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
+import { queueWrite } from "@/lib/sync";
 
 interface WeeklyReview {
   id: number;
@@ -271,9 +272,15 @@ export default function ReviewPage() {
     };
 
     if (review) {
-      await supabase.from("weekly_reviews").update(payload).eq("id", review.id);
+      const { error } = await supabase.from("weekly_reviews").update(payload).eq("id", review.id);
+      if (error) {
+        await queueWrite("weekly_reviews", "update", { id: review.id, ...payload });
+      }
     } else {
-      await supabase.from("weekly_reviews").insert(payload);
+      const { error } = await supabase.from("weekly_reviews").insert(payload);
+      if (error) {
+        await queueWrite("weekly_reviews", "insert", payload);
+      }
     }
 
     await fetchReview();

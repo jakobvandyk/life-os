@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { queueWrite } from "@/lib/sync";
 
 interface Income {
   id: number;
@@ -114,7 +115,14 @@ export default function CashflowTab({
       amount: Math.round(parseFloat(incomeForm.amount) * 100),
       user_id: userId,
     });
-    if (error) console.error("Error adding income:", error);
+    if (error) {
+      console.error("Error adding income:", error);
+      await queueWrite("finance_income", "insert", {
+        ...incomeForm,
+        amount: Math.round(parseFloat(incomeForm.amount) * 100),
+        user_id: userId,
+      });
+    }
     setIncomeForm({ name: "", amount: "", currency: "AUD", frequency: "monthly", is_passive: false, notes: "" });
     setForm(null);
     onRefresh();
@@ -128,7 +136,14 @@ export default function CashflowTab({
       amount: Math.round(parseFloat(expenseForm.amount) * 100),
       user_id: userId,
     });
-    if (error) console.error("Error adding expense:", error);
+    if (error) {
+      console.error("Error adding expense:", error);
+      await queueWrite("finance_expenses", "insert", {
+        ...expenseForm,
+        amount: Math.round(parseFloat(expenseForm.amount) * 100),
+        user_id: userId,
+      });
+    }
     setExpenseForm({ category: "", amount: "", currency: "AUD", frequency: "monthly", notes: "" });
     setForm(null);
     onRefresh();
@@ -143,7 +158,15 @@ export default function CashflowTab({
       due_day: parseInt(liabilityForm.due_day),
       user_id: userId,
     });
-    if (error) console.error("Error adding liability:", error);
+    if (error) {
+      console.error("Error adding liability:", error);
+      await queueWrite("finance_liabilities", "insert", {
+        ...liabilityForm,
+        amount: Math.round(parseFloat(liabilityForm.amount) * 100),
+        due_day: parseInt(liabilityForm.due_day),
+        user_id: userId,
+      });
+    }
     setLiabilityForm({ name: "", amount: "", currency: "AUD", frequency: "monthly", due_day: "1", category: "other", notes: "" });
     setForm(null);
     onRefresh();
@@ -152,7 +175,10 @@ export default function CashflowTab({
   const deleteItem = async (table: string, id: number) => {
     if (!userId) return;
     const { error } = await supabase.from(`finance_${table}`).delete().eq("id", id).eq("user_id", userId);
-    if (error) console.error(`Error deleting ${table}:`, error);
+    if (error) {
+      console.error(`Error deleting ${table}:`, error);
+      await queueWrite(`finance_${table}`, "delete", { id });
+    }
     onRefresh();
   };
 
