@@ -133,6 +133,7 @@ integration_syncs, raw_imports
 - Finance liquidity tiers: immediate, short_term, illiquid
 - Workout sessions: upper-strength, lower-strength, upper-volume, lower-volume (defined in constants.ts)
 - Workout RPE values: easy, med, hard, fail (display: easy=green, med=amber, hard=red, fail=purple)
+- workout_checkins: hrv (SDNN, Apple Health), hrv_rmssd (RMSSD, Polar H10/Elite HRV), shin_pain (0-10), waist_cm (real)
 - Exchange rate pairs stored as e.g. "NZDAUD" (no slash) with rate as real
 - kb_notes types: note, ai_response, research
 - chat_messages capabilities: focus, review, spending, journal, general
@@ -157,7 +158,7 @@ integration_syncs, raw_imports
 
 ## Integrations (Phase 6)
 - Apple Health: POST /api/integrations/health (x-api-key auth, env: HEALTH_WEBHOOK_KEY, HEALTH_USER_ID)
-  - JSON body: { date (required, YYYY-MM-DD), hrv, sleep_hours, weight, readiness (1-10), mindfulness_minutes }
+  - JSON body: { date (required, YYYY-MM-DD), hrv (SDNN), hrv_rmssd (RMSSD from Polar H10), sleep_hours, weight, readiness (1-10), mindfulness_minutes, shin_pain (0-10), waist_cm }
   - All fields except date are optional — only send what the iOS Shortcut pulls
   - Upserts to workout_checkins, logs mindfulness to habit_logs if matching habit exists
   - maxDuration=10, uses maybeSingle() to avoid crash on missing rows

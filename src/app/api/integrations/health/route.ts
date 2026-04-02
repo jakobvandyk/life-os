@@ -20,7 +20,7 @@ export async function POST(request: Request) {
     return Response.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const { date, hrv, readiness, mindfulness_minutes, sleep_hours, weight } = body;
+  const { date, hrv, hrv_rmssd, readiness, mindfulness_minutes, sleep_hours, weight, shin_pain, waist_cm } = body;
 
   if (!date) {
     return Response.json({ error: "date is required" }, { status: 400 });
@@ -32,9 +32,12 @@ export async function POST(request: Request) {
   // Upsert workout_checkins
   const checkinFields: Record<string, unknown> = {};
   if (hrv != null) { checkinFields.hrv = hrv; imported.push("hrv"); }
+  if (hrv_rmssd != null) { checkinFields.hrv_rmssd = hrv_rmssd; imported.push("hrv_rmssd"); }
   if (sleep_hours != null) { checkinFields.sleep = sleep_hours; imported.push("sleep"); }
   if (weight != null) { checkinFields.weight = weight; imported.push("weight"); }
   if (readiness != null) { checkinFields.readiness = readiness; imported.push("readiness"); }
+  if (shin_pain != null) { checkinFields.shin_pain = shin_pain; imported.push("shin_pain"); }
+  if (waist_cm != null) { checkinFields.waist_cm = waist_cm; imported.push("waist_cm"); }
 
   if (Object.keys(checkinFields).length > 0) {
     const { data: existing } = await db

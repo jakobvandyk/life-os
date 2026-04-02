@@ -26,6 +26,7 @@ export async function buildFocusContext(
     { data: habitLogs },
     { data: goals },
     { data: calEvents },
+    { data: recentCheckins },
   ] = await Promise.all([
     supabase
       .from("tasks")
@@ -65,6 +66,12 @@ export async function buildFocusContext(
       .eq("user_id", userId)
       .eq("date", today)
       .limit(10),
+    supabase
+      .from("workout_checkins")
+      .select("date, hrv, hrv_rmssd, sleep, weight, readiness, shin_pain, waist_cm")
+      .eq("user_id", userId)
+      .order("date", { ascending: false })
+      .limit(3),
   ]);
 
   const completedHabitIds = new Set((habitLogs || []).map((l) => l.habit_id));
@@ -123,6 +130,19 @@ export async function buildFocusContext(
           )
           .join("\n")
     );
+  }
+
+  if ((recentCheckins || []).length > 0) {
+    const latest = recentCheckins![0];
+    const parts = [`Date: ${latest.date}`];
+    if (latest.hrv_rmssd != null) parts.push(`RMSSD: ${latest.hrv_rmssd}ms (primary parasympathetic recovery metric — use this for training readiness, not SDNN)`);
+    if (latest.hrv != null) parts.push(`SDNN: ${latest.hrv}ms (overall HRV from Apple Health)`);
+    if (latest.sleep != null) parts.push(`Sleep: ${latest.sleep}h`);
+    if (latest.readiness != null) parts.push(`Readiness: ${latest.readiness}/10`);
+    if (latest.weight != null) parts.push(`Weight: ${latest.weight}kg`);
+    if (latest.shin_pain != null) parts.push(`Shin pain: ${latest.shin_pain}/10 (0=none, 10=severe)`);
+    if (latest.waist_cm != null) parts.push(`Waist: ${latest.waist_cm}cm`);
+    sections.push("RECOVERY & BODY DATA (latest check-in):\n" + parts.join("\n"));
   }
 
   return sections.join("\n\n") || "No data available for today.";
