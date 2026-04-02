@@ -133,7 +133,7 @@ integration_syncs, raw_imports
 - Finance liquidity tiers: immediate, short_term, illiquid
 - Workout sessions: upper-strength, lower-strength, upper-volume, lower-volume (defined in constants.ts)
 - Workout RPE values: easy, med, hard, fail (display: easy=green, med=amber, hard=red, fail=purple)
-- workout_checkins: hrv (SDNN, Apple Health), hrv_rmssd (RMSSD, Polar H10/Elite HRV), shin_pain (0-10), waist_cm (real)
+- workout_checkins: hrv (SDNN, Apple Health), hrv_rmssd (RMSSD, Kubios/Polar H10), pns_index, sns_index, stress_index, kubios_readiness (0-100), mean_hr, shin_pain (0-10), waist_cm
 - Exchange rate pairs stored as e.g. "NZDAUD" (no slash) with rate as real
 - kb_notes types: note, ai_response, research
 - chat_messages capabilities: focus, review, spending, journal, general
@@ -158,7 +158,8 @@ integration_syncs, raw_imports
 
 ## Integrations (Phase 6)
 - Apple Health: POST /api/integrations/health (x-api-key auth, env: HEALTH_WEBHOOK_KEY, HEALTH_USER_ID)
-  - JSON body: { date (required, YYYY-MM-DD), hrv (SDNN), hrv_rmssd (RMSSD from Polar H10), sleep_hours, weight, readiness (1-10), mindfulness_minutes, shin_pain (0-10), waist_cm }
+  - JSON body: { date (required, YYYY-MM-DD), hrv (SDNN), hrv_rmssd (RMSSD), sleep_hours, weight, readiness (1-10), mindfulness_minutes, shin_pain (0-10), waist_cm, pns_index, sns_index, stress_index, kubios_readiness (0-100), mean_hr }
+- Kubios HRV: Manual entry via DailyCheckin form (Polar H10 → Kubios app → read values → enter in Life OS). Future: /api/sync/kubios cron endpoint using Kubios Cloud API (OAuth 2.0). Metrics: RMSSD, PNS index, SNS index, Baevsky stress index, readiness 0-100, mean HR.
   - All fields except date are optional — only send what the iOS Shortcut pulls
   - Upserts to workout_checkins, logs mindfulness to habit_logs if matching habit exists
   - maxDuration=10, uses maybeSingle() to avoid crash on missing rows
@@ -177,6 +178,7 @@ integration_syncs, raw_imports
 - BINANCE_API_KEY, BINANCE_SECRET — Binance read-only API credentials
 - CRON_SECRET — protects cron-triggered endpoints
 - ICAL_URL_1..ICAL_URL_10 — iCal feed URLs (Google Calendar secret address etc.)
+# Future (Kubios sync): KUBIOS_CLIENT_ID, KUBIOS_CLIENT_SECRET, KUBIOS_ACCESS_TOKEN
 
 ## Auth / Routing
 - Auth handled by src/proxy.ts (Next.js 16 uses proxy.ts, NOT middleware.ts)

@@ -68,7 +68,7 @@ export async function buildFocusContext(
       .limit(10),
     supabase
       .from("workout_checkins")
-      .select("date, hrv, hrv_rmssd, sleep, weight, readiness, shin_pain, waist_cm")
+      .select("date, hrv, hrv_rmssd, sleep, weight, readiness, shin_pain, waist_cm, pns_index, sns_index, stress_index, kubios_readiness, mean_hr")
       .eq("user_id", userId)
       .order("date", { ascending: false })
       .limit(3),
@@ -140,9 +140,20 @@ export async function buildFocusContext(
     if (latest.sleep != null) parts.push(`Sleep: ${latest.sleep}h`);
     if (latest.readiness != null) parts.push(`Readiness: ${latest.readiness}/10`);
     if (latest.weight != null) parts.push(`Weight: ${latest.weight}kg`);
+    if (latest.pns_index != null) parts.push(`PNS Index: ${latest.pns_index} (>0 = good parasympathetic tone, <0 = suppressed)`);
+    if (latest.sns_index != null) parts.push(`SNS Index: ${latest.sns_index} (>0 = elevated sympathetic/stress, <0 = low sympathetic = good)`);
+    if (latest.stress_index != null) parts.push(`Stress Index: ${latest.stress_index} (Baevsky: <100 low, 100-200 moderate, >200 high)`);
+    if (latest.kubios_readiness != null) parts.push(`Kubios Readiness: ${latest.kubios_readiness}/100 (composite recovery score)`);
+    if (latest.mean_hr != null) parts.push(`Mean HR: ${latest.mean_hr} bpm (during HRV reading)`);
     if (latest.shin_pain != null) parts.push(`Shin pain: ${latest.shin_pain}/10 (0=none, 10=severe)`);
     if (latest.waist_cm != null) parts.push(`Waist: ${latest.waist_cm}cm`);
-    sections.push("RECOVERY & BODY DATA (latest check-in):\n" + parts.join("\n"));
+    sections.push(
+      "RECOVERY & BODY DATA (latest check-in):\n" + parts.join("\n") +
+      "\n\nHRV Interpretation: RMSSD measures parasympathetic recovery — primary metric for training readiness. " +
+      "PNS Index > 0 = good parasympathetic tone. SNS Index > 0 = elevated sympathetic (stress/overtraining). " +
+      "Trending SNS upward while RMSSD stays flat is an early overtraining signal. " +
+      "User is managing shin pain and returning to running — flag any recovery concerns."
+    );
   }
 
   return sections.join("\n\n") || "No data available for today.";

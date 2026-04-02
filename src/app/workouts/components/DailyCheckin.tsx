@@ -17,6 +17,11 @@ export interface Checkin {
   shin_pain?: number | null;
   waist?: number | null;
   waist_cm?: number | null;
+  pns_index?: number | null;
+  sns_index?: number | null;
+  stress_index?: number | null;
+  kubios_readiness?: number | null;
+  mean_hr?: number | null;
   created_at?: string;
 }
 
@@ -47,6 +52,12 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
   const [shinPainEnabled, setShinPainEnabled] = useState(false);
   const [waistCm, setWaistCm] = useState<string>("");
   const [waistCmEnabled, setWaistCmEnabled] = useState(false);
+  const [kubiosOpen, setKubiosOpen] = useState(false);
+  const [pnsIndex, setPnsIndex] = useState<string>("");
+  const [snsIndex, setSnsIndex] = useState<string>("");
+  const [stressIndex, setStressIndex] = useState<string>("");
+  const [kubiosReadiness, setKubiosReadiness] = useState<string>("");
+  const [meanHr, setMeanHr] = useState<string>("");
 
   // Get today's checkin
   const todayStr = new Date().toISOString().slice(0, 10);
@@ -124,6 +135,11 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
   const latestSleep = checkins.find(c => c.sleep != null)?.sleep;
   const latestShinPain = checkins.find(c => c.shin_pain != null)?.shin_pain;
   const latestWaistCm = checkins.find(c => c.waist_cm != null)?.waist_cm;
+  const latestPns = checkins.find(c => c.pns_index != null)?.pns_index;
+  const latestSns = checkins.find(c => c.sns_index != null)?.sns_index;
+  const latestStress = checkins.find(c => c.stress_index != null)?.stress_index;
+  const latestKubiosReadiness = checkins.find(c => c.kubios_readiness != null)?.kubios_readiness;
+  const latestMeanHr = checkins.find(c => c.mean_hr != null)?.mean_hr;
   const totalEntries = checkins.length;
 
   // Load today's data into form
@@ -142,6 +158,14 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
       setWaist(todayCheckin.waist?.toString() || "");
       setWaistCmEnabled(todayCheckin.waist_cm != null);
       setWaistCm(todayCheckin.waist_cm?.toString() || "");
+      setPnsIndex(todayCheckin.pns_index?.toString() || "");
+      setSnsIndex(todayCheckin.sns_index?.toString() || "");
+      setStressIndex(todayCheckin.stress_index?.toString() || "");
+      setKubiosReadiness(todayCheckin.kubios_readiness?.toString() || "");
+      setMeanHr(todayCheckin.mean_hr?.toString() || "");
+      if (todayCheckin.pns_index != null || todayCheckin.sns_index != null || todayCheckin.hrv_rmssd != null) {
+        setKubiosOpen(true);
+      }
     } else {
       setWeight("");
       setSleep("");
@@ -156,6 +180,12 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
       setWaist("");
       setWaistCmEnabled(false);
       setWaistCm("");
+      setPnsIndex("");
+      setSnsIndex("");
+      setStressIndex("");
+      setKubiosReadiness("");
+      setMeanHr("");
+      setKubiosOpen(false);
     }
   }, [todayCheckin]);
 
@@ -177,6 +207,11 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
         shin_pain: shinPainEnabled ? shinPain : null,
         waist: waistEnabled && waist ? parseFloat(waist) : null,
         waist_cm: waistCmEnabled && waistCm ? parseFloat(waistCm) : null,
+        pns_index: pnsIndex ? parseFloat(pnsIndex) : null,
+        sns_index: snsIndex ? parseFloat(snsIndex) : null,
+        stress_index: stressIndex ? parseFloat(stressIndex) : null,
+        kubios_readiness: kubiosReadiness ? parseFloat(kubiosReadiness) : null,
+        mean_hr: meanHr ? parseFloat(meanHr) : null,
       };
 
       const { error } = await supabase
@@ -201,6 +236,12 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
         setWaist("");
         setWaistCmEnabled(false);
         setWaistCm("");
+        setPnsIndex("");
+        setSnsIndex("");
+        setStressIndex("");
+        setKubiosReadiness("");
+        setMeanHr("");
+        setKubiosOpen(false);
       }
     } catch (err: any) {
       setError(err.message);
@@ -226,6 +267,12 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
       setWaist(entry.waist?.toString() || "");
       setWaistCmEnabled(entry.waist_cm != null);
       setWaistCm(entry.waist_cm?.toString() || "");
+      setPnsIndex(entry.pns_index?.toString() || "");
+      setSnsIndex(entry.sns_index?.toString() || "");
+      setStressIndex(entry.stress_index?.toString() || "");
+      setKubiosReadiness(entry.kubios_readiness?.toString() || "");
+      setMeanHr(entry.mean_hr?.toString() || "");
+      setKubiosOpen(entry.pns_index != null || entry.sns_index != null || entry.hrv_rmssd != null);
     } else {
       setEditingEntry(null);
       setPastDate(new Date().toISOString().slice(0, 10));
@@ -265,6 +312,11 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
         shin_pain: shinPainEnabled ? shinPain : null,
         waist: waistEnabled && waist ? parseFloat(waist) : null,
         waist_cm: waistCmEnabled && waistCm ? parseFloat(waistCm) : null,
+        pns_index: pnsIndex ? parseFloat(pnsIndex) : null,
+        sns_index: snsIndex ? parseFloat(snsIndex) : null,
+        stress_index: stressIndex ? parseFloat(stressIndex) : null,
+        kubios_readiness: kubiosReadiness ? parseFloat(kubiosReadiness) : null,
+        mean_hr: meanHr ? parseFloat(meanHr) : null,
       };
 
       const { error } = await supabase
@@ -292,6 +344,11 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
           setWaist(newToday.waist?.toString() || "");
           setWaistCmEnabled(newToday.waist_cm != null);
           setWaistCm(newToday.waist_cm?.toString() || "");
+          setPnsIndex(newToday.pns_index?.toString() || "");
+          setSnsIndex(newToday.sns_index?.toString() || "");
+          setStressIndex(newToday.stress_index?.toString() || "");
+          setKubiosReadiness(newToday.kubios_readiness?.toString() || "");
+          setMeanHr(newToday.mean_hr?.toString() || "");
         }
       }
     } catch (err: any) {
@@ -334,6 +391,12 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
         setWaist("");
         setWaistCmEnabled(false);
         setWaistCm("");
+        setPnsIndex("");
+        setSnsIndex("");
+        setStressIndex("");
+        setKubiosReadiness("");
+        setMeanHr("");
+        setKubiosOpen(false);
       }
     } catch (err: any) {
       setError(err.message);
@@ -404,6 +467,8 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
     if (entry.waist_cm) parts.push(`${entry.waist_cm.toFixed(1)}cm waist`);
     else if (entry.waist) parts.push(`${entry.waist.toFixed(1)}cm waist`);
     if (entry.hrv_rmssd) parts.push(`${entry.hrv_rmssd.toFixed(0)} rmssd`);
+    if (entry.pns_index != null) parts.push(`pns ${entry.pns_index.toFixed(1)}`);
+    if (entry.kubios_readiness != null) parts.push(`rdy ${entry.kubios_readiness.toFixed(0)}`);
     if (entry.hrv) parts.push(`${entry.hrv} sdnn`);
     if (entry.readiness) parts.push(`${entry.readiness}/10 rdy`);
     if (entry.sleep) parts.push(`${entry.sleep}h sleep`);
@@ -473,19 +538,102 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
               className="w-full bg-desert-bg border border-desert-border-strong rounded-sm px-3 py-2 text-desert-text placeholder:text-desert-text-3 focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent"
             />
           </div>
-          <div>
-            <label className="block text-xs text-desert-text-2 uppercase tracking-wider font-mono mb-2">
-              RMSSD (ms)
-            </label>
-            <input
-              type="number"
-              step="0.1"
-              placeholder="From Elite HRV"
-              value={hrvRmssd}
-              onChange={(e) => setHrvRmssd(e.target.value)}
-              className="w-full bg-desert-bg border border-desert-border-strong rounded-sm px-3 py-2 text-desert-text placeholder:text-desert-text-3 focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent"
-            />
-          </div>
+        </div>
+
+        {/* Kubios Metrics (collapsible) */}
+        <div className="mb-4">
+          <button
+            type="button"
+            onClick={() => setKubiosOpen(!kubiosOpen)}
+            className="flex items-center gap-2 w-full text-left mb-3"
+          >
+            <span className={`text-desert-text-3 text-xs transition-transform ${kubiosOpen ? "rotate-90" : ""}`}>▶</span>
+            <span className="font-mono text-xs uppercase tracking-wider text-desert-text-2">Kubios HRV Metrics</span>
+          </button>
+          {kubiosOpen && (
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 pl-4 border-l border-desert-border">
+              <div>
+                <label className="block text-xs text-desert-accent uppercase tracking-wider font-mono mb-2">
+                  RMSSD (ms)
+                </label>
+                <input
+                  type="number"
+                  step="0.1"
+                  placeholder="From Kubios"
+                  value={hrvRmssd}
+                  onChange={(e) => setHrvRmssd(e.target.value)}
+                  className="w-full bg-desert-bg border border-desert-border-strong rounded-sm px-3 py-2 text-desert-text placeholder:text-desert-text-3 focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-desert-text-3 uppercase tracking-wider font-mono mb-2">
+                  PNS Index (parasympathetic)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  placeholder="e.g. 1.2"
+                  value={pnsIndex}
+                  onChange={(e) => setPnsIndex(e.target.value)}
+                  className="w-full bg-desert-bg border border-desert-border-strong rounded-sm px-3 py-2 text-desert-text placeholder:text-desert-text-3 focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-desert-text-3 uppercase tracking-wider font-mono mb-2">
+                  SNS Index (sympathetic)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  placeholder="e.g. -0.8"
+                  value={snsIndex}
+                  onChange={(e) => setSnsIndex(e.target.value)}
+                  className="w-full bg-desert-bg border border-desert-border-strong rounded-sm px-3 py-2 text-desert-text placeholder:text-desert-text-3 focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-desert-text-3 uppercase tracking-wider font-mono mb-2">
+                  Stress Index (Baevsky)
+                </label>
+                <input
+                  type="number"
+                  step="0.1"
+                  placeholder="Baevsky"
+                  value={stressIndex}
+                  onChange={(e) => setStressIndex(e.target.value)}
+                  className="w-full bg-desert-bg border border-desert-border-strong rounded-sm px-3 py-2 text-desert-text placeholder:text-desert-text-3 focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-desert-text-3 uppercase tracking-wider font-mono mb-2">
+                  Readiness (0-100)
+                </label>
+                <input
+                  type="number"
+                  step="1"
+                  min="0"
+                  max="100"
+                  placeholder="Kubios 0-100"
+                  value={kubiosReadiness}
+                  onChange={(e) => setKubiosReadiness(e.target.value)}
+                  className="w-full bg-desert-bg border border-desert-border-strong rounded-sm px-3 py-2 text-desert-text placeholder:text-desert-text-3 focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-desert-text-3 uppercase tracking-wider font-mono mb-2">
+                  Mean HR (bpm)
+                </label>
+                <input
+                  type="number"
+                  step="1"
+                  placeholder="bpm"
+                  value={meanHr}
+                  onChange={(e) => setMeanHr(e.target.value)}
+                  className="w-full bg-desert-bg border border-desert-border-strong rounded-sm px-3 py-2 text-desert-text placeholder:text-desert-text-3 focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent"
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Row 2: Readiness Scale */}
@@ -780,6 +928,79 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
           </div>
           <div className="font-mono text-xs text-desert-text-2 mt-1">
             latest
+          </div>
+        </div>
+
+        {/* PNS Index */}
+        <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
+          <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">
+            PNS Index
+          </div>
+          <div className={`font-mono font-bold text-2xl tracking-tight ${
+            latestPns != null ? (latestPns >= 0 ? "text-desert-success" : "text-desert-danger") : "text-desert-text"
+          }`}>
+            {latestPns != null ? latestPns.toFixed(2) : "—"}
+          </div>
+          <div className="font-mono text-xs text-desert-text-2 mt-1">
+            parasympathetic
+          </div>
+        </div>
+
+        {/* SNS Index */}
+        <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
+          <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">
+            SNS Index
+          </div>
+          <div className={`font-mono font-bold text-2xl tracking-tight ${
+            latestSns != null ? (latestSns <= 0 ? "text-desert-success" : "text-desert-danger") : "text-desert-text"
+          }`}>
+            {latestSns != null ? latestSns.toFixed(2) : "—"}
+          </div>
+          <div className="font-mono text-xs text-desert-text-2 mt-1">
+            sympathetic
+          </div>
+        </div>
+
+        {/* Stress Index */}
+        <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
+          <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">
+            Stress Index
+          </div>
+          <div className={`font-mono font-bold text-2xl tracking-tight ${
+            latestStress != null
+              ? latestStress < 100 ? "text-desert-success" : latestStress < 200 ? "text-desert-warning" : "text-desert-danger"
+              : "text-desert-text"
+          }`}>
+            {latestStress != null ? latestStress.toFixed(0) : "—"}
+          </div>
+          <div className="font-mono text-xs text-desert-text-2 mt-1">
+            Baevsky
+          </div>
+        </div>
+
+        {/* Kubios Readiness */}
+        <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
+          <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">
+            Kubios Readiness
+          </div>
+          <div className="font-mono font-bold text-2xl text-desert-accent tracking-tight">
+            {latestKubiosReadiness != null ? `${latestKubiosReadiness.toFixed(0)}` : "—"}
+          </div>
+          <div className="font-mono text-xs text-desert-text-2 mt-1">
+            /100
+          </div>
+        </div>
+
+        {/* Mean HR */}
+        <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
+          <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">
+            Mean HR
+          </div>
+          <div className="font-mono font-bold text-2xl text-desert-text tracking-tight">
+            {latestMeanHr != null ? `${latestMeanHr.toFixed(0)}` : "—"}
+          </div>
+          <div className="font-mono text-xs text-desert-text-2 mt-1">
+            bpm
           </div>
         </div>
 
