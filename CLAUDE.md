@@ -103,12 +103,14 @@ src/app/
     ├── import/ofx/route.ts
     ├── sync/binance/route.ts
     └── sync/ical/route.ts
-src/components/ (Sidebar, SignOutButton, SyncStatus, ServiceWorkerRegistrar)
+src/proxy.ts (auth proxy — Next.js 16, excludes /api/ routes)
+src/components/ (Sidebar, SignOutButton, SyncStatus, ServiceWorkerRegistrar, PixelIcon)
 src/hooks/ (useOnlineStatus.ts)
 src/lib/ (supabase.ts, supabase-server.ts, supabase-service.ts, local-db.ts, sync.ts)
 src/lib/ai/ (context-builders.ts)
 src/types/ (modules.d.ts)
-public/ (manifest.json, sw.js, icon-192.svg, icon-512.svg)
+public/ (manifest.json, sw.js, icon-192.svg, icon-512.svg, banners/)
+vercel.json (Binance cron schedule)
 
 ## Supabase Tables
 tasks, habits, habit_logs, journal_entries, goals, goal_milestones,
@@ -155,10 +157,31 @@ integration_syncs, raw_imports
 
 ## Integrations (Phase 6)
 - Apple Health: POST /api/integrations/health (x-api-key auth, env: HEALTH_WEBHOOK_KEY, HEALTH_USER_ID)
+  - JSON body: { date (required, YYYY-MM-DD), hrv, sleep_hours, weight, readiness (1-10), mindfulness_minutes }
+  - All fields except date are optional — only send what the iOS Shortcut pulls
+  - Upserts to workout_checkins, logs mindfulness to habit_logs if matching habit exists
+  - maxDuration=10, uses maybeSingle() to avoid crash on missing rows
 - Cronometer: POST /api/import/cronometer (CSV upload, session auth)
 - myBOQ: POST /api/import/ofx (OFX upload, session auth)
 - Binance: GET /api/sync/binance (HMAC-SHA256, env: BINANCE_API_KEY, BINANCE_SECRET, CRON_SECRET, daily 8am via vercel.json)
 - iCal: GET /api/sync/ical (env: ICAL_URL_1..ICAL_URL_10)
+
+## Required Vercel Environment Variables
+- NEXT_PUBLIC_SUPABASE_URL — Supabase project URL
+- NEXT_PUBLIC_SUPABASE_ANON_KEY — Supabase anon/public key
+- SUPABASE_SERVICE_ROLE_KEY — Supabase service role key (for webhooks/crons, bypasses RLS)
+- ANTHROPIC_API_KEY — for AI Chat and review summary
+- HEALTH_WEBHOOK_KEY — API key for Apple Health webhook (alphanumeric only, no special chars)
+- HEALTH_USER_ID — Supabase user UUID (single-user system)
+- BINANCE_API_KEY, BINANCE_SECRET — Binance read-only API credentials
+- CRON_SECRET — protects cron-triggered endpoints
+- ICAL_URL_1..ICAL_URL_10 — iCal feed URLs (Google Calendar secret address etc.)
+
+## Auth / Routing
+- Auth handled by src/proxy.ts (Next.js 16 uses proxy.ts, NOT middleware.ts)
+- /api/* routes are excluded from auth redirect (webhooks/crons handle their own auth)
+- /login, static files, PWA assets also excluded
+- All other routes redirect to /login if no session
 
 ## PWA + Offline (Phase 7)
 - Service worker: public/sw.js (network-first, cache fallback)
@@ -174,55 +197,25 @@ integration_syncs, raw_imports
 Be concise, direct, and practical. Use plain text unless markdown genuinely helps.
 Jakob is based in Hamilton, New Zealand. Currency is NZD."
 
-## Planned: Pixel Art Design Upgrade
+## Pixel Art Icons (D3 — Complete)
+- PixelIcon component at src/components/PixelIcon.tsx
+- 7x7 SVG pixel grids with crispEdges rendering, uses currentColor
+- 12 icons: dashboard (bento grid), tasks (checkbox), habits (circle arrow),
+  workouts (dumbbell), journal (open book), goals (bullseye), finances (dollar),
+  calendar (grid), knowledge (book spines), review (refresh arrows),
+  chat (speech bubble), settings (gear cog)
+- Used in: sidebar NavList (14px), page headers (18px), dashboard bento cards (12px)
+- ICON_NAMES export maps route paths to icon names
 
-### D3 Upgrade — Sidebar Pixel Art Icons
-Replace current Unicode glyphs (◈ ☐ ↻ etc.) with proper pixel art icons:
-- Create a `PixelIcon` component at `src/components/PixelIcon.tsx`
-- Render each icon as a small inline SVG or CSS grid of "pixels" (5x5 or 7x7 grid)
-- Use desert-accent for active state, desert-text-3 for inactive
-- Icons to design (one per nav item):
-  - Dashboard: 4-square bento grid
-  - Tasks: checkbox with tick
-  - Habits: circular arrow loop
-  - Workouts: dumbbell / barbell
-  - Journal: open book or quill
-  - Goals: target / bullseye
-  - Finances: coin / dollar sign
-  - Calendar: calendar grid with day dot
-  - Knowledge: stacked pages / book
-  - Review: refresh cycle arrows
-  - AI Chat: speech bubble with spark
-  - Settings: gear cog
-
-### D4 Upgrade — Page Header Pixel Art Banners
-Add a decorative pixel art banner strip to each page header:
-- Create a `PageBanner` component at `src/components/PageBanner.tsx`
-- Renders a thin (32-48px tall) decorative pixel art strip below the page title
-- Each page gets a unique themed banner:
-  - Dashboard: desert horizon with sun
-  - Tasks: stacked stones / cairn
-  - Habits: repeating arrow pattern
-  - Workouts: mountain peaks
-  - Journal: stars / moon phase strip
-  - Goals: ascending steps
-  - Finances: bar chart silhouette
-  - Calendar: moon phases in a row
-  - Knowledge: bookshelf strip
-  - Review: compass rose
-  - Chat: signal waves
-  - Settings: circuit board trace pattern
-- Banners use desert palette colours only (accent, text-3, border, surface)
-- Rendered as SVG or CSS grid for pixel-perfect control at any scale
-- Add `<PageBanner variant="tasks" />` to each page header, below the h1
-
-### Implementation Notes
-- Both components should be pure CSS/SVG — no image assets needed
-- Keep pixel grids small (5x5 for icons, full-width × 32px for banners)
-- All colours from the Desert Mystic palette via CSS variables
-- Banners should be subtle — decorative accent, not attention-grabbing
-- Consider a shared pixel grid rendering utility if the pattern is reusable
+## Planned: D4 Page Header Banners (User-Generated)
+Jakob will create pixel art banner strips from his own photos. Specs:
+- **Dimensions:** 960×48px (120×6 pixel grid, each cell 8×8px)
+- **Format:** SVG preferred, PNG acceptable
+- **Palette:** bg #1a1714, surface #242019, border #3d3730, border-strong #5c5345, accent #d4793c, text-3 #6b5f50
+- **Files:** public/banners/{dashboard,tasks,habits,workouts,journal,goals,finances,calendar,knowledge,review,chat,settings}.svg
+- **Wiring:** PageBanner component renders `<img>` below h1, w-full h-8 md:h-12 object-cover opacity-40
+- Keep sparse and subtle — mostly bg colour with silhouette highlights
 
 ## Current Status
-All phases complete (1-7). Core build is done. Offline fallbacks wired into all write operations.
-Next: Pixel art upgrade (D3/D4), data export endpoint, additional polish as needed.
+All phases complete (1-7). D3 pixel art icons complete. Offline fallbacks wired.
+Next: D4 banners (user-created), data export endpoint, additional polish as needed.
