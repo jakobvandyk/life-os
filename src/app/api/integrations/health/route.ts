@@ -1,5 +1,7 @@
 import { getServiceClient } from "@/lib/supabase-service";
 
+export const maxDuration = 10;
+
 export async function POST(request: Request) {
   const apiKey = request.headers.get("x-api-key");
   if (!apiKey || apiKey !== process.env.HEALTH_WEBHOOK_KEY) {
@@ -11,21 +13,20 @@ export async function POST(request: Request) {
     return Response.json({ error: "User not configured" }, { status: 500 });
   }
 
-  const body = await request.json();
-  const {
-    date,
-    hrv,
-    resting_hr,
-    readiness,
-    mindfulness_minutes,
-    sleep_hours,
-    weight,
-  } = body;
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return Response.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+
+  const { date, hrv, readiness, mindfulness_minutes, sleep_hours, weight } = body;
 
   if (!date) {
     return Response.json({ error: "date is required" }, { status: 400 });
   }
 
+  const db = getServiceClient();
   const imported: string[] = [];
 
   // Upsert workout_checkins
@@ -36,76 +37,42 @@ export async function POST(request: Request) {
   if (readiness != null) { checkinFields.readiness = readiness; imported.push("readiness"); }
 
   if (Object.keys(checkinFields).length > 0) {
-    // Try update first, then insert if no rows updated
-    const { data: existing } = await getServiceClient()
+    const { data: existing } = await db
       .from("workout_checkins")
       .select("id")
       .eq("user_id", userId)
       .eq("date", date)
-      .single();
+      .maybeSingle();
 
     if (existing) {
-      await getServiceClient()
-        .from("workout_checkins")
-        .update(checkinFields)
-        .eq("id", existing.id);
+      await db.from("workout_checkins").update(checkinFields).eq("id", existing.id);
     } else {
-      await getServiceClient()
-        .from("workout_checkins")
-        .insert({ user_id: userId, date, ...checkinFields });
+      await db.from("workout_checkins").insert({ user_id: userId, date, ...checkinFields });
     }
   }
 
   // Mindfulness → habit log
   if (mindfulness_minutes != null && mindfulness_minutes > 0) {
-    const { data: habit } = await getServiceClient()
+    const { data: habit } = await db
       .from("habits")
       .select("id")
       .eq("user_id", userId)
-      .ilike("name", "%mindful%")
-      .single();
+      .or("name.ilike.%mindful%,name.ilike.%meditat%")
+      .maybeSingle();
 
-    if (!habit) {
-      // Try meditation
-      const { data: meditationHabit } = await getServiceClient()
-        .from("habits")
-        .select("id")
-        .eq("user_id", userId)
-        .ilike("name", "%meditat%")
-        .single();
-
-      if (meditationHabit) {
-        await getServiceClient()
-          .from("habit_logs")
-          .upsert(
-            {
-              user_id: userId,
-              habit_id: meditationHabit.id,
-              date,
-              value: mindfulness_minutes,
-            },
-            { onConflict: "habit_id,date" }
-          );
-        imported.push("mindfulness");
-      }
-    } else {
-      await getServiceClient()
+    if (habit) {
+      await db
         .from("habit_logs")
         .upsert(
-          {
-            user_id: userId,
-            habit_id: habit.id,
-            date,
-            value: mindfulness_minutes,
-          },
+          { user_id: userId, habit_id: habit.id, date, value: mindfulness_minutes },
           { onConflict: "habit_id,date" }
         );
       imported.push("mindfulness");
     }
   }
 
-  // Log to integration_syncs
-  await getServiceClient().from("integration_syncs").insert({
+  // Log sync
+  await db.from("integration_syncs").insert({
     user_id: userId,
     source: "apple_health",
     status: "ok",
