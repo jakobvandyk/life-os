@@ -131,20 +131,23 @@ integration_syncs, raw_imports
 - AI Chat (5 capabilities, context builders, session history, save-to-KB)
 - Settings (profile, integration placeholders, exchange rates, data export placeholder)
 - Desert Mystic design system (D1-D6 applied)
+- Integrations (Apple Health, Cronometer, myBOQ, Binance, iCal)
+- PWA + offline sync (Dexie.js, service worker, SyncStatus)
 
-## What's NOT Built Yet
+## Integrations (Phase 6)
+- Apple Health: POST /api/integrations/health (x-api-key auth, env: HEALTH_WEBHOOK_KEY, HEALTH_USER_ID)
+- Cronometer: POST /api/import/cronometer (CSV upload, session auth)
+- myBOQ: POST /api/import/ofx (OFX upload, session auth)
+- Binance: GET /api/sync/binance (HMAC-SHA256, env: BINANCE_API_KEY, BINANCE_SECRET, CRON_SECRET, daily 8am via vercel.json)
+- iCal: GET /api/sync/ical (env: ICAL_URL_1..ICAL_URL_10)
+- Service-role client: src/lib/supabase-service.ts (lazy getServiceClient())
 
-### Phase 6 — Integrations
-- Apple Health: webhook at /api/integrations/health, receives HRV/sleep/weight via iOS Shortcut, protected by x-api-key header
-- Cronometer: CSV upload at /api/import/cronometer, stores in raw_imports
-- myBOQ: OFX upload at /api/import/ofx, parses to finance_transactions
-- Binance: API sync at /api/sync/binance, HMAC-SHA256 auth, updates crypto account balances, Vercel cron daily 8am
-- iCal: feed sync at /api/sync/ical, parses .ics into calendar_events
-
-### Phase 7 — PWA + Offline
-- Dexie.js (IndexedDB) local database mirroring key tables
-- Sync queue for offline writes, auto-replay on reconnect
-- Service worker via next-pwa, manifest.json
+## PWA + Offline (Phase 7)
+- Service worker: public/sw.js (network-first, cache fallback)
+- Manifest: public/manifest.json
+- Dexie.js local DB: src/lib/local-db.ts (mirrors tasks, habits, journal, goals, workouts)
+- Sync queue: src/lib/sync.ts (queueWrite, processSyncQueue, seedLocalCache)
+- useOnlineStatus hook: src/hooks/useOnlineStatus.ts
 - SyncStatus component in sidebar (green/amber/red dot)
 
 ## AI Chat System Prompt
@@ -152,6 +155,7 @@ integration_syncs, raw_imports
 Be concise, direct, and practical. Use plain text unless markdown genuinely helps.
 Jakob is based in Hamilton, New Zealand. Currency is NZD."
 
-## Current Priority
-Phase 6 integrations (Apple Health, Cronometer, myBOQ, Binance, iCal),
-then Phase 7 PWA + offline sync.
+## Current Status
+All phases complete (1-7). Core build is done.
+Future work: wire offline-first writes into individual pages,
+data export endpoint, additional integrations as needed.
