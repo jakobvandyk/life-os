@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { createClient } from "@/lib/supabase-server";
 import Sidebar from "@/components/Sidebar";
+import ServiceWorkerRegistrar from "@/components/ServiceWorkerRegistrar";
 import { Press_Start_2P, IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
 
 export const metadata: Metadata = {
@@ -42,8 +43,13 @@ export default async function RootLayout({
     <html lang="en">
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="theme-color" content="#1a1714" />
+        <link rel="manifest" href="/manifest.json" />
+        <link rel="icon" href="/icon-192.svg" />
+        <link rel="apple-touch-icon" href="/icon-192.svg" />
       </head>
       <body className={`${pressStart.variable} ${plexMono.variable} ${plexSans.variable} font-sans antialiased`}>
+        <ServiceWorkerRegistrar />
         <div className="flex h-screen">
           <Sidebar user={user} />
 

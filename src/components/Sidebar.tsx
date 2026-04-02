@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import SignOutButton from "@/components/SignOutButton";
+import SyncStatus from "@/components/SyncStatus";
 import { User } from "@supabase/supabase-js";
 
 interface SidebarProps {
@@ -113,6 +114,7 @@ export default function Sidebar({ user }: SidebarProps) {
                 {user.email}
               </p>
             )}
+            <SyncStatus />
             <SignOutButton />
           </div>
         </nav>
@@ -135,6 +137,7 @@ export default function Sidebar({ user }: SidebarProps) {
               {user.email}
             </p>
           )}
+          <SyncStatus />
           <SignOutButton />
         </div>
       </nav>
