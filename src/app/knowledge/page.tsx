@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { queueWrite } from "@/lib/sync";
 import PixelIcon from "@/components/PixelIcon";
@@ -54,6 +54,13 @@ export default function KnowledgePage() {
   });
   const [selectedTags, setSelectedTags] = useState<number[]>([]);
   const [newTagName, setNewTagName] = useState("");
+  const [importModalOpen, setImportModalOpen] = useState(false);
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [importText, setImportText] = useState("");
+  const [importTitle, setImportTitle] = useState("");
+  const [importing, setImporting] = useState(false);
+  const [importError, setImportError] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -233,6 +240,119 @@ export default function KnowledgePage() {
     );
   };
 
+  const handleFileSelect = (file: File) => {
+    setImportFile(file);
+    // Auto-populate title from filename: "analysis-2026-04-03.md" → "Analysis — 2026-04-03"
+    const name = file.name.replace(/\.(md|txt)$/, "");
+    const formatted = name
+      .split(/[-_]/)
+      .map((part, i) => {
+        // If it looks like a date segment, keep as-is
+        if (/^\d{2,4}$/.test(part)) return part;
+        return part.charAt(0).toUpperCase() + part.slice(1);
+      })
+      .join(" ")
+      .replace(/(\d{4})\s+(\d{2})\s+(\d{2})/, "$1-$2-$3")
+      .replace(/^(.+?)\s+(\d{4}-\d{2}-\d{2})$/, "$1 \u2014 $2");
+    setImportTitle(formatted);
+  };
+
+  const handleImport = async () => {
+    if (!userId) return;
+    setImportError("");
+    setImporting(true);
+
+    try {
+      // Determine content
+      let content = "";
+      if (importFile) {
+        content = await importFile.text();
+      } else {
+        content = importText;
+      }
+
+      if (!content.trim()) {
+        setImportError("No content provided. Upload a file or paste text.");
+        setImporting(false);
+        return;
+      }
+
+      const title = importTitle.trim() || "Imported Insight";
+
+      // Create kb_notes record
+      const { data: noteData, error: noteError } = await supabase
+        .from("kb_notes")
+        .insert({ user_id: userId, title, content, type: "ai_response" })
+        .select("id")
+        .single();
+
+      if (noteError || !noteData) {
+        await queueWrite("kb_notes", "insert", {
+          user_id: userId,
+          title,
+          content,
+          type: "ai_response",
+        });
+        setImportModalOpen(false);
+        setImporting(false);
+        fetchData();
+        return;
+      }
+
+      const noteId = noteData.id;
+
+      // Find or create "claude-analysis" tag
+      let tagId: number | null = null;
+      const { data: existingTag } = await supabase
+        .from("kb_tags")
+        .select("id")
+        .eq("user_id", userId)
+        .eq("name", "claude-analysis")
+        .maybeSingle();
+
+      if (existingTag) {
+        tagId = existingTag.id;
+      } else {
+        const { data: newTag, error: tagError } = await supabase
+          .from("kb_tags")
+          .insert({ user_id: userId, name: "claude-analysis" })
+          .select("id")
+          .single();
+
+        if (tagError || !newTag) {
+          await queueWrite("kb_tags", "insert", {
+            user_id: userId,
+            name: "claude-analysis",
+          });
+        } else {
+          tagId = newTag.id;
+        }
+      }
+
+      // Link note to tag
+      if (tagId) {
+        const { error: linkError } = await supabase
+          .from("kb_note_tags")
+          .insert({ note_id: noteId, tag_id: tagId });
+
+        if (linkError) {
+          await queueWrite("kb_note_tags", "insert", {
+            note_id: noteId,
+            tag_id: tagId,
+          });
+        }
+      }
+
+      setImportModalOpen(false);
+      fetchData();
+    } catch (err) {
+      console.error("Import error:", err);
+      setImportError("An unexpected error occurred.");
+    } finally {
+      setImporting(false);
+    }
+  };
+
   const showEditor = isNew || editing;
 
   return (
@@ -245,12 +365,26 @@ export default function KnowledgePage() {
             {notes.length} note{notes.length !== 1 ? "s" : ""}
           </p>
         </div>
-        <button
-          onClick={() => openEditor()}
-          className="px-4 py-2 bg-desert-accent text-desert-bg font-mono font-semibold uppercase tracking-wider text-sm rounded-sm hover:bg-desert-accent-glow transition-colors duration-150"
-        >
-          + New Note
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              setImportModalOpen(true);
+              setImportFile(null);
+              setImportText("");
+              setImportTitle("");
+              setImportError("");
+            }}
+            className="bg-desert-surface border border-desert-border text-desert-text-2 font-mono text-sm rounded-sm py-2 px-4 hover:bg-desert-surface-hover hover:border-desert-border-strong transition-colors duration-150"
+          >
+            Import Insight
+          </button>
+          <button
+            onClick={() => openEditor()}
+            className="px-4 py-2 bg-desert-accent text-desert-bg font-mono font-semibold uppercase tracking-wider text-sm rounded-sm hover:bg-desert-accent-glow transition-colors duration-150"
+          >
+            + New Note
+          </button>
+        </div>
       </div>
 
       {/* Search + Filters */}
@@ -496,6 +630,109 @@ export default function KnowledgePage() {
           </div>
         )}
       </div>
+
+      {/* Import Insight Modal */}
+      {importModalOpen && (
+        <div className="fixed inset-0 bg-desert-bg/80 z-50 flex items-center justify-center">
+          <div className="bg-desert-surface border border-desert-border-strong rounded-sm p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto">
+            <h2 className="font-mono font-bold text-sm tracking-[0.06em] uppercase text-desert-text mb-5">
+              Import Insight
+            </h2>
+
+            <div className="space-y-4">
+              {/* File picker */}
+              <div>
+                <label className="font-mono text-xs uppercase tracking-wider text-desert-text-2 block mb-1.5">
+                  Upload File
+                </label>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".md,.txt"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleFileSelect(file);
+                  }}
+                />
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="bg-desert-bg border border-desert-border-strong rounded-sm px-4 py-2 text-desert-text-2 text-sm font-mono hover:border-desert-accent transition-colors"
+                >
+                  {importFile ? importFile.name : "Choose .md or .txt file..."}
+                </button>
+              </div>
+
+              {/* OR separator */}
+              <div className="flex items-center gap-3">
+                <div className="flex-1 border-t border-desert-border" />
+                <span className="text-desert-text-3 font-mono text-xs uppercase">or</span>
+                <div className="flex-1 border-t border-desert-border" />
+              </div>
+
+              {/* Paste textarea */}
+              <div>
+                <label className="font-mono text-xs uppercase tracking-wider text-desert-text-2 block mb-1.5">
+                  Paste Markdown
+                </label>
+                <textarea
+                  rows={8}
+                  placeholder="Paste content here..."
+                  value={importText}
+                  onChange={(e) => setImportText(e.target.value)}
+                  className="w-full bg-desert-bg border border-desert-border-strong rounded-sm px-4 py-3 text-desert-text font-mono text-sm placeholder:text-desert-text-3 focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent transition-colors resize-y"
+                />
+              </div>
+
+              {/* Title */}
+              <div>
+                <label className="font-mono text-xs uppercase tracking-wider text-desert-text-2 block mb-1.5">
+                  Title
+                </label>
+                <input
+                  type="text"
+                  placeholder="Insight title..."
+                  value={importTitle}
+                  onChange={(e) => setImportTitle(e.target.value)}
+                  className="w-full bg-desert-bg border border-desert-border-strong rounded-sm px-4 py-2 text-desert-text placeholder:text-desert-text-3 focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent transition-colors"
+                />
+              </div>
+
+              {/* Type (read-only) */}
+              <div>
+                <label className="font-mono text-xs uppercase tracking-wider text-desert-text-2 block mb-1.5">
+                  Type
+                </label>
+                <div className="bg-desert-bg border border-desert-border-strong rounded-sm px-4 py-2 text-desert-text-2 text-sm font-mono">
+                  ai_response
+                </div>
+              </div>
+
+              {/* Error */}
+              {importError && (
+                <p className="text-desert-danger text-sm font-mono">{importError}</p>
+              )}
+
+              {/* Actions */}
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-desert-border">
+                <button
+                  onClick={() => setImportModalOpen(false)}
+                  className="px-4 py-2 text-desert-text-3 hover:text-desert-text text-sm transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleImport}
+                  disabled={importing}
+                  className="px-4 py-2 bg-desert-accent text-desert-bg font-mono font-semibold uppercase tracking-wider text-sm rounded-sm hover:bg-desert-accent-glow transition-colors duration-150 disabled:opacity-50"
+                >
+                  {importing ? "Importing..." : "Import"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

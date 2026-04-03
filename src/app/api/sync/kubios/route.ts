@@ -1,3 +1,10 @@
+/**
+ * Kubios Cloud Sync — SCAFFOLD ONLY
+ * Requires paid Kubios Cloud subscription for API access.
+ * Currently returns not_implemented.
+ * If activated: OAuth 2.0 auth, daily cron pull, extracts RMSSD/PNS/SNS/stress/readiness/mean_hr
+ * Docs: https://www.kubios.com/hrv-api/
+ */
 // Kubios Cloud API sync endpoint — scaffold only, not yet active.
 // Docs: https://www.kubios.com/hrv-api/
 //

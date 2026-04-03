@@ -103,6 +103,26 @@ export default function ReviewPage() {
   const [challenges, setChallenges] = useState(["", ""]);
   const [intentions, setIntentions] = useState(["", "", ""]);
 
+  // Export state
+  const [exportDays, setExportDays] = useState(14);
+  const [exporting, setExporting] = useState(false);
+
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const res = await fetch(`/api/export/analysis?days=${exportDays}`, { credentials: "include" });
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `life-os-export-${new Date().toISOString().split("T")[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } finally {
+      setExporting(false);
+    }
+  };
+
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) setUserId(user.id);
@@ -335,6 +355,35 @@ export default function ReviewPage() {
             className="px-4 py-2 bg-desert-accent text-desert-bg font-mono font-semibold uppercase tracking-wider text-sm rounded-sm hover:bg-desert-accent-glow transition-colors duration-150 disabled:opacity-50"
           >
             {saving ? "Saving..." : "Save"}
+          </button>
+        </div>
+      </div>
+
+      {/* Export for Analysis */}
+      <div className="bg-desert-surface border border-desert-border rounded-sm p-4 mb-8">
+        <div className="flex items-center gap-3 flex-wrap">
+          <p className="font-mono font-bold text-xs tracking-[0.06em] uppercase text-desert-text-2">Export for Analysis</p>
+          <div className="flex gap-1.5">
+            {([7, 14, 30] as const).map((d) => (
+              <button
+                key={d}
+                onClick={() => setExportDays(d)}
+                className={`px-2.5 py-1 font-mono text-xs rounded-sm transition-colors duration-150 ${
+                  exportDays === d
+                    ? "bg-desert-accent text-desert-bg"
+                    : "bg-desert-bg border border-desert-border-strong text-desert-text-2 hover:text-desert-text hover:border-desert-accent"
+                }`}
+              >
+                {d}d
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={handleExport}
+            disabled={exporting}
+            className="px-4 py-1.5 bg-desert-accent text-desert-bg font-mono font-semibold uppercase tracking-wider text-xs rounded-sm hover:bg-desert-accent-glow transition-colors duration-150 disabled:opacity-50"
+          >
+            {exporting ? "Exporting..." : "Download JSON"}
           </button>
         </div>
       </div>

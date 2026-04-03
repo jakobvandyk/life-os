@@ -102,7 +102,9 @@ src/app/
     ├── import/cronometer/route.ts
     ├── import/ofx/route.ts
     ├── sync/binance/route.ts
-    └── sync/ical/route.ts
+    ├── sync/ical/route.ts
+    ├── sync/kubios/route.ts (scaffold, not active)
+    └── export/analysis/route.ts
 src/proxy.ts (auth proxy — Next.js 16, excludes /api/ routes)
 src/components/ (Sidebar, SignOutButton, SyncStatus, ServiceWorkerRegistrar, PixelIcon)
 src/hooks/ (useOnlineStatus.ts)
@@ -133,7 +135,7 @@ integration_syncs, raw_imports
 - Finance liquidity tiers: immediate, short_term, illiquid
 - Workout sessions: upper-strength, lower-strength, upper-volume, lower-volume (defined in constants.ts)
 - Workout RPE values: easy, med, hard, fail (display: easy=green, med=amber, hard=red, fail=purple)
-- workout_checkins: hrv (SDNN, Apple Health), hrv_rmssd (RMSSD, Kubios/Polar H10), pns_index, sns_index, stress_index, kubios_readiness (0-100), mean_hr, shin_pain (0-10), waist_cm
+- workout_checkins: hrv (SDNN, Apple Health), hrv_rmssd (RMSSD, Kubios/Polar H10), pns_index, sns_index, stress_index, kubios_readiness (0-100), mean_hr, shin_pain (0-10), waist_cm, tags (text array)
 - Exchange rate pairs stored as e.g. "NZDAUD" (no slash) with rate as real
 - kb_notes types: note, ai_response, research
 - chat_messages capabilities: focus, review, spending, journal, general
@@ -158,15 +160,19 @@ integration_syncs, raw_imports
 
 ## Integrations (Phase 6)
 - Apple Health: POST /api/integrations/health (x-api-key auth, env: HEALTH_WEBHOOK_KEY, HEALTH_USER_ID)
-  - JSON body: { date (required, YYYY-MM-DD), hrv (SDNN), hrv_rmssd (RMSSD), sleep_hours, weight, readiness (1-10), mindfulness_minutes, shin_pain (0-10), waist_cm, pns_index, sns_index, stress_index, kubios_readiness (0-100), mean_hr }
-- Kubios HRV: Manual entry via DailyCheckin form (Polar H10 → Kubios app → read values → enter in Life OS). Future: /api/sync/kubios cron endpoint using Kubios Cloud API (OAuth 2.0). Metrics: RMSSD, PNS index, SNS index, Baevsky stress index, readiness 0-100, mean HR.
+  - JSON body: { date (required, YYYY-MM-DD), hrv (SDNN), hrv_rmssd (RMSSD from Kubios/Polar H10), sleep_hours, weight, readiness (1-10), mindfulness_minutes, shin_pain (0-10), waist_cm, pns_index, sns_index, stress_index, kubios_readiness (0-100), mean_hr }
   - All fields except date are optional — only send what the iOS Shortcut pulls
   - Upserts to workout_checkins, logs mindfulness to habit_logs if matching habit exists
   - maxDuration=10, uses maybeSingle() to avoid crash on missing rows
+- Kubios HRV: Manual entry via DailyCheckin form (Polar H10 → Kubios app → read values → enter in Life OS). Metrics: RMSSD, PNS index, SNS index, Baevsky stress index, readiness 0-100, mean HR. Sync scaffold at /api/sync/kubios (not active, requires paid Kubios Cloud).
 - Cronometer: POST /api/import/cronometer (CSV upload, session auth)
 - myBOQ: POST /api/import/ofx (OFX upload, session auth)
 - Binance: GET /api/sync/binance (HMAC-SHA256, env: BINANCE_API_KEY, BINANCE_SECRET, CRON_SECRET, daily 8am via vercel.json)
 - iCal: GET /api/sync/ical (env: ICAL_URL_1..ICAL_URL_10)
+- Data Export: GET /api/export/analysis?days=14 (session auth, max 90). Full JSON bundle for offline AI analysis. Download buttons on dashboard + review page.
+- Insight Import: Knowledge Base "Import Insight" modal. Accepts .md/.txt or pasted markdown. Saves as kb_notes type: ai_response, auto-tagged: claude-analysis.
+- Analysis prompt template: public/analysis-prompt.md
+- Workflow: Export JSON → analyse in Claude (subscription) → save markdown → import insight to KB
 
 ## Required Vercel Environment Variables
 - NEXT_PUBLIC_SUPABASE_URL — Supabase project URL
@@ -178,7 +184,7 @@ integration_syncs, raw_imports
 - BINANCE_API_KEY, BINANCE_SECRET — Binance read-only API credentials
 - CRON_SECRET — protects cron-triggered endpoints
 - ICAL_URL_1..ICAL_URL_10 — iCal feed URLs (Google Calendar secret address etc.)
-# Future (Kubios sync): KUBIOS_CLIENT_ID, KUBIOS_CLIENT_SECRET, KUBIOS_ACCESS_TOKEN
+# Future (Kubios sync, requires paid cloud): KUBIOS_CLIENT_ID, KUBIOS_CLIENT_SECRET, KUBIOS_ACCESS_TOKEN
 
 ## Auth / Routing
 - Auth handled by src/proxy.ts (Next.js 16 uses proxy.ts, NOT middleware.ts)
@@ -221,4 +227,5 @@ Jakob will create pixel art banner strips from his own photos. Specs:
 
 ## Current Status
 All phases complete (1-7). D3 pixel art icons complete. Offline fallbacks wired.
-Next: D4 banners (user-created), data export endpoint, additional polish as needed.
+Data export + insight import workflow built. Kubios HRV manual entry active.
+Next: D4 banners (user-created), additional polish as needed.

@@ -22,6 +22,7 @@ export interface Checkin {
   stress_index?: number | null;
   kubios_readiness?: number | null;
   mean_hr?: number | null;
+  tags?: string[] | null;
   created_at?: string;
 }
 
@@ -43,10 +44,6 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
   const [sleep, setSleep] = useState<string>("");
   const [hrv, setHrv] = useState<string>("");
   const [readiness, setReadiness] = useState<number | null>(null);
-  const [shinEnabled, setShinEnabled] = useState(false);
-  const [shin, setShin] = useState<number | null>(null);
-  const [waistEnabled, setWaistEnabled] = useState(false);
-  const [waist, setWaist] = useState<string>("");
   const [hrvRmssd, setHrvRmssd] = useState<string>("");
   const [shinPain, setShinPain] = useState<number | null>(null);
   const [shinPainEnabled, setShinPainEnabled] = useState(false);
@@ -58,10 +55,11 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
   const [stressIndex, setStressIndex] = useState<string>("");
   const [kubiosReadiness, setKubiosReadiness] = useState<string>("");
   const [meanHr, setMeanHr] = useState<string>("");
+  const [tags, setTags] = useState<string>("");
 
   // Get today's checkin
   const todayStr = new Date().toISOString().slice(0, 10);
-  const todayCheckin = useMemo(() => 
+  const todayCheckin = useMemo(() =>
     checkins.find(c => c.date === todayStr), [checkins]
   );
 
@@ -133,8 +131,8 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
   const latestRmssd = checkins.find(c => c.hrv_rmssd != null)?.hrv_rmssd;
   const latestReadiness = checkins.find(c => c.readiness != null)?.readiness;
   const latestSleep = checkins.find(c => c.sleep != null)?.sleep;
-  const latestShinPain = checkins.find(c => c.shin_pain != null)?.shin_pain;
-  const latestWaistCm = checkins.find(c => c.waist_cm != null)?.waist_cm;
+  const latestShinPain = checkins.find(c => (c.shin_pain ?? c.shin) != null)?.shin_pain ?? checkins.find(c => c.shin != null)?.shin;
+  const latestWaistCm = checkins.find(c => (c.waist_cm ?? c.waist) != null)?.waist_cm ?? checkins.find(c => c.waist != null)?.waist;
   const latestPns = checkins.find(c => c.pns_index != null)?.pns_index;
   const latestSns = checkins.find(c => c.sns_index != null)?.sns_index;
   const latestStress = checkins.find(c => c.stress_index != null)?.stress_index;
@@ -142,52 +140,82 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
   const latestMeanHr = checkins.find(c => c.mean_hr != null)?.mean_hr;
   const totalEntries = checkins.length;
 
+  const getShinPainColor = (value: number | null | undefined): string => {
+    if (value == null) return "text-desert-text";
+    if (value === 0) return "text-desert-success";
+    if (value >= 1 && value <= 3) return "text-desert-text";
+    if (value >= 4 && value <= 6) return "text-desert-warning";
+    return "text-desert-danger";
+  };
+
+  // Helper to reset all form fields
+  const resetForm = () => {
+    setWeight("");
+    setSleep("");
+    setHrv("");
+    setHrvRmssd("");
+    setReadiness(null);
+    setShinPainEnabled(false);
+    setShinPain(null);
+    setWaistCmEnabled(false);
+    setWaistCm("");
+    setPnsIndex("");
+    setSnsIndex("");
+    setStressIndex("");
+    setKubiosReadiness("");
+    setMeanHr("");
+    setKubiosOpen(false);
+    setTags("");
+  };
+
+  // Helper to load form from an entry
+  const loadFromEntry = (entry: Checkin) => {
+    setWeight(entry.weight?.toString() || "");
+    setSleep(entry.sleep?.toString() || "");
+    setHrv(entry.hrv?.toString() || "");
+    setHrvRmssd(entry.hrv_rmssd?.toString() || "");
+    setReadiness(entry.readiness || null);
+    setShinPainEnabled(entry.shin_pain != null || entry.shin != null);
+    setShinPain(entry.shin_pain ?? entry.shin ?? null);
+    setWaistCmEnabled(entry.waist_cm != null || entry.waist != null);
+    setWaistCm((entry.waist_cm ?? entry.waist)?.toString() || "");
+    setPnsIndex(entry.pns_index?.toString() || "");
+    setSnsIndex(entry.sns_index?.toString() || "");
+    setStressIndex(entry.stress_index?.toString() || "");
+    setKubiosReadiness(entry.kubios_readiness?.toString() || "");
+    setMeanHr(entry.mean_hr?.toString() || "");
+    setTags(Array.isArray(entry.tags) ? entry.tags.join(", ") : "");
+    if (entry.pns_index != null || entry.sns_index != null || entry.hrv_rmssd != null) {
+      setKubiosOpen(true);
+    }
+  };
+
   // Load today's data into form
   useEffect(() => {
     if (todayCheckin) {
-      setWeight(todayCheckin.weight?.toString() || "");
-      setSleep(todayCheckin.sleep?.toString() || "");
-      setHrv(todayCheckin.hrv?.toString() || "");
-      setHrvRmssd(todayCheckin.hrv_rmssd?.toString() || "");
-      setReadiness(todayCheckin.readiness || null);
-      setShinEnabled(todayCheckin.shin != null);
-      setShin(todayCheckin.shin || null);
-      setShinPainEnabled(todayCheckin.shin_pain != null);
-      setShinPain(todayCheckin.shin_pain ?? null);
-      setWaistEnabled(todayCheckin.waist != null);
-      setWaist(todayCheckin.waist?.toString() || "");
-      setWaistCmEnabled(todayCheckin.waist_cm != null);
-      setWaistCm(todayCheckin.waist_cm?.toString() || "");
-      setPnsIndex(todayCheckin.pns_index?.toString() || "");
-      setSnsIndex(todayCheckin.sns_index?.toString() || "");
-      setStressIndex(todayCheckin.stress_index?.toString() || "");
-      setKubiosReadiness(todayCheckin.kubios_readiness?.toString() || "");
-      setMeanHr(todayCheckin.mean_hr?.toString() || "");
-      if (todayCheckin.pns_index != null || todayCheckin.sns_index != null || todayCheckin.hrv_rmssd != null) {
-        setKubiosOpen(true);
-      }
+      loadFromEntry(todayCheckin);
     } else {
-      setWeight("");
-      setSleep("");
-      setHrv("");
-      setHrvRmssd("");
-      setReadiness(null);
-      setShinEnabled(false);
-      setShin(null);
-      setShinPainEnabled(false);
-      setShinPain(null);
-      setWaistEnabled(false);
-      setWaist("");
-      setWaistCmEnabled(false);
-      setWaistCm("");
-      setPnsIndex("");
-      setSnsIndex("");
-      setStressIndex("");
-      setKubiosReadiness("");
-      setMeanHr("");
-      setKubiosOpen(false);
+      resetForm();
     }
   }, [todayCheckin]);
+
+  const buildPayload = (dateStr: string) => ({
+    user_id: userId,
+    date: dateStr,
+    weight: weight ? parseFloat(weight) : null,
+    sleep: sleep ? parseFloat(sleep) : null,
+    hrv: hrv ? parseInt(hrv) : null,
+    hrv_rmssd: hrvRmssd ? parseFloat(hrvRmssd) : null,
+    readiness: readiness,
+    shin_pain: shinPainEnabled ? shinPain : null,
+    waist_cm: waistCmEnabled && waistCm ? parseFloat(waistCm) : null,
+    pns_index: pnsIndex ? parseFloat(pnsIndex) : null,
+    sns_index: snsIndex ? parseFloat(snsIndex) : null,
+    stress_index: stressIndex ? parseFloat(stressIndex) : null,
+    kubios_readiness: kubiosReadiness ? parseFloat(kubiosReadiness) : null,
+    mean_hr: meanHr ? parseFloat(meanHr) : null,
+    tags: tags ? tags.split(",").map(t => t.trim()).filter(Boolean) : null,
+  });
 
   const handleSave = async () => {
     if (!userId) return;
@@ -195,24 +223,7 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
     setError(null);
 
     try {
-      const payload = {
-        user_id: userId,
-        date: todayStr,
-        weight: weight ? parseFloat(weight) : null,
-        sleep: sleep ? parseFloat(sleep) : null,
-        hrv: hrv ? parseInt(hrv) : null,
-        hrv_rmssd: hrvRmssd ? parseFloat(hrvRmssd) : null,
-        readiness: readiness,
-        shin: shinEnabled ? shin : null,
-        shin_pain: shinPainEnabled ? shinPain : null,
-        waist: waistEnabled && waist ? parseFloat(waist) : null,
-        waist_cm: waistCmEnabled && waistCm ? parseFloat(waistCm) : null,
-        pns_index: pnsIndex ? parseFloat(pnsIndex) : null,
-        sns_index: snsIndex ? parseFloat(snsIndex) : null,
-        stress_index: stressIndex ? parseFloat(stressIndex) : null,
-        kubios_readiness: kubiosReadiness ? parseFloat(kubiosReadiness) : null,
-        mean_hr: meanHr ? parseFloat(meanHr) : null,
-      };
+      const payload = buildPayload(todayStr);
 
       const { error } = await supabase
         .from("workout_checkins")
@@ -223,25 +234,7 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
       onRefetch();
       // Reset form if it's a new entry (not update)
       if (!todayCheckin) {
-        setWeight("");
-        setSleep("");
-        setHrv("");
-        setHrvRmssd("");
-        setReadiness(null);
-        setShinEnabled(false);
-        setShin(null);
-        setShinPainEnabled(false);
-        setShinPain(null);
-        setWaistEnabled(false);
-        setWaist("");
-        setWaistCmEnabled(false);
-        setWaistCm("");
-        setPnsIndex("");
-        setSnsIndex("");
-        setStressIndex("");
-        setKubiosReadiness("");
-        setMeanHr("");
-        setKubiosOpen(false);
+        resetForm();
       }
     } catch (err: any) {
       setError(err.message);
@@ -254,36 +247,11 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
     if (entry) {
       setEditingEntry(entry);
       setPastDate(entry.date);
-      setWeight(entry.weight?.toString() || "");
-      setSleep(entry.sleep?.toString() || "");
-      setHrv(entry.hrv?.toString() || "");
-      setHrvRmssd(entry.hrv_rmssd?.toString() || "");
-      setReadiness(entry.readiness || null);
-      setShinEnabled(entry.shin != null);
-      setShin(entry.shin || null);
-      setShinPainEnabled(entry.shin_pain != null);
-      setShinPain(entry.shin_pain ?? null);
-      setWaistEnabled(entry.waist != null);
-      setWaist(entry.waist?.toString() || "");
-      setWaistCmEnabled(entry.waist_cm != null);
-      setWaistCm(entry.waist_cm?.toString() || "");
-      setPnsIndex(entry.pns_index?.toString() || "");
-      setSnsIndex(entry.sns_index?.toString() || "");
-      setStressIndex(entry.stress_index?.toString() || "");
-      setKubiosReadiness(entry.kubios_readiness?.toString() || "");
-      setMeanHr(entry.mean_hr?.toString() || "");
-      setKubiosOpen(entry.pns_index != null || entry.sns_index != null || entry.hrv_rmssd != null);
+      loadFromEntry(entry);
     } else {
       setEditingEntry(null);
       setPastDate(new Date().toISOString().slice(0, 10));
-      setWeight("");
-      setSleep("");
-      setHrv("");
-      setReadiness(null);
-      setShinEnabled(false);
-      setShin(null);
-      setWaistEnabled(false);
-      setWaist("");
+      resetForm();
     }
     setModalOpen(true);
   };
@@ -299,25 +267,7 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
     setError(null);
 
     try {
-      const dateToUse = pastDate;
-      const payload = {
-        user_id: userId,
-        date: dateToUse,
-        weight: weight ? parseFloat(weight) : null,
-        sleep: sleep ? parseFloat(sleep) : null,
-        hrv: hrv ? parseInt(hrv) : null,
-        hrv_rmssd: hrvRmssd ? parseFloat(hrvRmssd) : null,
-        readiness: readiness,
-        shin: shinEnabled ? shin : null,
-        shin_pain: shinPainEnabled ? shinPain : null,
-        waist: waistEnabled && waist ? parseFloat(waist) : null,
-        waist_cm: waistCmEnabled && waistCm ? parseFloat(waistCm) : null,
-        pns_index: pnsIndex ? parseFloat(pnsIndex) : null,
-        sns_index: snsIndex ? parseFloat(snsIndex) : null,
-        stress_index: stressIndex ? parseFloat(stressIndex) : null,
-        kubios_readiness: kubiosReadiness ? parseFloat(kubiosReadiness) : null,
-        mean_hr: meanHr ? parseFloat(meanHr) : null,
-      };
+      const payload = buildPayload(pastDate);
 
       const { error } = await supabase
         .from("workout_checkins")
@@ -331,24 +281,7 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
       if (editingEntry?.date === todayStr) {
         const newToday = checkins.find(c => c.date === todayStr);
         if (newToday) {
-          setWeight(newToday.weight?.toString() || "");
-          setSleep(newToday.sleep?.toString() || "");
-          setHrv(newToday.hrv?.toString() || "");
-          setHrvRmssd(newToday.hrv_rmssd?.toString() || "");
-          setReadiness(newToday.readiness || null);
-          setShinEnabled(newToday.shin != null);
-          setShin(newToday.shin || null);
-          setShinPainEnabled(newToday.shin_pain != null);
-          setShinPain(newToday.shin_pain ?? null);
-          setWaistEnabled(newToday.waist != null);
-          setWaist(newToday.waist?.toString() || "");
-          setWaistCmEnabled(newToday.waist_cm != null);
-          setWaistCm(newToday.waist_cm?.toString() || "");
-          setPnsIndex(newToday.pns_index?.toString() || "");
-          setSnsIndex(newToday.sns_index?.toString() || "");
-          setStressIndex(newToday.stress_index?.toString() || "");
-          setKubiosReadiness(newToday.kubios_readiness?.toString() || "");
-          setMeanHr(newToday.mean_hr?.toString() || "");
+          loadFromEntry(newToday);
         }
       }
     } catch (err: any) {
@@ -378,25 +311,7 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
       onRefetch();
       // If deleted today's entry, clear form
       if (editingEntry.date === todayStr) {
-        setWeight("");
-        setSleep("");
-        setHrv("");
-        setHrvRmssd("");
-        setReadiness(null);
-        setShinEnabled(false);
-        setShin(null);
-        setShinPainEnabled(false);
-        setShinPain(null);
-        setWaistEnabled(false);
-        setWaist("");
-        setWaistCmEnabled(false);
-        setWaistCm("");
-        setPnsIndex("");
-        setSnsIndex("");
-        setStressIndex("");
-        setKubiosReadiness("");
-        setMeanHr("");
-        setKubiosOpen(false);
+        resetForm();
       }
     } catch (err: any) {
       setError(err.message);
@@ -413,20 +328,8 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
     return "border-desert-border-strong text-desert-text-3";
   };
 
-  const getShinColor = (value: number | null) => {
-    if (value === null) return "border-desert-border-strong text-desert-text-3";
-    if (value >= 0 && value <= 2) return "bg-desert-success-dim border-desert-success text-desert-success";
-    if (value >= 3 && value <= 5) return "bg-desert-accent-glow border-desert-accent text-desert-accent";
-    if (value >= 6 && value <= 10) return "bg-desert-danger-dim border-desert-danger text-desert-danger";
-    return "border-desert-border-strong text-desert-text-3";
-  };
-
   const toggleReadiness = (value: number) => {
     setReadiness(prev => prev === value ? null : value);
-  };
-
-  const toggleShin = (value: number) => {
-    setShin(prev => prev === value ? null : value);
   };
 
   // Sparkline SVG generation
@@ -474,15 +377,117 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
     if (entry.sleep) parts.push(`${entry.sleep}h sleep`);
     if (entry.shin_pain != null) parts.push(`${entry.shin_pain}/10 shin`);
     else if (entry.shin != null) parts.push(`${entry.shin}/10 shin`);
+    if (Array.isArray(entry.tags) && entry.tags.length > 0) parts.push(entry.tags.join(", "));
     return parts.join(" · ");
   };
 
-  const pastEntries = useMemo(() => 
+  const pastEntries = useMemo(() =>
     checkins
       .filter(c => c.date !== todayStr)
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       .slice(0, 60),
     [checkins, todayStr]
+  );
+
+  // Toggle switch component
+  const ToggleSwitch = ({ enabled, onToggle }: { enabled: boolean; onToggle: () => void }) => (
+    <button
+      type="button"
+      onClick={onToggle}
+      className="relative inline-block w-10 h-5"
+    >
+      <span
+        className={`absolute inline-block w-4 h-4 bg-desert-surface-hover rounded-full transition-transform ${
+          enabled ? "translate-x-5" : "translate-x-0.5"
+        }`}
+        style={{ top: "2px", left: enabled ? "calc(100% - 17px)" : "2px" }}
+      />
+      <div
+        className={`w-full h-full rounded-full transition-colors ${
+          enabled ? "bg-desert-accent" : "bg-desert-surface"
+        }`}
+      />
+    </button>
+  );
+
+  // Shin pain range slider section (reusable for form and modal)
+  const ShinPainSlider = () => (
+    <div className="mb-4">
+      <div className="flex items-center justify-between mb-2">
+        <label className="font-mono text-xs uppercase tracking-wider text-desert-text-2">
+          Shin Pain (0-10)
+        </label>
+        <ToggleSwitch
+          enabled={shinPainEnabled}
+          onToggle={() => {
+            setShinPainEnabled(!shinPainEnabled);
+            if (shinPainEnabled) setShinPain(null);
+          }}
+        />
+      </div>
+      {shinPainEnabled ? (
+        <div className="flex items-center gap-4">
+          <input
+            type="range"
+            min="0"
+            max="10"
+            step="1"
+            value={shinPain ?? 0}
+            onChange={(e) => setShinPain(parseInt(e.target.value))}
+            className="flex-1 accent-desert-accent"
+          />
+          <span className="font-mono text-desert-text w-6 text-right">{shinPain ?? 0}</span>
+        </div>
+      ) : (
+        <div className="font-mono text-desert-text-3 text-sm">—</div>
+      )}
+    </div>
+  );
+
+  // Waist cm input section (reusable for form and modal)
+  const WaistCmInput = () => (
+    <div className="mb-4">
+      <div className="flex items-center justify-between mb-2">
+        <label className="font-mono text-xs uppercase tracking-wider text-desert-text-2">
+          Waist (CM)
+        </label>
+        <ToggleSwitch
+          enabled={waistCmEnabled}
+          onToggle={() => {
+            setWaistCmEnabled(!waistCmEnabled);
+            if (waistCmEnabled) setWaistCm("");
+          }}
+        />
+      </div>
+      {waistCmEnabled ? (
+        <input
+          type="number"
+          step="0.1"
+          placeholder="85.0"
+          value={waistCm}
+          onChange={(e) => setWaistCm(e.target.value)}
+          className="w-full bg-desert-bg border border-desert-border-strong rounded-sm px-3 py-2 font-mono text-desert-text placeholder:text-desert-text-3 focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent"
+        />
+      ) : (
+        <div className="font-mono text-desert-text-3 text-sm">—</div>
+      )}
+    </div>
+  );
+
+  // Tags input section (reusable for form and modal)
+  const TagsInput = () => (
+    <div className="mb-6">
+      <label className="block font-mono text-xs uppercase tracking-wider text-desert-text-2 mb-2">
+        Tags
+      </label>
+      <input
+        type="text"
+        placeholder="e.g. rest-day, travel, deload"
+        value={tags}
+        onChange={(e) => setTags(e.target.value)}
+        className="w-full bg-desert-bg border border-desert-border-strong rounded-sm px-3 py-2 font-mono text-desert-text placeholder:text-desert-text-3 focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent"
+      />
+    </div>
   );
 
   return (
@@ -495,10 +500,10 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
 
       {/* Section 1: Today's Form */}
       <div className="bg-desert-surface border border-desert-border rounded-sm p-5">
-        <h2 className="font-mono font-bold text-base tracking-[0.06em] uppercase text-desert-text mb-4">Today's Check-in</h2>
+        <h2 className="font-mono font-bold text-base tracking-[0.06em] uppercase text-desert-text mb-4">Today&#39;s Check-in</h2>
 
-        {/* Row 1: Weight, Sleep, HRV SDNN, RMSSD */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+        {/* Row 1: Weight, Sleep, HRV SDNN */}
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
           <div>
             <label className="block text-xs text-desert-text-3 uppercase tracking-wider font-mono mb-2">
               Weight (kg)
@@ -636,7 +641,7 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
           )}
         </div>
 
-        {/* Row 2: Readiness Scale */}
+        {/* Readiness Scale */}
         <div className="mb-4">
           <label className="block text-xs text-desert-text-3 uppercase tracking-wider font-mono mb-3">
             Readiness (1 = wrecked · 10 = great)
@@ -655,165 +660,14 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
           </div>
         </div>
 
-        {/* Row 3: Shin Pain Toggle */}
-        <div className="mb-4">
-          <div className="flex items-center justify-between mb-2">
-            <label className="text-sm text-desert-text">Shin pain today</label>
-            <button
-              type="button"
-              onClick={() => {
-                setShinEnabled(!shinEnabled);
-                if (shinEnabled) setShin(null);
-              }}
-              className="relative inline-block w-10 h-5"
-            >
-              <span
-                className={`absolute inline-block w-4 h-4 bg-desert-surface-hover rounded-full transition-transform ${
-                  shinEnabled ? "translate-x-5" : "translate-x-0.5"
-                }`}
-                style={{ top: "2px", left: shinEnabled ? "calc(100% - 17px)" : "2px" }}
-              />
-              <div
-                className={`w-full h-full rounded-full transition-colors ${
-                  shinEnabled ? "bg-desert-accent" : "bg-desert-surface"
-                }`}
-              />
-            </button>
-          </div>
-          {shinEnabled && (
-            <div className="mt-3">
-              <div className="flex flex-wrap gap-2">
-                {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((value) => (
-                  <button
-                    key={value}
-                    type="button"
-                    onClick={() => toggleShin(value)}
-                    className={`w-10 h-10 rounded-sm border font-mono text-sm font-medium transition-colors ${getShinColor(shin === value ? value : null)}`}
-                  >
-                    {value}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
+        {/* Shin Pain (range slider) */}
+        <ShinPainSlider />
 
-        {/* Row 4: Shin Pain (new column) */}
-        <div className="mb-4">
-          <div className="flex items-center justify-between mb-2">
-            <label className="text-sm text-desert-text">Shin pain (new)</label>
-            <button
-              type="button"
-              onClick={() => {
-                setShinPainEnabled(!shinPainEnabled);
-                if (shinPainEnabled) setShinPain(null);
-              }}
-              className="relative inline-block w-10 h-5"
-            >
-              <span
-                className={`absolute inline-block w-4 h-4 bg-desert-surface-hover rounded-full transition-transform ${
-                  shinPainEnabled ? "translate-x-5" : "translate-x-0.5"
-                }`}
-                style={{ top: "2px", left: shinPainEnabled ? "calc(100% - 17px)" : "2px" }}
-              />
-              <div
-                className={`w-full h-full rounded-full transition-colors ${
-                  shinPainEnabled ? "bg-desert-accent" : "bg-desert-surface"
-                }`}
-              />
-            </button>
-          </div>
-          {shinPainEnabled && (
-            <div className="mt-3">
-              <div className="flex flex-wrap gap-2">
-                {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((value) => (
-                  <button
-                    key={value}
-                    type="button"
-                    onClick={() => setShinPain(prev => prev === value ? null : value)}
-                    className={`w-10 h-10 rounded-sm border font-mono text-sm font-medium transition-colors ${getShinColor(shinPain === value ? value : null)}`}
-                  >
-                    {value}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
+        {/* Waist (cm) */}
+        <WaistCmInput />
 
-        {/* Row 5: Waist cm (new column) */}
-        <div className="mb-4">
-          <div className="flex items-center justify-between mb-2">
-            <label className="font-sans text-sm text-desert-text">Waist circumference (cm)</label>
-            <button
-              type="button"
-              onClick={() => {
-                setWaistCmEnabled(!waistCmEnabled);
-                if (!waistCmEnabled) setWaistCm("");
-              }}
-              className="relative inline-block w-10 h-5"
-            >
-              <span
-                className={`absolute inline-block w-4 h-4 bg-desert-surface-hover rounded-full transition-transform ${
-                  waistCmEnabled ? "translate-x-5" : "translate-x-0.5"
-                }`}
-                style={{ top: "2px", left: waistCmEnabled ? "calc(100% - 17px)" : "2px" }}
-              />
-              <div
-                className={`w-full h-full rounded-full transition-colors ${
-                  waistCmEnabled ? "bg-desert-accent" : "bg-desert-surface"
-                }`}
-              />
-            </button>
-          </div>
-          {waistCmEnabled && (
-            <input
-              type="number"
-              step="0.1"
-              placeholder="85.0"
-              value={waistCm}
-              onChange={(e) => setWaistCm(e.target.value)}
-              className="w-full bg-desert-bg border border-desert-border-strong rounded-sm px-3 py-2 text-desert-text font-sans placeholder:text-desert-text-3 focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent"
-            />
-          )}
-        </div>
-
-        {/* Row 6: Waist Toggle (legacy) */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-2">
-            <label className="font-sans text-sm text-desert-text">Log waist (legacy)</label>
-            <button
-              type="button"
-              onClick={() => {
-                setWaistEnabled(!waistEnabled);
-                if (!waistEnabled) setWaist("");
-              }}
-              className="relative inline-block w-10 h-5"
-            >
-              <span
-                className={`absolute inline-block w-4 h-4 bg-desert-surface-hover rounded-full transition-transform ${
-                  waistEnabled ? "translate-x-5" : "translate-x-0.5"
-                }`}
-                style={{ top: "2px", left: waistEnabled ? "calc(100% - 17px)" : "2px" }}
-              />
-              <div
-                className={`w-full h-full rounded-full transition-colors ${
-                  waistEnabled ? "bg-desert-accent" : "bg-desert-surface"
-                }`}
-              />
-            </button>
-          </div>
-          {waistEnabled && (
-            <input
-              type="number"
-              step="0.5"
-              placeholder="85.0"
-              value={waist}
-              onChange={(e) => setWaist(e.target.value)}
-              className="w-full bg-desert-bg border border-desert-border-strong rounded-sm px-3 py-2 text-desert-text font-sans placeholder:text-desert-text-3 focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent"
-            />
-          )}
-        </div>
+        {/* Tags */}
+        <TagsInput />
 
         {/* Save Button */}
         <button
@@ -910,7 +764,7 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
           <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">
             Shin Pain
           </div>
-          <div className="font-mono font-bold text-2xl text-desert-text tracking-tight">
+          <div className={`font-mono font-bold text-2xl tracking-tight ${getShinPainColor(latestShinPain)}`}>
             {latestShinPain != null ? `${latestShinPain}/10` : "—"}
           </div>
           <div className="font-mono text-xs text-desert-text-2 mt-1">
@@ -1180,81 +1034,14 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
                 </div>
               </div>
 
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="font-sans text-sm text-desert-text">Shin pain today</label>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShinEnabled(!shinEnabled);
-                      if (shinEnabled) setShin(null);
-                    }}
-                    className="relative inline-block w-10 h-5"
-                  >
-                    <span
-                      className={`absolute inline-block w-4 h-4 bg-desert-surface-hover rounded-full transition-transform ${
-                        shinEnabled ? "translate-x-5" : "translate-x-0.5"
-                      }`}
-                      style={{ top: "2px", left: shinEnabled ? "calc(100% - 17px)" : "2px" }}
-                    />
-                    <div
-                      className={`w-full h-full rounded-full transition-colors ${
-                        shinEnabled ? "bg-desert-accent" : "bg-desert-surface"
-                      }`}
-                    />
-                  </button>
-                </div>
-                {shinEnabled && (
-                  <div className="flex flex-wrap gap-2 mt-3">
-                    {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((value) => (
-                      <button
-                        key={value}
-                        type="button"
-                        onClick={() => toggleShin(value)}
-                        className={`w-10 h-10 rounded-sm border font-mono text-sm font-medium transition-colors ${getShinColor(shin === value ? value : null)}`}
-                      >
-                        {value}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+              {/* Shin Pain (range slider) */}
+              <ShinPainSlider />
 
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="font-sans text-sm text-desert-text">Log waist cm</label>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setWaistEnabled(!waistEnabled);
-                      if (!waistEnabled) setWaist("");
-                    }}
-                    className="relative inline-block w-10 h-5"
-                  >
-                    <span
-                      className={`absolute inline-block w-4 h-4 bg-desert-surface-hover rounded-full transition-transform ${
-                        waistEnabled ? "translate-x-5" : "translate-x-0.5"
-                      }`}
-                      style={{ top: "2px", left: waistEnabled ? "calc(100% - 17px)" : "2px" }}
-                    />
-                    <div
-                      className={`w-full h-full rounded-full transition-colors ${
-                        waistEnabled ? "bg-desert-accent" : "bg-desert-surface"
-                      }`}
-                    />
-                  </button>
-                </div>
-                {waistEnabled && (
-                  <input
-                    type="number"
-                    step="0.5"
-                    placeholder="85.0"
-                    value={waist}
-                    onChange={(e) => setWaist(e.target.value)}
-                    className="w-full bg-desert-bg border border-desert-border-strong rounded-sm px-3 py-2 text-desert-text font-sans placeholder:text-desert-text-3 focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent"
-                  />
-                )}
-              </div>
+              {/* Waist (cm) */}
+              <WaistCmInput />
+
+              {/* Tags */}
+              <TagsInput />
             </div>
 
             <div className="flex gap-3 mt-6">

@@ -68,7 +68,7 @@ export async function buildFocusContext(
       .limit(10),
     supabase
       .from("workout_checkins")
-      .select("date, hrv, hrv_rmssd, sleep, weight, readiness, shin_pain, waist_cm, pns_index, sns_index, stress_index, kubios_readiness, mean_hr")
+      .select("date, hrv, hrv_rmssd, sleep, weight, readiness, shin_pain, waist_cm, pns_index, sns_index, stress_index, kubios_readiness, mean_hr, tags")
       .eq("user_id", userId)
       .order("date", { ascending: false })
       .limit(3),
@@ -147,6 +147,7 @@ export async function buildFocusContext(
     if (latest.mean_hr != null) parts.push(`Mean HR: ${latest.mean_hr} bpm (during HRV reading)`);
     if (latest.shin_pain != null) parts.push(`Shin pain: ${latest.shin_pain}/10 (0=none, 10=severe)`);
     if (latest.waist_cm != null) parts.push(`Waist: ${latest.waist_cm}cm`);
+    if (latest.tags && Array.isArray(latest.tags) && latest.tags.length > 0) parts.push(`Tags: ${latest.tags.join(", ")}`);
     sections.push(
       "RECOVERY & BODY DATA (latest check-in):\n" + parts.join("\n") +
       "\n\nHRV Interpretation: RMSSD measures parasympathetic recovery — primary metric for training readiness. " +
