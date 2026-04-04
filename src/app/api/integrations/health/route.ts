@@ -20,7 +20,7 @@ export async function POST(request: Request) {
     return Response.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const { date, hrv, hrv_rmssd, readiness, mindfulness_minutes, sleep_hours, weight, shin_pain, waist_cm, pns_index, sns_index, stress_index, kubios_readiness, mean_hr } = body;
+  const { date, hrv, hrv_rmssd, readiness, mindfulness_minutes, sleep_hours, weight, shin_pain, waist_cm, pns_index, sns_index, stress_index, kubios_readiness, mean_hr, body_fat_pct } = body;
 
   if (!date) {
     return Response.json({ error: "date is required" }, { status: 400 });
@@ -43,6 +43,7 @@ export async function POST(request: Request) {
   if (stress_index != null) { checkinFields.stress_index = stress_index; imported.push("stress_index"); }
   if (kubios_readiness != null) { checkinFields.kubios_readiness = kubios_readiness; imported.push("kubios_readiness"); }
   if (mean_hr != null) { checkinFields.mean_hr = mean_hr; imported.push("mean_hr"); }
+  if (body_fat_pct != null) { checkinFields.body_fat_pct = body_fat_pct; imported.push("body_fat_pct"); }
 
   if (Object.keys(checkinFields).length > 0) {
     const { data: existing } = await db

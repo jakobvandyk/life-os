@@ -54,7 +54,7 @@ export default async function RootLayout({
           <Sidebar user={user} />
 
           {/* Main Content */}
-          <main className="relative z-10 flex-1 overflow-y-auto p-4 md:p-6">
+          <main className="relative z-10 flex-1 overflow-y-auto pt-16 px-4 pb-4 md:pt-6 md:px-6 md:pb-6">
             {children}
           </main>
         </div>

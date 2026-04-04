@@ -22,6 +22,7 @@ export interface Checkin {
   stress_index?: number | null;
   kubios_readiness?: number | null;
   mean_hr?: number | null;
+  body_fat_pct?: number | null;
   tags?: string[] | null;
   created_at?: string;
 }
@@ -55,6 +56,7 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
   const [stressIndex, setStressIndex] = useState<string>("");
   const [kubiosReadiness, setKubiosReadiness] = useState<string>("");
   const [meanHr, setMeanHr] = useState<string>("");
+  const [bodyFatPct, setBodyFatPct] = useState<string>("");
   const [tags, setTags] = useState<string>("");
 
   // Get today's checkin
@@ -138,6 +140,7 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
   const latestStress = checkins.find(c => c.stress_index != null)?.stress_index;
   const latestKubiosReadiness = checkins.find(c => c.kubios_readiness != null)?.kubios_readiness;
   const latestMeanHr = checkins.find(c => c.mean_hr != null)?.mean_hr;
+  const latestBodyFatPct = checkins.find(c => c.body_fat_pct != null)?.body_fat_pct;
   const totalEntries = checkins.length;
 
   const getShinPainColor = (value: number | null | undefined): string => {
@@ -164,6 +167,7 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
     setStressIndex("");
     setKubiosReadiness("");
     setMeanHr("");
+    setBodyFatPct("");
     setKubiosOpen(false);
     setTags("");
   };
@@ -184,6 +188,7 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
     setStressIndex(entry.stress_index?.toString() || "");
     setKubiosReadiness(entry.kubios_readiness?.toString() || "");
     setMeanHr(entry.mean_hr?.toString() || "");
+    setBodyFatPct(entry.body_fat_pct?.toString() || "");
     setTags(Array.isArray(entry.tags) ? entry.tags.join(", ") : "");
     if (entry.pns_index != null || entry.sns_index != null || entry.hrv_rmssd != null) {
       setKubiosOpen(true);
@@ -214,6 +219,7 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
     stress_index: stressIndex ? parseFloat(stressIndex) : null,
     kubios_readiness: kubiosReadiness ? parseFloat(kubiosReadiness) : null,
     mean_hr: meanHr ? parseFloat(meanHr) : null,
+    body_fat_pct: bodyFatPct ? parseFloat(bodyFatPct) : null,
     tags: tags ? tags.split(",").map(t => t.trim()).filter(Boolean) : null,
   });
 
@@ -225,18 +231,23 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
     try {
       const payload = buildPayload(todayStr);
 
-      const { error } = await supabase
+      // Bug fix: renamed to avoid shadowing the state `error` variable,
+      // and added explicit error logging so save failures are visible.
+      const { error: upsertError } = await supabase
         .from("workout_checkins")
         .upsert(payload, { onConflict: "user_id,date" });
 
-      if (error) await queueWrite("workout_checkins", "insert", payload);
+      if (upsertError) {
+        console.error("Checkin upsert failed, queueing offline:", upsertError);
+        await queueWrite("workout_checkins", "insert", payload);
+      }
 
       onRefetch();
-      // Reset form if it's a new entry (not update)
       if (!todayCheckin) {
         resetForm();
       }
     } catch (err: any) {
+      console.error("Checkin save error:", err);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -269,11 +280,14 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
     try {
       const payload = buildPayload(pastDate);
 
-      const { error } = await supabase
+      const { error: upsertError } = await supabase
         .from("workout_checkins")
         .upsert(payload, { onConflict: "user_id,date" });
 
-      if (error) await queueWrite("workout_checkins", "insert", payload);
+      if (upsertError) {
+        console.error("Checkin modal upsert failed, queueing offline:", upsertError);
+        await queueWrite("workout_checkins", "insert", payload);
+      }
 
       closeModal();
       onRefetch();
@@ -367,6 +381,7 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
   const formatHistoryPill = (entry: Checkin) => {
     const parts = [];
     if (entry.weight) parts.push(`${entry.weight.toFixed(1)}kg wt`);
+    if (entry.body_fat_pct != null) parts.push(`${entry.body_fat_pct.toFixed(1)}% bf`);
     if (entry.waist_cm) parts.push(`${entry.waist_cm.toFixed(1)}cm waist`);
     else if (entry.waist) parts.push(`${entry.waist.toFixed(1)}cm waist`);
     if (entry.hrv_rmssd) parts.push(`${entry.hrv_rmssd.toFixed(0)} rmssd`);
@@ -389,8 +404,11 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
     [checkins, todayStr]
   );
 
-  // Toggle switch component
-  const ToggleSwitch = ({ enabled, onToggle }: { enabled: boolean; onToggle: () => void }) => (
+  // Reusable inline JSX renderers — defined as arrow functions returning JSX
+  // rather than as React components to avoid remount issues (Bug fix: defining
+  // components inside render causes input unmount/remount on every keystroke,
+  // dismissing mobile keyboards). These share parent state via closure.
+  const renderToggleSwitch = (enabled: boolean, onToggle: () => void) => (
     <button
       type="button"
       onClick={onToggle}
@@ -410,20 +428,16 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
     </button>
   );
 
-  // Shin pain range slider section (reusable for form and modal)
-  const ShinPainSlider = () => (
+  const renderShinPainSlider = () => (
     <div className="mb-4">
       <div className="flex items-center justify-between mb-2">
         <label className="font-mono text-xs uppercase tracking-wider text-desert-text-2">
           Shin Pain (0-10)
         </label>
-        <ToggleSwitch
-          enabled={shinPainEnabled}
-          onToggle={() => {
-            setShinPainEnabled(!shinPainEnabled);
-            if (shinPainEnabled) setShinPain(null);
-          }}
-        />
+        {renderToggleSwitch(shinPainEnabled, () => {
+          setShinPainEnabled(!shinPainEnabled);
+          if (shinPainEnabled) setShinPain(null);
+        })}
       </div>
       {shinPainEnabled ? (
         <div className="flex items-center gap-4">
@@ -444,20 +458,16 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
     </div>
   );
 
-  // Waist cm input section (reusable for form and modal)
-  const WaistCmInput = () => (
+  const renderWaistCmInput = () => (
     <div className="mb-4">
       <div className="flex items-center justify-between mb-2">
         <label className="font-mono text-xs uppercase tracking-wider text-desert-text-2">
           Waist (CM)
         </label>
-        <ToggleSwitch
-          enabled={waistCmEnabled}
-          onToggle={() => {
-            setWaistCmEnabled(!waistCmEnabled);
-            if (waistCmEnabled) setWaistCm("");
-          }}
-        />
+        {renderToggleSwitch(waistCmEnabled, () => {
+          setWaistCmEnabled(!waistCmEnabled);
+          if (waistCmEnabled) setWaistCm("");
+        })}
       </div>
       {waistCmEnabled ? (
         <input
@@ -474,8 +484,7 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
     </div>
   );
 
-  // Tags input section (reusable for form and modal)
-  const TagsInput = () => (
+  const renderTagsInput = () => (
     <div className="mb-6">
       <label className="block font-mono text-xs uppercase tracking-wider text-desert-text-2 mb-2">
         Tags
@@ -502,8 +511,8 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
       <div className="bg-desert-surface border border-desert-border rounded-sm p-5">
         <h2 className="font-mono font-bold text-base tracking-[0.06em] uppercase text-desert-text mb-4">Today&#39;s Check-in</h2>
 
-        {/* Row 1: Weight, Sleep, HRV SDNN */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+        {/* Row 1: Weight, Sleep, HRV SDNN, Body Fat */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
           <div>
             <label className="block text-xs text-desert-text-3 uppercase tracking-wider font-mono mb-2">
               Weight (kg)
@@ -540,6 +549,19 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
               placeholder="52"
               value={hrv}
               onChange={(e) => setHrv(e.target.value)}
+              className="w-full bg-desert-bg border border-desert-border-strong rounded-sm px-3 py-2 text-desert-text placeholder:text-desert-text-3 focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-desert-text-3 uppercase tracking-wider font-mono mb-2">
+              Body Fat (%)
+            </label>
+            <input
+              type="number"
+              step="0.1"
+              placeholder="Scale estimate"
+              value={bodyFatPct}
+              onChange={(e) => setBodyFatPct(e.target.value)}
               className="w-full bg-desert-bg border border-desert-border-strong rounded-sm px-3 py-2 text-desert-text placeholder:text-desert-text-3 focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent"
             />
           </div>
@@ -661,13 +683,13 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
         </div>
 
         {/* Shin Pain (range slider) */}
-        <ShinPainSlider />
+        {renderShinPainSlider()}
 
         {/* Waist (cm) */}
-        <WaistCmInput />
+        {renderWaistCmInput()}
 
         {/* Tags */}
-        <TagsInput />
+        {renderTagsInput()}
 
         {/* Save Button */}
         <button
@@ -782,6 +804,19 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
           </div>
           <div className="font-mono text-xs text-desert-text-2 mt-1">
             latest
+          </div>
+        </div>
+
+        {/* Body Fat */}
+        <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
+          <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">
+            Body Fat
+          </div>
+          <div className="font-mono font-bold text-2xl text-desert-text tracking-tight">
+            {latestBodyFatPct != null ? `${latestBodyFatPct.toFixed(1)}%` : "—"}
+          </div>
+          <div className="font-mono text-xs text-desert-text-2 mt-1">
+            scale estimate
           </div>
         </div>
 
@@ -990,6 +1025,20 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
 
               <div>
                 <label className="block font-mono text-xs text-desert-text-3 uppercase tracking-wider mb-2">
+                  Body Fat (%)
+                </label>
+                <input
+                  type="number"
+                  step="0.1"
+                  placeholder="Scale estimate"
+                  value={bodyFatPct}
+                  onChange={(e) => setBodyFatPct(e.target.value)}
+                  className="w-full bg-desert-bg border border-desert-border-strong rounded-sm px-3 py-2 text-desert-text font-sans placeholder:text-desert-text-3 focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent"
+                />
+              </div>
+
+              <div>
+                <label className="block font-mono text-xs text-desert-text-3 uppercase tracking-wider mb-2">
                   Sleep (hrs)
                 </label>
                 <input
@@ -1035,13 +1084,13 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
               </div>
 
               {/* Shin Pain (range slider) */}
-              <ShinPainSlider />
+              {renderShinPainSlider()}
 
               {/* Waist (cm) */}
-              <WaistCmInput />
+              {renderWaistCmInput()}
 
               {/* Tags */}
-              <TagsInput />
+              {renderTagsInput()}
             </div>
 
             <div className="flex gap-3 mt-6">
