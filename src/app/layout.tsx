@@ -43,6 +43,11 @@ export default async function RootLayout({
     <html lang="en">
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){var t=localStorage.getItem('theme');if(t==='light')document.documentElement.classList.add('light');var m=document.querySelector('meta[name="theme-color"]');if(m)m.content=t==='light'?'#f5efe6':'#1a1714'})()`,
+          }}
+        />
         <meta name="theme-color" content="#1a1714" />
         <link rel="manifest" href="/manifest.json" />
         <link rel="icon" href="/icon-192.svg" />

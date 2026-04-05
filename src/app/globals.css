@@ -47,6 +47,49 @@
   --font-sans: var(--font-sans-var), "IBM Plex Sans", sans-serif;
 }
 
+/* === Light mode overrides — "Desert at Midday" === */
+html.light {
+  --color-desert-bg: #f5efe6;
+  --color-desert-bg-secondary: #ede5d8;
+  --color-desert-surface: #e6ddd0;
+  --color-desert-surface-hover: #ddd3c4;
+  --color-desert-border: #c8bda8;
+  --color-desert-border-strong: #a89880;
+  --color-desert-text: #2c2418;
+  --color-desert-text-2: #6b5a45;
+  --color-desert-text-3: #9a8b78;
+  --color-desert-accent: #c06a2f;
+  --color-desert-accent-glow: #d4793c;
+  --color-desert-accent-dim: #c06a2f20;
+  --color-desert-success: #5a7a42;
+  --color-desert-success-dim: #5a7a4218;
+  --color-desert-warning: #a06b28;
+  --color-desert-warning-dim: #a06b2818;
+  --color-desert-danger: #993828;
+  --color-desert-danger-dim: #99382818;
+  --color-desert-mystic: #6e4e8e;
+  --color-desert-mystic-dim: #6e4e8e18;
+  --color-desert-celestial: #366a88;
+  --color-desert-celestial-dim: #366a8818;
+  --color-desert-forest: #486844;
+  --color-desert-forest-dim: #48684418;
+  --color-desert-ocean: #2f5a68;
+  --color-desert-clay: #8a5252;
+  --color-desert-driftwood: #6b6050;
+}
+
+html.light body::before {
+  opacity: 0.04;
+}
+
+html.light body::after {
+  background: radial-gradient(
+    ellipse at 50% 0%,
+    transparent 50%,
+    rgba(200, 189, 168, 0.3) 100%
+  );
+}
+
 /* === Base body styles === */
 body {
   background-color: var(--color-desert-bg);

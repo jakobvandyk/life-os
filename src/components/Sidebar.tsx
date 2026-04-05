@@ -69,11 +69,25 @@ function NavList({
 
 export default function Sidebar({ user }: SidebarProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isLight, setIsLight] = useState(false);
   const pathname = usePathname();
 
   useEffect(() => {
     setSidebarOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    setIsLight(document.documentElement.classList.contains("light"));
+  }, []);
+
+  const toggleTheme = () => {
+    const next = !isLight;
+    document.documentElement.classList.toggle("light", next);
+    localStorage.setItem("theme", next ? "light" : "dark");
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute("content", next ? "#f5efe6" : "#1a1714");
+    setIsLight(next);
+  };
 
   const closeNav = () => setSidebarOpen(false);
 
@@ -114,6 +128,13 @@ export default function Sidebar({ user }: SidebarProps) {
                 {user.email}
               </p>
             )}
+            <button
+              onClick={toggleTheme}
+              className="font-pixel text-[9px] text-desert-text-3 hover:text-desert-accent transition-colors uppercase tracking-wider"
+              aria-label={isLight ? "Switch to dark mode" : "Switch to light mode"}
+            >
+              {isLight ? "☽ DARK" : "☀ LIGHT"}
+            </button>
             <SyncStatus />
             <SignOutButton />
           </div>
@@ -137,6 +158,13 @@ export default function Sidebar({ user }: SidebarProps) {
               {user.email}
             </p>
           )}
+          <button
+            onClick={toggleTheme}
+            className="font-pixel text-[9px] text-desert-text-3 hover:text-desert-accent transition-colors uppercase tracking-wider"
+            aria-label={isLight ? "Switch to dark mode" : "Switch to light mode"}
+          >
+            {isLight ? "☽ DARK" : "☀ LIGHT"}
+          </button>
           <SyncStatus />
           <SignOutButton />
         </div>
