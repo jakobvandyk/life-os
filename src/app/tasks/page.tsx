@@ -390,7 +390,7 @@ export default function TasksPage() {
   };
 
   return (
-    <div className="bg-desert-bg min-h-screen p-3 md:p-6 relative z-10">
+    <div className="min-h-screen p-3 md:p-6 relative z-10">
       <div className="flex items-center justify-between mb-8 pb-6 border-b border-desert-border">
         <div>
           <h1 className="font-pixel text-lg text-desert-text flex items-center gap-3">

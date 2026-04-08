@@ -225,7 +225,20 @@ Jakob will create pixel art banner strips from his own photos. Specs:
 - **Wiring:** PageBanner component renders `<img>` below h1, w-full h-8 md:h-12 object-cover opacity-40
 - Keep sparse and subtle — mostly bg colour with silhouette highlights
 
+## Light/Dark Theme
+- Toggle in sidebar footer: "☀ LIGHT" / "☽ DARK"
+- Implemented via CSS variable overrides: `html.light {}` in globals.css
+- FOUC-prevention inline script in layout.tsx reads localStorage before first paint
+- Light palette: warm parchment/sandstone ("desert at midday"), not clinical white
+- All components automatically adapt — no per-page changes needed
+- Preference persisted in localStorage key: "theme" (values: "light" | "dark")
+
+## Data Inventory
+- DATA-INVENTORY.md in project root — comprehensive list of all tracked data points, sources, and ingestion methods
+- Includes Cronometer expansion ideas (biometric mapping, nutrition features, cross-domain insights)
+
 ## Current Status
 All phases complete (1-7). D3 pixel art icons complete. Offline fallbacks wired.
 Data export + insight import workflow built. Kubios HRV manual entry active.
-Next: D4 banners (user-created), additional polish as needed.
+Light/dark theme toggle complete. Body fat percentage tracking added.
+Next: D4 banners (user-created), Cronometer biometric mapping, additional polish.

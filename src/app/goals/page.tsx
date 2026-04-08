@@ -156,7 +156,7 @@ export default function GoalsPage() {
     "bg-desert-surface border border-desert-border rounded-sm px-3 py-2 text-desert-text text-sm focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent transition-colors";
 
   return (
-    <div className="bg-desert-bg min-h-screen p-6 relative z-10">
+    <div className="min-h-screen p-6 relative z-10">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>

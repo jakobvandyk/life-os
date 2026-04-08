@@ -167,7 +167,7 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="bg-desert-bg min-h-screen flex flex-col relative z-10">
+    <div className="min-h-screen flex flex-col relative z-10">
       {/* Header */}
       <div className="p-6 pb-0">
         <div className="flex items-center justify-between mb-4 pb-4 border-b border-desert-border">

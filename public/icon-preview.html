@@ -1,0 +1,1720 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Pixel Icon Size Preview</title>
+<style>
+  body {
+    background: #1a1714;
+    color: #e8dcc8;
+    font-family: 'IBM Plex Mono', monospace;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 48px;
+  }
+  h1 { color: #d4793c; font-size: 14px; text-transform: uppercase; letter-spacing: 0.15em; }
+  h2 { color: #a89880; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+  .row {
+    display: flex;
+    align-items: end;
+    gap: 40px;
+    flex-wrap: wrap;
+  }
+  .sample {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .label {
+    font-size: 10px;
+    color: #6b5f50;
+  }
+  .context {
+    font-size: 10px;
+    color: #5c5345;
+  }
+  .card {
+    background: #242019;
+    border: 1px solid #3d3730;
+    border-radius: 2px;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .card-label {
+    font-size: 13px;
+    color: #e8dcc8;
+  }
+  .sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 13px;
+    color: #a89880;
+  }
+  .sidebar-item:hover { background: #2e2a22; }
+  .header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 18px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: #e8dcc8;
+  }
+  .divider {
+    border: none;
+    border-top: 1px solid #3d3730;
+    margin: 0;
+  }
+  .grid-section {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  .icon-grid {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .icon-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    width: 64px;
+  }
+  .icon-cell .label { font-size: 8px; }
+</style>
+</head>
+<body>
+
+<h1>Pixel Icon Size Review -- Dashboard Icon</h1>
+
+<script>
+// Dashboard icon (bento grid) - 7x7
+const grid = [
+  1,1,1,0,1,1,1,
+  1,1,1,0,1,1,1,
+  1,1,1,0,1,1,1,
+  0,0,0,0,0,0,0,
+  1,1,1,0,1,1,1,
+  1,1,1,0,1,1,1,
+  1,1,1,0,1,1,1,
+];
+
+// All icons for the grid at the bottom
+const ALL_ICONS = {
+  dashboard: [1,1,1,0,1,1,1, 1,1,1,0,1,1,1, 1,1,1,0,1,1,1, 0,0,0,0,0,0,0, 1,1,1,0,1,1,1, 1,1,1,0,1,1,1, 1,1,1,0,1,1,1],
+  tasks:     [1,1,1,1,1,1,0, 1,0,0,0,0,1,0, 1,0,1,0,1,1,0, 1,0,0,1,0,1,0, 1,0,0,0,1,1,0, 1,0,0,0,0,1,0, 1,1,1,1,1,1,0],
+  habits:    [0,0,1,1,1,0,0, 0,1,0,0,0,0,0, 1,0,0,0,0,0,1, 1,0,0,0,0,0,1, 1,0,0,0,0,0,1, 0,0,0,0,0,1,0, 0,0,1,1,1,0,0],
+  workouts:  [0,0,0,1,0,0,0, 0,0,1,1,1,0,0, 0,1,0,1,0,1,0, 1,0,0,1,0,0,1, 0,0,0,1,0,0,0, 0,0,0,1,0,0,0, 0,0,1,1,1,0,0],
+  journal:   [0,1,1,1,1,1,0, 0,1,0,0,0,1,0, 0,1,0,1,0,1,0, 0,1,0,1,0,1,0, 0,1,0,0,0,1,0, 0,1,0,1,0,1,0, 0,1,1,1,1,1,0],
+  goals:     [0,0,1,1,1,0,0, 0,1,0,0,0,1,0, 1,0,0,1,0,0,1, 1,0,1,1,1,0,1, 1,0,0,1,0,0,1, 0,1,0,0,0,1,0, 0,0,1,1,1,0,0],
+  finances:  [0,0,1,1,1,0,0, 0,1,0,1,0,0,0, 1,0,0,1,0,0,0, 0,1,0,1,0,1,0, 0,0,0,1,0,0,1, 0,0,0,1,0,1,0, 0,0,1,1,1,0,0],
+  calendar:  [1,1,1,1,1,1,1, 1,0,0,0,0,0,1, 1,1,1,1,1,1,1, 1,0,1,0,1,0,1, 1,0,0,0,0,0,1, 1,0,1,0,0,0,1, 1,1,1,1,1,1,1],
+  knowledge: [0,1,1,0,1,1,0, 0,1,1,0,1,1,0, 0,1,1,0,1,1,0, 0,1,1,0,1,1,0, 0,1,1,0,1,1,0, 0,1,1,0,1,1,0, 1,1,1,1,1,1,1],
+  review:    [0,1,1,1,1,0,0, 1,0,0,0,0,0,0, 1,0,0,0,1,1,0, 1,0,0,0,0,1,0, 1,0,0,0,1,1,0, 1,0,0,0,0,0,0, 0,1,1,1,1,0,0],
+  chat:      [0,1,1,1,1,1,0, 1,0,0,0,0,0,1, 1,0,1,0,1,0,1, 1,0,0,0,0,0,1, 0,1,1,1,1,1,0, 0,0,0,1,0,0,0, 0,0,1,0,0,0,0],
+  settings:  [0,0,1,0,1,0,0, 0,1,1,1,1,1,0, 1,1,0,0,0,1,1, 0,1,0,0,0,1,0, 1,1,0,0,0,1,1, 0,1,1,1,1,1,0, 0,0,1,0,1,0,0],
+};
+
+function makeSVG(iconGrid, size, color = '#e8dcc8') {
+  let rects = '';
+  iconGrid.forEach((val, i) => {
+    if (!val) return;
+    const x = i % 7;
+    const y = Math.floor(i / 7);
+    rects += `<rect x="${x}" y="${y}" width="1" height="1" fill="${color}" shape-rendering="crispEdges"/>`;
+  });
+  return `<svg width="${size}" height="${size}" viewBox="0 0 7 7" xmlns="http://www.w3.org/2000/svg">${rects}</svg>`;
+}
+
+// --- GRID RESOLUTION COMPARISON ---
+// Same "dashboard/bento" concept redrawn at different pixel grid dimensions
+const GRID_VARIANTS = {
+  '5x5': {
+    dim: 5,
+    grid: [
+      1,1,0,1,1,
+      1,1,0,1,1,
+      0,0,0,0,0,
+      1,1,0,1,1,
+      1,1,0,1,1,
+    ]
+  },
+  '7x7 (current)': {
+    dim: 7,
+    grid: [
+      1,1,1,0,1,1,1,
+      1,1,1,0,1,1,1,
+      1,1,1,0,1,1,1,
+      0,0,0,0,0,0,0,
+      1,1,1,0,1,1,1,
+      1,1,1,0,1,1,1,
+      1,1,1,0,1,1,1,
+    ]
+  },
+  '9x9': {
+    dim: 9,
+    grid: [
+      1,1,1,1,0,1,1,1,1,
+      1,1,1,1,0,1,1,1,1,
+      1,1,1,1,0,1,1,1,1,
+      1,1,1,1,0,1,1,1,1,
+      0,0,0,0,0,0,0,0,0,
+      1,1,1,1,0,1,1,1,1,
+      1,1,1,1,0,1,1,1,1,
+      1,1,1,1,0,1,1,1,1,
+      1,1,1,1,0,1,1,1,1,
+    ]
+  },
+  '11x11': {
+    dim: 11,
+    grid: [
+      1,1,1,1,1,0,1,1,1,1,1,
+      1,1,1,1,1,0,1,1,1,1,1,
+      1,1,1,1,1,0,1,1,1,1,1,
+      1,1,1,1,1,0,1,1,1,1,1,
+      1,1,1,1,1,0,1,1,1,1,1,
+      0,0,0,0,0,0,0,0,0,0,0,
+      1,1,0,0,1,0,1,1,1,1,1,
+      1,1,0,0,1,0,1,1,1,1,1,
+      1,1,1,1,1,0,1,1,1,1,1,
+      1,1,1,1,1,0,1,1,1,1,1,
+      1,1,1,1,1,0,1,1,1,1,1,
+    ]
+  },
+  '13x13': {
+    dim: 13,
+    grid: [
+      1,1,1,1,1,1,0,1,1,1,1,1,1,
+      1,1,1,1,1,1,0,1,1,1,1,1,1,
+      1,1,1,1,1,1,0,1,1,1,1,1,1,
+      1,1,1,1,1,1,0,1,1,1,1,1,1,
+      1,1,1,1,1,1,0,1,1,1,1,1,1,
+      1,1,1,1,1,1,0,1,1,1,1,1,1,
+      0,0,0,0,0,0,0,0,0,0,0,0,0,
+      1,1,1,0,1,1,0,1,1,1,1,1,1,
+      1,1,1,0,1,1,0,1,1,1,1,1,1,
+      1,1,1,0,1,1,0,1,1,1,1,1,1,
+      1,1,1,1,1,1,0,1,1,1,1,1,1,
+      1,1,1,1,1,1,0,1,1,1,1,1,1,
+      1,1,1,1,1,1,0,1,1,1,1,1,1,
+    ]
+  },
+};
+
+// Workouts icon at different grid dimensions for comparison
+const WORKOUTS_VARIANTS = {
+  '5x5': {
+    dim: 5,
+    grid: [
+      0,0,1,0,0,
+      0,1,1,1,0,
+      1,0,1,0,1,
+      0,0,1,0,0,
+      0,1,1,1,0,
+    ]
+  },
+  '7x7 (current)': {
+    dim: 7,
+    grid: [
+      0,0,0,1,0,0,0,
+      0,0,1,1,1,0,0,
+      0,1,0,1,0,1,0,
+      1,0,0,1,0,0,1,
+      0,0,0,1,0,0,0,
+      0,0,0,1,0,0,0,
+      0,0,1,1,1,0,0,
+    ]
+  },
+  '9x9': {
+    dim: 9,
+    grid: [
+      0,0,0,0,1,0,0,0,0,
+      0,0,0,1,1,1,0,0,0,
+      0,0,1,0,1,0,1,0,0,
+      0,1,0,0,1,0,0,1,0,
+      1,0,0,0,1,0,0,0,1,
+      0,0,0,0,1,0,0,0,0,
+      0,0,0,0,1,0,0,0,0,
+      0,0,0,1,1,1,0,0,0,
+      0,0,1,1,0,1,1,0,0,
+    ]
+  },
+  '11x11': {
+    dim: 11,
+    grid: [
+      0,0,0,0,0,1,0,0,0,0,0,
+      0,0,0,0,1,1,1,0,0,0,0,
+      0,0,0,1,0,1,0,1,0,0,0,
+      0,0,1,0,0,1,0,0,1,0,0,
+      0,1,0,0,0,1,0,0,0,1,0,
+      1,0,0,0,0,1,0,0,0,0,1,
+      0,0,0,0,0,1,0,0,0,0,0,
+      0,0,0,0,0,1,0,0,0,0,0,
+      0,0,0,0,1,1,1,0,0,0,0,
+      0,0,0,1,1,0,1,1,0,0,0,
+      0,0,1,1,0,0,0,1,1,0,0,
+    ]
+  },
+  '13x13': {
+    dim: 13,
+    grid: [
+      0,0,0,0,0,0,1,0,0,0,0,0,0,
+      0,0,0,0,0,1,1,1,0,0,0,0,0,
+      0,0,0,0,1,1,1,1,1,0,0,0,0,
+      0,0,0,1,0,0,1,0,0,1,0,0,0,
+      0,0,1,0,0,0,1,0,0,0,1,0,0,
+      0,1,0,0,0,0,1,0,0,0,0,1,0,
+      1,0,0,0,0,0,1,0,0,0,0,0,1,
+      0,0,0,0,0,0,1,0,0,0,0,0,0,
+      0,0,0,0,0,0,1,0,0,0,0,0,0,
+      0,0,0,0,0,0,1,0,0,0,0,0,0,
+      0,0,0,0,0,1,1,1,0,0,0,0,0,
+      0,0,0,0,1,1,0,1,1,0,0,0,0,
+      0,0,0,1,1,0,0,0,1,1,0,0,0,
+    ]
+  },
+};
+
+// Goals icon at different grid dimensions
+const GOALS_VARIANTS = {
+  '5x5': {
+    dim: 5,
+    grid: [
+      0,1,1,1,0,
+      1,0,0,0,1,
+      1,0,1,0,1,
+      1,0,0,0,1,
+      0,1,1,1,0,
+    ]
+  },
+  '7x7 (current)': {
+    dim: 7,
+    grid: [
+      0,0,1,1,1,0,0,
+      0,1,0,0,0,1,0,
+      1,0,0,1,0,0,1,
+      1,0,1,1,1,0,1,
+      1,0,0,1,0,0,1,
+      0,1,0,0,0,1,0,
+      0,0,1,1,1,0,0,
+    ]
+  },
+  '9x9': {
+    dim: 9,
+    grid: [
+      0,0,1,1,1,1,1,0,0,
+      0,1,0,0,0,0,0,1,0,
+      1,0,0,1,1,1,0,0,1,
+      1,0,1,0,0,0,1,0,1,
+      1,0,1,0,1,0,1,0,1,
+      1,0,1,0,0,0,1,0,1,
+      1,0,0,1,1,1,0,0,1,
+      0,1,0,0,0,0,0,1,0,
+      0,0,1,1,1,1,1,0,0,
+    ]
+  },
+  '11x11': {
+    dim: 11,
+    grid: [
+      0,0,0,1,1,1,1,1,0,0,0,
+      0,0,1,0,0,0,0,0,1,0,0,
+      0,1,0,0,0,0,0,0,0,1,0,
+      1,0,0,0,1,1,1,0,0,0,1,
+      1,0,0,1,0,0,0,1,0,0,1,
+      1,0,0,1,0,1,0,1,0,0,1,
+      1,0,0,1,0,0,0,1,0,0,1,
+      1,0,0,0,1,1,1,0,0,0,1,
+      0,1,0,0,0,0,0,0,0,1,0,
+      0,0,1,0,0,0,0,0,1,0,0,
+      0,0,0,1,1,1,1,1,0,0,0,
+    ]
+  },
+  '13x13': {
+    dim: 13,
+    grid: [
+      0,0,0,0,1,1,1,1,1,0,0,0,0,
+      0,0,0,1,0,0,0,0,0,1,0,0,0,
+      0,0,1,0,0,0,0,0,0,0,1,0,0,
+      0,1,0,0,0,1,1,1,0,0,0,1,0,
+      1,0,0,0,1,0,0,0,1,0,0,0,1,
+      1,0,0,1,0,0,1,0,0,1,0,0,1,
+      1,0,0,1,0,1,1,1,0,1,0,0,1,
+      1,0,0,1,0,0,1,0,0,1,0,0,1,
+      1,0,0,0,1,0,0,0,1,0,0,0,1,
+      0,1,0,0,0,1,1,1,0,0,0,1,0,
+      0,0,1,0,0,0,0,0,0,0,1,0,0,
+      0,0,0,1,0,0,0,0,0,1,0,0,0,
+      0,0,0,0,1,1,1,1,1,0,0,0,0,
+    ]
+  },
+};
+
+function makeSVGVar(iconGrid, dim, size, color = '#e8dcc8') {
+  let rects = '';
+  iconGrid.forEach((val, i) => {
+    if (!val) return;
+    const x = i % dim;
+    const y = Math.floor(i / dim);
+    rects += `<rect x="${x}" y="${y}" width="1" height="1" fill="${color}" shape-rendering="crispEdges"/>`;
+  });
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${dim} ${dim}" xmlns="http://www.w3.org/2000/svg">${rects}</svg>`;
+}
+
+// Render grid resolution section
+function renderGridSection(title, variants) {
+  let h = `<hr class="divider"><h2>${title} — Grid Resolution Comparison</h2>`;
+
+  // Show all at same render size (32px) to compare detail
+  h += '<p style="font-size:10px;color:#5c5345;margin-bottom:12px">All rendered at 32px — comparing pixel detail, not display size</p>';
+  h += '<div class="row">';
+  Object.entries(variants).forEach(([label, v]) => {
+    h += `<div class="sample">${makeSVGVar(v.grid, v.dim, 32)}<span class="label">${label}</span><span class="context">${v.dim}x${v.dim} = ${v.dim*v.dim} cells</span></div>`;
+  });
+  h += '</div>';
+
+  // Show at native-feeling sizes (2px per cell)
+  h += '<p style="font-size:10px;color:#5c5345;margin:16px 0 12px">Rendered at 2px per cell — natural pixel scale</p>';
+  h += '<div class="row">';
+  Object.entries(variants).forEach(([label, v]) => {
+    const nativeSize = v.dim * 2;
+    h += `<div class="sample">${makeSVGVar(v.grid, v.dim, nativeSize)}<span class="label">${label}</span><span class="context">${nativeSize}px</span></div>`;
+  });
+  h += '</div>';
+
+  // Show at 3px per cell
+  h += '<p style="font-size:10px;color:#5c5345;margin:16px 0 12px">Rendered at 3px per cell</p>';
+  h += '<div class="row">';
+  Object.entries(variants).forEach(([label, v]) => {
+    const sz = v.dim * 3;
+    h += `<div class="sample">${makeSVGVar(v.grid, v.dim, sz)}<span class="label">${label}</span><span class="context">${sz}px</span></div>`;
+  });
+  h += '</div>';
+
+  // In-context: sidebar at 14px
+  h += '<p style="font-size:10px;color:#5c5345;margin:16px 0 12px">In sidebar context (14px render)</p>';
+  Object.entries(variants).forEach(([label, v]) => {
+    h += `<div style="margin-bottom:4px"><span class="label" style="display:inline-block;width:80px;text-align:right;margin-right:12px">${label}</span><span class="sidebar-item">${makeSVGVar(v.grid, v.dim, 14, '#a89880')} Dashboard</span></div>`;
+  });
+
+  // In-context: page header at 18px
+  h += '<p style="font-size:10px;color:#5c5345;margin:16px 0 12px">In page header context (18px render)</p>';
+  Object.entries(variants).forEach(([label, v]) => {
+    h += `<div style="margin-bottom:8px"><span class="label" style="display:inline-block;width:80px;text-align:right;margin-right:12px">${label}</span><span class="header">${makeSVGVar(v.grid, v.dim, 18)} Dashboard</span></div>`;
+  });
+
+  document.write(h);
+}
+
+renderGridSection('Dashboard (Bento Grid)', GRID_VARIANTS);
+renderGridSection('Workouts (Dumbbell)', WORKOUTS_VARIANTS);
+renderGridSection('Goals (Bullseye)', GOALS_VARIANTS);
+
+// ===========================================
+// 9x9 FULL ICON SET MOCKUP
+// ===========================================
+const ICONS_9x9 = {
+  dashboard: {
+    grid: [
+      1,1,1,1,0,1,1,1,1,
+      1,1,1,1,0,1,1,1,1,
+      1,1,1,1,0,1,1,1,1,
+      1,1,1,1,0,1,1,1,1,
+      0,0,0,0,0,0,0,0,0,
+      1,1,1,1,0,1,1,1,1,
+      1,1,1,1,0,1,1,1,1,
+      1,1,1,1,0,1,1,1,1,
+      1,1,1,1,0,1,1,1,1,
+    ]
+  },
+  tasks: {
+    grid: [
+      1,1,1,1,1,1,1,1,0,
+      1,0,0,0,0,0,0,1,0,
+      1,0,0,0,0,0,0,1,0,
+      1,0,0,1,0,0,0,1,0,
+      1,0,0,0,1,0,0,1,0,
+      1,0,1,0,0,1,0,1,0,
+      1,0,0,1,0,0,0,1,0,
+      1,0,0,0,0,0,0,1,0,
+      1,1,1,1,1,1,1,1,0,
+    ]
+  },
+  habits: {
+    grid: [
+      0,0,0,1,1,1,0,0,0,
+      0,0,1,0,0,0,1,0,0,
+      0,1,0,0,0,0,0,0,0,
+      1,0,0,0,0,0,0,0,1,
+      1,0,0,0,0,0,0,0,1,
+      1,0,0,0,0,0,0,0,1,
+      0,0,0,0,0,0,0,1,0,
+      0,0,1,0,0,0,1,0,0,
+      0,0,0,1,1,1,0,0,0,
+    ]
+  },
+  workouts: {
+    grid: [
+      0,0,0,0,1,0,0,0,0,
+      0,0,0,1,1,1,0,0,0,
+      0,0,1,0,1,0,1,0,0,
+      0,1,0,0,1,0,0,1,0,
+      1,0,0,0,1,0,0,0,1,
+      0,0,0,0,1,0,0,0,0,
+      0,0,0,0,1,0,0,0,0,
+      0,0,0,1,1,1,0,0,0,
+      0,0,1,1,0,1,1,0,0,
+    ]
+  },
+  journal: {
+    grid: [
+      0,1,1,1,1,1,1,1,0,
+      1,1,0,0,0,0,0,1,0,
+      1,1,0,1,1,1,0,1,0,
+      1,1,0,0,0,0,0,1,0,
+      1,1,0,1,1,1,0,1,0,
+      1,1,0,1,1,0,0,1,0,
+      1,1,0,0,0,0,0,1,0,
+      1,1,0,1,1,1,0,1,0,
+      0,1,1,1,1,1,1,1,0,
+    ]
+  },
+  goals: {
+    grid: [
+      0,0,1,1,1,1,1,0,0,
+      0,1,0,0,0,0,0,1,0,
+      1,0,0,1,1,1,0,0,1,
+      1,0,1,0,0,0,1,0,1,
+      1,0,1,0,1,0,1,0,1,
+      1,0,1,0,0,0,1,0,1,
+      1,0,0,1,1,1,0,0,1,
+      0,1,0,0,0,0,0,1,0,
+      0,0,1,1,1,1,1,0,0,
+    ]
+  },
+  finances: {
+    grid: [
+      0,0,0,1,1,1,0,0,0,
+      0,0,1,0,1,0,1,0,0,
+      0,1,0,0,1,0,0,0,0,
+      0,1,0,0,1,0,0,0,0,
+      0,0,1,0,1,0,1,0,0,
+      0,0,0,0,1,0,0,1,0,
+      0,0,0,0,1,0,0,1,0,
+      0,0,1,0,1,0,1,0,0,
+      0,0,0,1,1,1,0,0,0,
+    ]
+  },
+  calendar: {
+    grid: [
+      0,1,0,1,1,1,0,1,0,
+      1,1,1,1,1,1,1,1,1,
+      1,0,0,0,0,0,0,0,1,
+      1,1,1,1,1,1,1,1,1,
+      1,0,1,0,1,0,1,0,1,
+      1,0,0,0,0,0,0,0,1,
+      1,0,1,0,1,0,0,0,1,
+      1,0,0,0,0,0,0,0,1,
+      1,1,1,1,1,1,1,1,1,
+    ]
+  },
+  knowledge: {
+    grid: [
+      0,1,1,0,1,1,0,1,1,
+      0,1,1,0,1,1,0,1,1,
+      0,1,1,0,1,1,0,1,1,
+      0,1,1,0,1,1,0,1,1,
+      0,1,1,0,1,1,0,1,1,
+      0,1,1,0,1,1,0,1,1,
+      0,1,1,0,1,1,0,1,1,
+      0,1,1,0,1,1,0,1,1,
+      1,1,1,1,1,1,1,1,1,
+    ]
+  },
+  review: {
+    grid: [
+      0,0,1,1,1,1,0,0,0,
+      0,1,0,0,0,0,1,0,0,
+      1,0,0,0,0,0,0,0,0,
+      1,0,0,0,0,1,1,0,0,
+      1,0,0,0,1,0,0,1,0,
+      1,0,0,0,0,1,1,0,0,
+      1,0,0,0,0,0,0,0,0,
+      0,1,0,0,0,0,1,0,0,
+      0,0,1,1,1,1,0,0,0,
+    ]
+  },
+  chat: {
+    grid: [
+      0,1,1,1,1,1,1,1,0,
+      1,0,0,0,0,0,0,0,1,
+      1,0,0,0,0,0,0,0,1,
+      1,0,1,0,1,0,1,0,1,
+      1,0,0,0,0,0,0,0,1,
+      0,1,1,1,1,1,1,1,0,
+      0,0,0,0,1,0,0,0,0,
+      0,0,0,1,0,0,0,0,0,
+      0,0,1,0,0,0,0,0,0,
+    ]
+  },
+  settings: {
+    grid: [
+      0,0,0,1,0,1,0,0,0,
+      0,0,1,1,0,1,1,0,0,
+      0,1,1,0,0,0,1,1,0,
+      1,1,0,0,0,0,0,1,1,
+      0,0,0,0,0,0,0,0,0,
+      1,1,0,0,0,0,0,1,1,
+      0,1,1,0,0,0,1,1,0,
+      0,0,1,1,0,1,1,0,0,
+      0,0,0,1,0,1,0,0,0,
+    ]
+  },
+};
+
+// Sidebar mockup
+{
+  const NAV_ITEMS = [
+    { icon: 'dashboard', label: 'Dashboard' },
+    { icon: 'tasks', label: 'Tasks' },
+    { icon: 'habits', label: 'Habits' },
+    { icon: 'workouts', label: 'Workouts' },
+    { icon: 'journal', label: 'Journal' },
+    { icon: 'goals', label: 'Goals' },
+    { icon: 'finances', label: 'Finances' },
+    { icon: 'calendar', label: 'Calendar' },
+    { icon: 'knowledge', label: 'Knowledge' },
+    { icon: 'review', label: 'Review' },
+    { icon: 'chat', label: 'AI Chat' },
+    { icon: 'settings', label: 'Settings' },
+  ];
+
+  let h = '<hr class="divider">';
+  h += '<h1 style="margin-top:16px">9x9 Full Mockup — Sidebar at 18px + Headers at 40px</h1>';
+
+  // All icons grid
+  h += '<h2>All 9x9 Icons</h2><div class="icon-grid">';
+  Object.entries(ICONS_9x9).forEach(([name, v]) => {
+    h += `<div class="icon-cell">${makeSVGVar(v.grid, 9, 32)}<span class="label">${name}</span></div>`;
+  });
+  h += '</div>';
+
+  // Sidebar mockup
+  h += '<div style="display:flex;gap:48px;flex-wrap:wrap;margin-top:24px">';
+
+  // 9x9 at 18px sidebar
+  h += '<div>';
+  h += '<h2>Sidebar — 9x9 at 18px</h2>';
+  h += '<div style="background:#242019;border:1px solid #3d3730;border-radius:2px;padding:12px 8px;width:200px">';
+  NAV_ITEMS.forEach(item => {
+    const v = ICONS_9x9[item.icon];
+    h += `<div class="sidebar-item">${makeSVGVar(v.grid, 9, 18, '#a89880')}<span>${item.label}</span></div>`;
+  });
+  h += '</div></div>';
+
+  // Current 7x7 at 14px sidebar for comparison
+  h += '<div>';
+  h += '<h2>Sidebar — 7x7 at 14px (current)</h2>';
+  h += '<div style="background:#242019;border:1px solid #3d3730;border-radius:2px;padding:12px 8px;width:200px">';
+  NAV_ITEMS.forEach(item => {
+    const g = ALL_ICONS[item.icon];
+    h += `<div class="sidebar-item">${makeSVG(g, 14, '#a89880')}<span>${item.label}</span></div>`;
+  });
+  h += '</div></div>';
+
+  h += '</div>'; // end flex row
+
+  // Page header mockups
+  h += '<h2 style="margin-top:32px">Page Headers — 9x9 at 40px</h2>';
+  h += '<div style="display:flex;flex-direction:column;gap:20px">';
+  NAV_ITEMS.forEach(item => {
+    const v = ICONS_9x9[item.icon];
+    h += `<div style="display:flex;align-items:center;gap:16px;padding-bottom:12px;border-bottom:1px solid #3d3730">`;
+    h += makeSVGVar(v.grid, 9, 40);
+    h += `<span style="font-size:22px;font-weight:bold;text-transform:uppercase;letter-spacing:0.15em">${item.label}</span>`;
+    h += `</div>`;
+  });
+  h += '</div>';
+
+  // Comparison: page headers current vs proposed
+  h += '<h2 style="margin-top:32px">Page Header Comparison — Current (7x7 at 18px) vs Proposed (9x9 at 40px)</h2>';
+  h += '<div style="display:flex;flex-direction:column;gap:16px">';
+  NAV_ITEMS.slice(0, 6).forEach(item => {
+    const v9 = ICONS_9x9[item.icon];
+    const g7 = ALL_ICONS[item.icon];
+    h += `<div style="display:flex;gap:48px;align-items:center">`;
+    // Current
+    h += `<div style="display:flex;align-items:center;gap:10px;width:240px">`;
+    h += `<span class="label" style="width:60px;text-align:right">current</span>`;
+    h += makeSVG(g7, 18);
+    h += `<span style="font-size:18px;font-weight:bold;text-transform:uppercase;letter-spacing:0.15em">${item.label}</span>`;
+    h += `</div>`;
+    // Proposed
+    h += `<div style="display:flex;align-items:center;gap:16px">`;
+    h += `<span class="label" style="width:60px;text-align:right">proposed</span>`;
+    h += makeSVGVar(v9.grid, 9, 40);
+    h += `<span style="font-size:22px;font-weight:bold;text-transform:uppercase;letter-spacing:0.15em">${item.label}</span>`;
+    h += `</div>`;
+    h += `</div>`;
+  });
+  h += '</div>';
+
+  document.write(h);
+}
+
+// --- SIZE COMPARISON ---
+const sizes = [10, 12, 14, 16, 18, 20, 24, 28, 32, 40, 48, 56, 64];
+const notes = {
+  12: 'dashboard cards',
+  14: 'sidebar (current)',
+  18: 'page headers (current)',
+  24: '', 28: '', 32: '', 40: '', 48: '', 56: '', 64: ''
+};
+
+let html = '<h2>Size Comparison (px)</h2><div class="row">';
+sizes.forEach(s => {
+  const note = notes[s] || '';
+  html += `<div class="sample">${makeSVG(grid, s)}<span class="label">${s}px</span>${note ? `<span class="context">${note}</span>` : ''}</div>`;
+});
+html += '</div>';
+document.write(html);
+
+// --- IN CONTEXT: SIDEBAR ---
+document.write('<hr class="divider">');
+document.write('<h2>In Context: Sidebar Nav Item</h2>');
+[12, 14, 16, 18].forEach(s => {
+  document.write(`<div style="margin-bottom:4px"><span class="label" style="display:inline-block;width:40px;text-align:right;margin-right:12px">${s}px</span><span class="sidebar-item">${makeSVG(grid, s, '#a89880')} Dashboard</span></div>`);
+});
+
+// --- IN CONTEXT: PAGE HEADER ---
+document.write('<hr class="divider">');
+document.write('<h2>In Context: Page Header</h2>');
+[16, 18, 20, 24].forEach(s => {
+  document.write(`<div style="margin-bottom:12px"><span class="label" style="display:inline-block;width:40px;text-align:right;margin-right:12px">${s}px</span><span class="header">${makeSVG(grid, s)} Dashboard</span></div>`);
+});
+
+// --- IN CONTEXT: CARD ---
+document.write('<hr class="divider">');
+document.write('<h2>In Context: Bento Card Header</h2>');
+[10, 12, 14, 16].forEach(s => {
+  document.write(`<div style="margin-bottom:8px"><span class="label" style="display:inline-block;width:40px;text-align:right;margin-right:12px">${s}px</span><div class="card">${makeSVG(grid, s, '#a89880')}<span class="card-label">Dashboard</span></div></div>`);
+});
+
+// --- ALL ICONS AT CURRENT SIZES ---
+document.write('<hr class="divider">');
+document.write('<h2>All Icons at 14px (sidebar size)</h2><div class="icon-grid">');
+Object.entries(ALL_ICONS).forEach(([name, g]) => {
+  document.write(`<div class="icon-cell">${makeSVG(g, 14)}<span class="label">${name}</span></div>`);
+});
+document.write('</div>');
+
+document.write('<h2>All Icons at 18px (header size)</h2><div class="icon-grid">');
+Object.entries(ALL_ICONS).forEach(([name, g]) => {
+  document.write(`<div class="icon-cell">${makeSVG(g, 18)}<span class="label">${name}</span></div>`);
+});
+document.write('</div>');
+
+document.write('<h2>All Icons at 24px</h2><div class="icon-grid">');
+Object.entries(ALL_ICONS).forEach(([name, g]) => {
+  document.write(`<div class="icon-cell">${makeSVG(g, 24)}<span class="label">${name}</span></div>`);
+});
+document.write('</div>');
+
+document.write('<h2>All Icons at 32px</h2><div class="icon-grid">');
+Object.entries(ALL_ICONS).forEach(([name, g]) => {
+  document.write(`<div class="icon-cell">${makeSVG(g, 32)}<span class="label">${name}</span></div>`);
+});
+document.write('</div>');
+
+document.write('<h2>All Icons at 48px (large display)</h2><div class="icon-grid">');
+Object.entries(ALL_ICONS).forEach(([name, g]) => {
+  document.write(`<div class="icon-cell" style="width:80px">${makeSVG(g, 48)}<span class="label">${name}</span></div>`);
+});
+document.write('</div>');
+
+// ==========================================================
+// EMOJI REPLACEMENT ICONS — Full Desert Mystic pixel set
+// ==========================================================
+
+const EMOJI_ICONS = {
+
+  // ── MOOD (currently text-2xl ~24px, 5 levels) ──────────
+  mood_1_rough: { // replaces 😞
+    dim: 9, grid: [
+      0,0,1,1,1,1,1,0,0,
+      0,1,0,0,0,0,0,1,0,
+      1,0,0,0,0,0,0,0,1,
+      1,0,0,1,0,1,0,0,1,
+      1,0,0,0,0,0,0,0,1,
+      1,0,0,1,0,1,0,0,1,
+      1,0,1,0,1,0,1,0,1,
+      0,1,0,0,0,0,0,1,0,
+      0,0,1,1,1,1,1,0,0,
+    ]
+  },
+  mood_2_meh: { // replaces 😐
+    dim: 9, grid: [
+      0,0,1,1,1,1,1,0,0,
+      0,1,0,0,0,0,0,1,0,
+      1,0,0,0,0,0,0,0,1,
+      1,0,0,1,0,1,0,0,1,
+      1,0,0,0,0,0,0,0,1,
+      1,0,0,0,0,0,0,0,1,
+      1,0,0,1,1,1,0,0,1,
+      0,1,0,0,0,0,0,1,0,
+      0,0,1,1,1,1,1,0,0,
+    ]
+  },
+  mood_3_okay: { // replaces 🙂
+    dim: 9, grid: [
+      0,0,1,1,1,1,1,0,0,
+      0,1,0,0,0,0,0,1,0,
+      1,0,0,0,0,0,0,0,1,
+      1,0,0,1,0,1,0,0,1,
+      1,0,0,0,0,0,0,0,1,
+      1,0,0,0,0,0,0,0,1,
+      1,0,1,0,0,0,1,0,1,
+      0,1,0,1,1,1,0,1,0,
+      0,0,1,1,1,1,1,0,0,
+    ]
+  },
+  mood_4_good: { // replaces 😊
+    dim: 9, grid: [
+      0,0,1,1,1,1,1,0,0,
+      0,1,0,0,0,0,0,1,0,
+      1,0,0,0,0,0,0,0,1,
+      1,0,1,1,0,1,1,0,1,
+      1,0,0,0,0,0,0,0,1,
+      1,0,0,0,0,0,0,0,1,
+      1,0,1,0,0,0,1,0,1,
+      0,1,0,1,1,1,0,1,0,
+      0,0,1,1,1,1,1,0,0,
+    ]
+  },
+  mood_5_great: { // replaces 🤩
+    dim: 9, grid: [
+      0,0,1,1,1,1,1,0,0,
+      0,1,0,0,0,0,0,1,0,
+      1,0,0,1,0,1,0,0,1,
+      1,0,1,1,0,1,1,0,1,
+      1,0,0,1,0,1,0,0,1,
+      1,0,0,0,0,0,0,0,1,
+      1,0,1,0,0,0,1,0,1,
+      0,1,0,1,1,1,0,1,0,
+      0,0,1,1,1,1,1,0,0,
+    ]
+  },
+
+  // ── ENERGY (currently text-2xl ~24px, 5 levels) ────────
+  energy_1_drained: { // replaces 🪫 — empty vessel
+    dim: 9, grid: [
+      0,0,1,1,1,1,1,0,0,
+      0,0,1,0,0,0,1,0,0,
+      0,1,0,0,0,0,0,1,0,
+      0,1,0,0,0,0,0,1,0,
+      0,1,0,0,0,0,0,1,0,
+      0,1,0,0,0,0,0,1,0,
+      0,1,0,0,0,0,0,1,0,
+      0,1,0,0,0,0,0,1,0,
+      0,0,1,1,1,1,1,0,0,
+    ]
+  },
+  energy_2_low: { // replaces 😴 — moon + z
+    dim: 9, grid: [
+      0,0,0,1,1,0,1,1,0,
+      0,0,1,0,0,0,0,1,0,
+      0,1,0,0,0,0,1,0,0,
+      0,1,0,0,0,1,0,0,0,
+      0,1,0,0,0,1,1,0,0,
+      0,1,0,0,0,0,0,0,0,
+      0,0,1,0,0,0,0,0,0,
+      0,0,0,1,1,0,0,0,0,
+      0,0,0,0,0,0,0,0,0,
+    ]
+  },
+  energy_3_moderate: { // replaces ⚡ — small bolt
+    dim: 9, grid: [
+      0,0,0,0,1,1,0,0,0,
+      0,0,0,1,1,0,0,0,0,
+      0,0,1,1,0,0,0,0,0,
+      0,1,1,0,0,0,0,0,0,
+      0,1,1,1,1,1,0,0,0,
+      0,0,0,0,0,1,1,0,0,
+      0,0,0,0,1,1,0,0,0,
+      0,0,0,1,1,0,0,0,0,
+      0,0,0,1,0,0,0,0,0,
+    ]
+  },
+  energy_4_high: { // replaces 🔥 — flame
+    dim: 9, grid: [
+      0,0,0,0,1,0,0,0,0,
+      0,0,0,1,1,0,0,0,0,
+      0,0,0,1,0,1,0,0,0,
+      0,0,1,0,0,1,0,0,0,
+      0,1,0,0,1,0,1,0,0,
+      0,1,0,1,1,0,1,0,0,
+      0,1,0,0,1,0,1,0,0,
+      0,0,1,0,0,1,0,0,0,
+      0,0,0,1,1,0,0,0,0,
+    ]
+  },
+  energy_5_peak: { // replaces 🚀 — starburst/sun
+    dim: 9, grid: [
+      0,0,0,0,1,0,0,0,0,
+      1,0,0,1,0,1,0,0,1,
+      0,1,0,0,0,0,0,1,0,
+      0,0,0,1,1,1,0,0,0,
+      1,0,0,1,1,1,0,0,1,
+      0,0,0,1,1,1,0,0,0,
+      0,1,0,0,0,0,0,1,0,
+      1,0,0,1,0,1,0,0,1,
+      0,0,0,0,1,0,0,0,0,
+    ]
+  },
+
+  // ── JOURNAL SECTIONS (currently text-sm ~14px) ─────────
+  gratitude: { // replaces 🙏 — open hands
+    dim: 9, grid: [
+      0,0,0,0,1,0,0,0,0,
+      0,1,0,0,1,0,0,1,0,
+      0,1,0,0,1,0,0,1,0,
+      0,1,0,1,0,1,0,1,0,
+      0,0,1,0,0,0,1,0,0,
+      0,0,1,0,0,0,1,0,0,
+      0,0,0,1,0,1,0,0,0,
+      0,0,0,1,0,1,0,0,0,
+      0,0,0,0,1,0,0,0,0,
+    ]
+  },
+  wins: { // replaces 🏆 — trophy cup
+    dim: 9, grid: [
+      0,1,1,1,1,1,1,1,0,
+      0,1,1,1,1,1,1,1,0,
+      1,0,1,1,1,1,1,0,1,
+      1,0,0,1,1,1,0,0,1,
+      0,0,0,1,1,1,0,0,0,
+      0,0,0,0,1,0,0,0,0,
+      0,0,0,0,1,0,0,0,0,
+      0,0,0,1,1,1,0,0,0,
+      0,0,1,1,1,1,1,0,0,
+    ]
+  },
+  reflection: { // replaces 💭 — thought ripple
+    dim: 9, grid: [
+      0,0,0,0,0,0,0,0,0,
+      0,0,0,1,1,1,1,0,0,
+      0,0,1,0,0,0,0,1,0,
+      0,0,1,0,1,0,0,1,0,
+      0,0,1,0,1,1,0,1,0,
+      0,0,0,1,1,1,1,0,0,
+      0,0,0,1,0,0,0,0,0,
+      0,0,1,0,0,0,0,0,0,
+      0,1,0,0,0,0,0,0,0,
+    ]
+  },
+
+  // ── TASK PRIORITY (currently inline ~14px) ─────────────
+  priority_urgent: { // replaces 🔴 — filled diamond
+    dim: 9, grid: [
+      0,0,0,0,1,0,0,0,0,
+      0,0,0,1,1,1,0,0,0,
+      0,0,1,1,1,1,1,0,0,
+      0,1,1,1,1,1,1,1,0,
+      1,1,1,1,1,1,1,1,1,
+      0,1,1,1,1,1,1,1,0,
+      0,0,1,1,1,1,1,0,0,
+      0,0,0,1,1,1,0,0,0,
+      0,0,0,0,1,0,0,0,0,
+    ]
+  },
+  priority_high: { // replaces 🟠 — filled up-triangle
+    dim: 9, grid: [
+      0,0,0,0,0,0,0,0,0,
+      0,0,0,0,1,0,0,0,0,
+      0,0,0,1,1,1,0,0,0,
+      0,0,0,1,1,1,0,0,0,
+      0,0,1,1,1,1,1,0,0,
+      0,0,1,1,1,1,1,0,0,
+      0,1,1,1,1,1,1,1,0,
+      0,1,1,1,1,1,1,1,0,
+      1,1,1,1,1,1,1,1,1,
+    ]
+  },
+  priority_medium: { // replaces 🔵 — filled circle
+    dim: 9, grid: [
+      0,0,0,1,1,1,0,0,0,
+      0,0,1,1,1,1,1,0,0,
+      0,1,1,1,1,1,1,1,0,
+      1,1,1,1,1,1,1,1,1,
+      1,1,1,1,1,1,1,1,1,
+      1,1,1,1,1,1,1,1,1,
+      0,1,1,1,1,1,1,1,0,
+      0,0,1,1,1,1,1,0,0,
+      0,0,0,1,1,1,0,0,0,
+    ]
+  },
+  priority_low: { // replaces ⚪ — hollow circle
+    dim: 9, grid: [
+      0,0,0,1,1,1,0,0,0,
+      0,0,1,0,0,0,1,0,0,
+      0,1,0,0,0,0,0,1,0,
+      1,0,0,0,0,0,0,0,1,
+      1,0,0,0,0,0,0,0,1,
+      1,0,0,0,0,0,0,0,1,
+      0,1,0,0,0,0,0,1,0,
+      0,0,1,0,0,0,1,0,0,
+      0,0,0,1,1,1,0,0,0,
+    ]
+  },
+
+  // ── CHAT CAPABILITIES (currently in pills ~14px) ───────
+  cap_focus: { // replaces 🎯 — crosshair
+    dim: 9, grid: [
+      0,0,0,0,1,0,0,0,0,
+      0,0,1,1,1,1,1,0,0,
+      0,1,0,0,0,0,0,1,0,
+      0,1,0,0,1,0,0,1,0,
+      1,1,0,1,1,1,0,1,1,
+      0,1,0,0,1,0,0,1,0,
+      0,1,0,0,0,0,0,1,0,
+      0,0,1,1,1,1,1,0,0,
+      0,0,0,0,1,0,0,0,0,
+    ]
+  },
+  cap_review: { // replaces 🔄 — cycle arrows
+    dim: 9, grid: [
+      0,0,0,1,1,1,1,0,0,
+      0,0,1,0,0,0,0,1,0,
+      0,1,0,0,0,0,0,0,0,
+      1,1,1,0,0,0,0,0,0,
+      0,0,0,0,0,0,0,0,0,
+      0,0,0,0,0,0,1,1,1,
+      0,0,0,0,0,0,0,1,0,
+      0,1,0,0,0,0,1,0,0,
+      0,0,1,1,1,1,0,0,0,
+    ]
+  },
+  cap_spending: { // replaces 💰 — coin stack
+    dim: 9, grid: [
+      0,0,1,1,1,1,1,0,0,
+      0,1,0,0,1,0,0,1,0,
+      0,0,1,1,1,1,1,0,0,
+      0,0,0,0,0,0,0,0,0,
+      0,0,1,1,1,1,1,0,0,
+      0,1,0,0,1,0,0,1,0,
+      0,0,1,1,1,1,1,0,0,
+      0,0,0,0,0,0,0,0,0,
+      0,0,1,1,1,1,1,0,0,
+    ]
+  },
+  cap_journal: { // replaces 📔 — notebook
+    dim: 9, grid: [
+      0,1,1,1,1,1,1,1,0,
+      1,1,0,0,0,0,0,1,0,
+      1,1,0,1,1,1,0,1,0,
+      1,1,0,0,0,0,0,1,0,
+      1,1,0,1,1,1,0,1,0,
+      1,1,0,1,1,0,0,1,0,
+      1,1,0,0,0,0,0,1,0,
+      1,1,0,1,1,1,0,1,0,
+      0,1,1,1,1,1,1,1,0,
+    ]
+  },
+  cap_general: { // replaces 💬 — speech bubble dots
+    dim: 9, grid: [
+      0,1,1,1,1,1,1,1,0,
+      1,0,0,0,0,0,0,0,1,
+      1,0,0,0,0,0,0,0,1,
+      1,0,1,0,1,0,1,0,1,
+      1,0,0,0,0,0,0,0,1,
+      0,1,1,1,1,1,1,1,0,
+      0,0,0,0,1,0,0,0,0,
+      0,0,0,1,0,0,0,0,0,
+      0,0,1,0,0,0,0,0,0,
+    ]
+  },
+
+  // ── INTEGRATIONS (currently text-xl ~20px) ─────────────
+  int_health: { // replaces ♥ — heart
+    dim: 9, grid: [
+      0,0,0,0,0,0,0,0,0,
+      0,1,1,0,0,0,1,1,0,
+      1,1,1,1,0,1,1,1,1,
+      1,1,1,1,1,1,1,1,1,
+      1,1,1,1,1,1,1,1,1,
+      0,1,1,1,1,1,1,1,0,
+      0,0,1,1,1,1,1,0,0,
+      0,0,0,1,1,1,0,0,0,
+      0,0,0,0,1,0,0,0,0,
+    ]
+  },
+  int_nutrition: { // replaces 🥗 — leaf/sprout
+    dim: 9, grid: [
+      0,0,0,0,0,0,1,1,0,
+      0,0,0,0,0,1,1,1,0,
+      0,0,0,0,1,1,1,0,0,
+      0,0,0,1,1,1,0,0,0,
+      0,0,1,1,1,0,0,0,0,
+      0,0,0,1,0,0,0,0,0,
+      0,0,0,1,0,0,0,0,0,
+      0,0,0,1,0,0,0,0,0,
+      0,0,1,1,1,0,0,0,0,
+    ]
+  },
+  int_bank: { // replaces 🏦 — columns/temple
+    dim: 9, grid: [
+      0,0,0,1,1,1,0,0,0,
+      0,0,1,1,1,1,1,0,0,
+      0,1,1,1,1,1,1,1,0,
+      0,0,0,0,0,0,0,0,0,
+      0,1,0,1,0,1,0,1,0,
+      0,1,0,1,0,1,0,1,0,
+      0,1,0,1,0,1,0,1,0,
+      0,1,0,1,0,1,0,1,0,
+      0,1,1,1,1,1,1,1,0,
+    ]
+  },
+  int_crypto: { // replaces ₿ — chain link
+    dim: 9, grid: [
+      0,0,0,1,1,0,0,0,0,
+      0,0,1,0,0,1,0,0,0,
+      0,0,1,0,0,1,0,0,0,
+      0,0,0,1,1,0,0,0,0,
+      0,0,0,1,1,0,0,0,0,
+      0,0,0,0,1,1,0,0,0,
+      0,0,0,1,0,0,1,0,0,
+      0,0,0,1,0,0,1,0,0,
+      0,0,0,0,1,1,0,0,0,
+    ]
+  },
+  int_ical: { // replaces 📅 — calendar page
+    dim: 9, grid: [
+      0,1,0,1,1,1,0,1,0,
+      1,1,1,1,1,1,1,1,1,
+      1,0,0,0,0,0,0,0,1,
+      1,1,1,1,1,1,1,1,1,
+      1,0,0,0,0,0,0,0,1,
+      1,0,0,1,1,0,0,0,1,
+      1,0,0,1,1,0,0,0,1,
+      1,0,0,0,0,0,0,0,1,
+      1,1,1,1,1,1,1,1,1,
+    ]
+  },
+
+  // ── HABIT ICONS (currently ~18-20px in grid buttons) ───
+  habit_check: { // replaces ✅ — checkmark
+    dim: 9, grid: [
+      0,0,0,0,0,0,0,0,0,
+      0,0,0,0,0,0,0,0,1,
+      0,0,0,0,0,0,0,1,0,
+      0,0,0,0,0,0,1,0,0,
+      0,0,0,0,0,1,0,0,0,
+      1,0,0,0,1,0,0,0,0,
+      0,1,0,1,0,0,0,0,0,
+      0,0,1,0,0,0,0,0,0,
+      0,0,0,0,0,0,0,0,0,
+    ]
+  },
+  habit_meditate: { // replaces 🧘 — seated figure
+    dim: 9, grid: [
+      0,0,0,1,1,1,0,0,0,
+      0,0,0,1,1,1,0,0,0,
+      0,0,0,0,1,0,0,0,0,
+      0,0,1,1,1,1,1,0,0,
+      0,1,0,0,1,0,0,1,0,
+      1,0,0,0,1,0,0,0,1,
+      0,0,0,1,0,1,0,0,0,
+      0,0,1,0,0,0,1,0,0,
+      0,1,1,0,0,0,1,1,0,
+    ]
+  },
+  habit_read: { // replaces 📚 — open book
+    dim: 9, grid: [
+      0,0,0,0,1,0,0,0,0,
+      0,1,1,0,1,0,1,1,0,
+      1,0,0,1,1,1,0,0,1,
+      1,0,1,0,1,0,1,0,1,
+      1,0,0,0,1,0,0,0,1,
+      1,0,1,0,1,0,1,0,1,
+      1,0,0,0,1,0,0,0,1,
+      1,0,1,0,1,0,1,0,1,
+      0,1,1,1,0,1,1,1,0,
+    ]
+  },
+  habit_run: { // replaces 🏃 — running figure
+    dim: 9, grid: [
+      0,0,0,0,1,1,0,0,0,
+      0,0,0,0,1,1,0,0,0,
+      0,0,0,1,1,0,0,0,0,
+      0,0,1,1,1,1,0,0,0,
+      0,0,0,1,0,0,1,0,0,
+      0,0,1,0,0,0,0,1,0,
+      0,1,0,0,1,0,0,0,0,
+      0,0,0,1,0,0,0,0,0,
+      0,0,1,0,0,1,0,0,0,
+    ]
+  },
+  habit_water: { // replaces 💧 — droplet
+    dim: 9, grid: [
+      0,0,0,0,1,0,0,0,0,
+      0,0,0,0,1,0,0,0,0,
+      0,0,0,1,0,1,0,0,0,
+      0,0,0,1,0,1,0,0,0,
+      0,0,1,0,0,0,1,0,0,
+      0,1,0,0,0,0,0,1,0,
+      0,1,0,0,0,0,0,1,0,
+      0,0,1,0,0,0,1,0,0,
+      0,0,0,1,1,1,0,0,0,
+    ]
+  },
+  habit_nutrition: { // replaces 🍎 — apple/fruit
+    dim: 9, grid: [
+      0,0,0,0,1,0,0,0,0,
+      0,0,0,0,0,1,0,0,0,
+      0,0,1,1,1,1,1,0,0,
+      0,1,1,0,1,1,1,1,0,
+      0,1,1,0,0,1,1,1,0,
+      0,1,1,0,0,1,1,1,0,
+      0,1,1,1,1,1,1,1,0,
+      0,0,1,1,1,1,1,0,0,
+      0,0,0,1,1,1,0,0,0,
+    ]
+  },
+  habit_medicine: { // replaces 💊 — capsule
+    dim: 9, grid: [
+      0,0,0,1,1,1,0,0,0,
+      0,0,1,1,1,1,1,0,0,
+      0,0,1,1,1,1,1,0,0,
+      0,0,1,1,1,1,1,0,0,
+      0,0,1,1,1,1,1,0,0,
+      0,0,1,0,0,0,1,0,0,
+      0,0,1,0,0,0,1,0,0,
+      0,0,1,0,0,0,1,0,0,
+      0,0,0,1,1,1,0,0,0,
+    ]
+  },
+  habit_sleep: { // replaces 🛌 — crescent moon
+    dim: 9, grid: [
+      0,0,0,0,1,1,1,0,0,
+      0,0,0,1,1,0,0,0,0,
+      0,0,1,1,0,0,0,0,0,
+      0,0,1,0,0,0,0,0,0,
+      0,0,1,0,0,0,0,0,0,
+      0,0,1,0,0,0,0,0,0,
+      0,0,1,1,0,0,0,0,0,
+      0,0,0,1,1,0,0,0,0,
+      0,0,0,0,1,1,1,0,0,
+    ]
+  },
+  habit_write: { // replaces ✍️ — pen nib
+    dim: 9, grid: [
+      0,0,0,0,0,0,0,1,1,
+      0,0,0,0,0,0,1,0,1,
+      0,0,0,0,0,1,0,1,0,
+      0,0,0,0,1,0,1,0,0,
+      0,0,0,1,0,1,0,0,0,
+      0,0,1,0,1,0,0,0,0,
+      0,1,0,1,0,0,0,0,0,
+      1,0,1,0,0,0,0,0,0,
+      1,1,0,0,0,0,0,0,0,
+    ]
+  },
+  habit_music: { // replaces 🎵 — music note
+    dim: 9, grid: [
+      0,0,0,0,1,1,1,1,0,
+      0,0,0,0,1,0,0,0,0,
+      0,0,0,0,1,0,0,0,0,
+      0,0,0,0,1,0,0,0,0,
+      0,0,0,0,1,0,0,0,0,
+      0,0,0,0,1,0,0,0,0,
+      0,1,1,0,1,0,0,0,0,
+      1,0,0,1,1,0,0,0,0,
+      0,1,1,0,0,0,0,0,0,
+    ]
+  },
+  habit_clean: { // replaces 🧹 — sparkle/star
+    dim: 9, grid: [
+      0,0,0,0,1,0,0,0,0,
+      0,0,0,0,1,0,0,0,0,
+      0,0,0,0,0,0,0,1,0,
+      0,0,0,0,0,0,0,0,0,
+      1,1,0,0,1,0,0,1,1,
+      0,0,0,0,0,0,0,0,0,
+      0,1,0,0,0,0,0,0,0,
+      0,0,0,0,1,0,0,0,0,
+      0,0,0,0,1,0,0,0,0,
+    ]
+  },
+  habit_phonefree: { // replaces 📵 — phone with X
+    dim: 9, grid: [
+      0,0,1,1,1,1,1,0,0,
+      0,0,1,0,0,0,1,0,0,
+      0,0,1,1,0,1,1,0,0,
+      0,0,1,0,1,0,1,0,0,
+      0,0,1,1,0,1,1,0,0,
+      0,0,1,0,0,0,1,0,0,
+      0,0,1,0,0,0,1,0,0,
+      0,0,1,0,1,0,1,0,0,
+      0,0,1,1,1,1,1,0,0,
+    ]
+  },
+  habit_sunrise: { // replaces 🌅 — sun over horizon
+    dim: 9, grid: [
+      0,0,0,0,1,0,0,0,0,
+      0,0,0,0,0,0,0,0,0,
+      0,1,0,0,0,0,0,1,0,
+      0,0,0,1,1,1,0,0,0,
+      0,0,1,1,1,1,1,0,0,
+      1,1,1,1,1,1,1,1,1,
+      0,0,0,0,0,0,0,0,0,
+      1,1,1,1,1,1,1,1,1,
+      0,0,0,0,0,0,0,0,0,
+    ]
+  },
+  habit_brain: { // replaces 🧠 — brain pattern
+    dim: 9, grid: [
+      0,0,1,1,1,1,1,0,0,
+      0,1,1,0,0,0,1,1,0,
+      1,1,0,1,1,1,0,1,1,
+      1,0,1,1,0,1,1,0,1,
+      1,0,1,0,0,0,1,0,1,
+      1,1,0,1,1,1,0,1,1,
+      0,1,1,0,0,0,1,1,0,
+      0,0,1,1,1,1,1,0,0,
+      0,0,0,1,1,1,0,0,0,
+    ]
+  },
+  habit_strength: { // replaces 💪 — flexed arm
+    dim: 9, grid: [
+      0,0,0,1,1,0,0,0,0,
+      0,0,1,1,1,1,0,0,0,
+      0,0,0,0,0,1,1,0,0,
+      0,0,0,0,0,0,1,0,0,
+      0,0,0,0,0,0,1,0,0,
+      0,0,0,0,0,1,0,0,0,
+      0,0,0,0,1,0,0,0,0,
+      0,0,0,1,0,0,0,0,0,
+      0,0,1,1,0,0,0,0,0,
+    ]
+  },
+  habit_pray: { // replaces 🙏 (habit context) — hands together
+    dim: 9, grid: [
+      0,0,0,0,1,0,0,0,0,
+      0,0,0,1,1,1,0,0,0,
+      0,0,1,0,1,0,1,0,0,
+      0,1,0,0,1,0,0,1,0,
+      0,1,0,0,1,0,0,1,0,
+      0,0,1,0,1,0,1,0,0,
+      0,0,0,1,0,1,0,0,0,
+      0,0,0,0,1,0,0,0,0,
+      0,0,0,0,1,0,0,0,0,
+    ]
+  },
+
+  // ── FINANCE (currently inline ~14-16px) ────────────────
+  fin_immediate: { // replaces 💧 — liquid/flowing
+    dim: 9, grid: [
+      0,0,0,0,1,0,0,0,0,
+      0,0,0,1,0,1,0,0,0,
+      0,0,1,0,0,0,1,0,0,
+      0,1,0,0,0,0,0,1,0,
+      0,1,0,0,0,0,0,1,0,
+      0,0,1,0,0,0,1,0,0,
+      0,0,0,1,1,1,0,0,0,
+      0,0,0,0,0,0,0,0,0,
+      0,0,0,0,0,0,0,0,0,
+    ]
+  },
+  fin_short_term: { // replaces 📊 — hourglass
+    dim: 9, grid: [
+      0,1,1,1,1,1,1,1,0,
+      0,0,1,0,0,0,1,0,0,
+      0,0,0,1,0,1,0,0,0,
+      0,0,0,0,1,0,0,0,0,
+      0,0,0,0,1,0,0,0,0,
+      0,0,0,0,1,0,0,0,0,
+      0,0,0,1,0,1,0,0,0,
+      0,0,1,0,0,0,1,0,0,
+      0,1,1,1,1,1,1,1,0,
+    ]
+  },
+  fin_illiquid: { // replaces 🔒 — padlock
+    dim: 9, grid: [
+      0,0,0,1,1,1,0,0,0,
+      0,0,1,0,0,0,1,0,0,
+      0,0,1,0,0,0,1,0,0,
+      0,1,1,1,1,1,1,1,0,
+      0,1,0,0,0,0,0,1,0,
+      0,1,0,0,1,0,0,1,0,
+      0,1,0,0,1,0,0,1,0,
+      0,1,0,0,0,0,0,1,0,
+      0,1,1,1,1,1,1,1,0,
+    ]
+  },
+  fin_tax_shield: { // replaces 🛡️ — shield
+    dim: 9, grid: [
+      0,1,1,1,1,1,1,1,0,
+      0,1,0,0,0,0,0,1,0,
+      0,1,0,0,1,0,0,1,0,
+      0,1,0,1,1,1,0,1,0,
+      0,1,0,0,1,0,0,1,0,
+      0,1,0,0,1,0,0,1,0,
+      0,0,1,0,0,0,1,0,0,
+      0,0,0,1,0,1,0,0,0,
+      0,0,0,0,1,0,0,0,0,
+    ]
+  },
+  fin_credit: { // replaces 💳 — credit card
+    dim: 9, grid: [
+      1,1,1,1,1,1,1,1,1,
+      1,0,0,0,0,0,0,0,1,
+      1,1,1,1,1,1,1,1,1,
+      1,1,1,1,1,1,1,1,1,
+      1,0,0,0,0,0,0,0,1,
+      1,0,0,0,0,0,0,0,1,
+      1,0,0,0,0,1,1,0,1,
+      1,0,0,0,0,0,0,0,1,
+      1,1,1,1,1,1,1,1,1,
+    ]
+  },
+
+  // ── KNOWLEDGE BASE (currently ~12-14px inline) ─────────
+  kb_pinned: { // replaces 📌 — pin
+    dim: 9, grid: [
+      0,0,0,0,1,0,0,0,0,
+      0,0,0,1,1,1,0,0,0,
+      0,0,0,1,1,1,0,0,0,
+      0,0,1,1,1,1,1,0,0,
+      0,0,0,0,1,0,0,0,0,
+      0,0,0,0,1,0,0,0,0,
+      0,0,0,0,1,0,0,0,0,
+      0,0,0,0,1,0,0,0,0,
+      0,0,0,0,0,0,0,0,0,
+    ]
+  },
+  kb_task_link: { // replaces 📋 — clipboard
+    dim: 9, grid: [
+      0,0,1,1,1,1,1,0,0,
+      0,1,1,0,0,0,1,1,0,
+      0,1,0,0,0,0,0,1,0,
+      0,1,0,1,1,1,0,1,0,
+      0,1,0,0,0,0,0,1,0,
+      0,1,0,1,1,1,0,1,0,
+      0,1,0,0,0,0,0,1,0,
+      0,1,0,1,1,0,0,1,0,
+      0,1,1,1,1,1,1,1,0,
+    ]
+  },
+
+  // ── STATUS INDICATORS (currently ~12px inline) ─────────
+  status_done: { // replaces ✅ — filled check box
+    dim: 9, grid: [
+      1,1,1,1,1,1,1,1,1,
+      1,0,0,0,0,0,0,0,1,
+      1,0,0,0,0,0,0,1,1,
+      1,0,0,0,0,0,1,0,1,
+      1,0,1,0,0,1,0,0,1,
+      1,0,0,1,1,0,0,0,1,
+      1,0,0,0,1,0,0,0,1,
+      1,0,0,0,0,0,0,0,1,
+      1,1,1,1,1,1,1,1,1,
+    ]
+  },
+  status_empty: { // replaces ⬜ — empty box
+    dim: 9, grid: [
+      1,1,1,1,1,1,1,1,1,
+      1,0,0,0,0,0,0,0,1,
+      1,0,0,0,0,0,0,0,1,
+      1,0,0,0,0,0,0,0,1,
+      1,0,0,0,0,0,0,0,1,
+      1,0,0,0,0,0,0,0,1,
+      1,0,0,0,0,0,0,0,1,
+      1,0,0,0,0,0,0,0,1,
+      1,1,1,1,1,1,1,1,1,
+    ]
+  },
+  status_warning: { // replaces ⚠ — triangle with !
+    dim: 9, grid: [
+      0,0,0,0,1,0,0,0,0,
+      0,0,0,1,0,1,0,0,0,
+      0,0,0,1,0,1,0,0,0,
+      0,0,1,0,1,0,1,0,0,
+      0,0,1,0,1,0,1,0,0,
+      0,1,0,0,0,0,0,1,0,
+      0,1,0,0,1,0,0,1,0,
+      1,0,0,0,0,0,0,0,1,
+      1,1,1,1,1,1,1,1,1,
+    ]
+  },
+
+  // ── BRANDING (sidebar + login ~10px) ───────────────────
+  bolt: { // replaces ⚡ in LIFE OS branding
+    dim: 9, grid: [
+      0,0,0,0,1,1,0,0,0,
+      0,0,0,1,1,0,0,0,0,
+      0,0,1,1,0,0,0,0,0,
+      0,1,1,0,0,0,0,0,0,
+      1,1,1,1,1,1,0,0,0,
+      0,0,0,0,1,1,0,0,0,
+      0,0,0,1,1,0,0,0,0,
+      0,0,1,1,0,0,0,0,0,
+      0,1,1,0,0,0,0,0,0,
+    ]
+  },
+};
+
+// ── RENDER EMOJI REPLACEMENT SECTION ─────────────────────
+{
+  const PALETTE = {
+    text:    '#e8dcc8',
+    text2:   '#a89880',
+    text3:   '#6b5f50',
+    accent:  '#d4793c',
+    success: '#7a9a5a',
+    danger:  '#b54a3a',
+    warning: '#c4873a',
+    mystic:  '#8a6aaa',
+    celestial:'#4a7a9a',
+    surface: '#242019',
+    border:  '#3d3730',
+  };
+
+  let h = '<hr class="divider">';
+  h += '<h1 style="margin-top:16px">Emoji Replacements — 9x9 Pixel Art for Desert Mystic</h1>';
+
+  function renderCategory(title, items, renderSize, description) {
+    let s = `<h2>${title}</h2>`;
+    if (description) s += `<p style="font-size:10px;color:#5c5345;margin-bottom:12px">${description}</p>`;
+    s += '<div style="display:flex;gap:24px;flex-wrap:wrap;margin-bottom:8px">';
+    items.forEach(item => {
+      const icon = EMOJI_ICONS[item.key];
+      const color = item.color || PALETTE.text;
+      s += `<div style="display:flex;flex-direction:column;align-items:center;gap:6px;min-width:72px">`;
+      s += `<span style="font-size:${renderSize}px;line-height:1">${item.emoji}</span>`;
+      s += makeSVGVar(icon.grid, icon.dim, renderSize, color);
+      s += `<span class="label">${item.label}</span>`;
+      s += `</div>`;
+    });
+    s += '</div>';
+    return s;
+  }
+
+  // Mood — 24px (currently text-2xl)
+  h += renderCategory('Mood (text-2xl → 24px)', [
+    { key: 'mood_1_rough',  emoji: '😞', label: 'Rough',  color: PALETTE.danger },
+    { key: 'mood_2_meh',    emoji: '😐', label: 'Meh',    color: PALETTE.warning },
+    { key: 'mood_3_okay',   emoji: '🙂', label: 'Okay',   color: PALETTE.text2 },
+    { key: 'mood_4_good',   emoji: '😊', label: 'Good',   color: PALETTE.success },
+    { key: 'mood_5_great',  emoji: '🤩', label: 'Great',  color: PALETTE.accent },
+  ], 24, 'Journal mood selector buttons — original emoji above, pixel replacement below');
+
+  // Energy — 24px
+  h += renderCategory('Energy (text-2xl → 24px)', [
+    { key: 'energy_1_drained', emoji: '🪫', label: 'Drained', color: PALETTE.text3 },
+    { key: 'energy_2_low',     emoji: '😴', label: 'Low',     color: PALETTE.celestial },
+    { key: 'energy_3_moderate',emoji: '⚡', label: 'Moderate',color: PALETTE.warning },
+    { key: 'energy_4_high',    emoji: '🔥', label: 'High',    color: PALETTE.accent },
+    { key: 'energy_5_peak',    emoji: '🚀', label: 'Peak',    color: PALETTE.accent },
+  ], 24, 'Journal energy selector buttons');
+
+  // Journal sections — 14px
+  h += renderCategory('Journal Sections (text-sm → 14px)', [
+    { key: 'gratitude',  emoji: '🙏', label: 'Gratitude',  color: PALETTE.warning },
+    { key: 'wins',       emoji: '🏆', label: 'Wins',       color: PALETTE.accent },
+    { key: 'reflection', emoji: '💭', label: 'Reflection', color: PALETTE.mystic },
+  ], 14, 'Section header labels in journal form');
+
+  // Task priority — 14px
+  h += renderCategory('Task Priority (inline → 14px)', [
+    { key: 'priority_urgent', emoji: '🔴', label: 'Urgent', color: PALETTE.danger },
+    { key: 'priority_high',   emoji: '🟠', label: 'High',   color: PALETTE.accent },
+    { key: 'priority_medium', emoji: '🔵', label: 'Medium', color: PALETTE.celestial },
+    { key: 'priority_low',    emoji: '⚪', label: 'Low',    color: PALETTE.text3 },
+  ], 14, 'Priority indicators in task list and dropdowns');
+
+  // Chat capabilities — 14px
+  h += renderCategory('Chat Capabilities (pill buttons → 14px)', [
+    { key: 'cap_focus',    emoji: '🎯', label: 'Focus',    color: PALETTE.accent },
+    { key: 'cap_review',   emoji: '🔄', label: 'Review',   color: PALETTE.mystic },
+    { key: 'cap_spending', emoji: '💰', label: 'Spending', color: PALETTE.success },
+    { key: 'cap_journal',  emoji: '📔', label: 'Journal',  color: PALETTE.warning },
+    { key: 'cap_general',  emoji: '💬', label: 'General',  color: PALETTE.text2 },
+  ], 14, 'AI chat mode selector pills');
+
+  // Integrations — 20px
+  h += renderCategory('Integrations (text-xl → 20px)', [
+    { key: 'int_health',    emoji: '♥',  label: 'Health',     color: PALETTE.danger },
+    { key: 'int_nutrition', emoji: '🥗', label: 'Cronometer', color: PALETTE.success },
+    { key: 'int_bank',      emoji: '🏦', label: 'myBOQ',      color: PALETTE.warning },
+    { key: 'int_crypto',    emoji: '₿',  label: 'Binance',    color: PALETTE.accent },
+    { key: 'int_ical',      emoji: '📅', label: 'iCal',       color: PALETTE.celestial },
+  ], 20, 'Settings page integration cards');
+
+  // Habits — 20px
+  h += renderCategory('Habit Icons (grid buttons → 20px)', [
+    { key: 'habit_check',     emoji: '✅', label: 'Done',       color: PALETTE.success },
+    { key: 'habit_meditate',  emoji: '🧘', label: 'Meditate',   color: PALETTE.mystic },
+    { key: 'habit_read',      emoji: '📚', label: 'Read',       color: PALETTE.warning },
+    { key: 'habit_run',       emoji: '🏃', label: 'Run',        color: PALETTE.accent },
+    { key: 'habit_water',     emoji: '💧', label: 'Water',      color: PALETTE.celestial },
+    { key: 'habit_nutrition', emoji: '🍎', label: 'Nutrition',  color: PALETTE.success },
+    { key: 'habit_medicine',  emoji: '💊', label: 'Medicine',   color: PALETTE.mystic },
+    { key: 'habit_sleep',     emoji: '🛌', label: 'Sleep',      color: PALETTE.celestial },
+  ], 20, 'Habit icon picker palette — row 1');
+
+  h += renderCategory('Habit Icons (continued)', [
+    { key: 'habit_write',     emoji: '✍️', label: 'Write',      color: PALETTE.text },
+    { key: 'habit_music',     emoji: '🎵', label: 'Music',      color: PALETTE.mystic },
+    { key: 'habit_clean',     emoji: '🧹', label: 'Clean',      color: PALETTE.warning },
+    { key: 'habit_phonefree', emoji: '📵', label: 'Phone-free', color: PALETTE.danger },
+    { key: 'habit_sunrise',   emoji: '🌅', label: 'Morning',    color: PALETTE.accent },
+    { key: 'habit_brain',     emoji: '🧠', label: 'Brain',      color: PALETTE.mystic },
+    { key: 'habit_strength',  emoji: '💪', label: 'Strength',   color: PALETTE.accent },
+    { key: 'habit_pray',      emoji: '🙏', label: 'Gratitude',  color: PALETTE.warning },
+  ], 20, 'Habit icon picker palette — row 2');
+
+  // Finance — 16px
+  h += renderCategory('Finance Indicators (inline → 16px)', [
+    { key: 'fin_immediate',  emoji: '💧', label: 'Immediate',  color: PALETTE.celestial },
+    { key: 'fin_short_term', emoji: '📊', label: 'Short-term', color: PALETTE.warning },
+    { key: 'fin_illiquid',   emoji: '🔒', label: 'Illiquid',   color: PALETTE.text3 },
+    { key: 'fin_tax_shield', emoji: '🛡️', label: 'Tax shield', color: PALETTE.success },
+    { key: 'fin_credit',     emoji: '💳', label: 'Credit',     color: PALETTE.text2 },
+  ], 16, 'Finance page liquidity tiers and card indicators');
+
+  // Knowledge Base — 14px
+  h += renderCategory('Knowledge Base (inline → 14px)', [
+    { key: 'kb_pinned',    emoji: '📌', label: 'Pinned',    color: PALETTE.accent },
+    { key: 'kb_task_link', emoji: '📋', label: 'Task link', color: PALETTE.celestial },
+  ], 14, 'Note list inline indicators (goal link reuses goals bullseye)');
+
+  // Status — 12px
+  h += renderCategory('Status Indicators (text-xs → 12px)', [
+    { key: 'status_done',    emoji: '✅', label: 'Done',    color: PALETTE.success },
+    { key: 'status_empty',   emoji: '⬜', label: 'Not done',color: PALETTE.text3 },
+    { key: 'status_warning', emoji: '⚠',  label: 'Warning', color: PALETTE.warning },
+  ], 12, 'AI context + inline status markers');
+
+  // Branding — 12px
+  h += renderCategory('Branding (sidebar logo → 12px)', [
+    { key: 'bolt', emoji: '⚡', label: 'LIFE OS bolt', color: PALETTE.accent },
+  ], 12, 'Sidebar and login page branding');
+
+  // ── IN-CONTEXT MOCKUPS ──────────────────────────────────
+
+  // Mood selector mockup
+  h += '<hr class="divider"><h2>In Context: Journal Mood Selector</h2>';
+  h += '<div style="display:flex;flex-direction:column;gap:16px">';
+
+  // Current
+  h += '<div>';
+  h += '<span class="label" style="margin-bottom:8px;display:block">Current (emoji)</span>';
+  h += '<div style="display:flex;gap:8px">';
+  ['😞','😐','🙂','😊','🤩'].forEach((e, i) => {
+    const active = i === 3;
+    h += `<button style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;font-size:24px;background:${active ? PALETTE.surface : 'transparent'};border:2px solid ${active ? PALETTE.accent : PALETTE.border};border-radius:2px;cursor:pointer">${e}</button>`;
+  });
+  h += '</div></div>';
+
+  // Proposed
+  const moodColors = [PALETTE.danger, PALETTE.warning, PALETTE.text2, PALETTE.success, PALETTE.accent];
+  const moodKeys = ['mood_1_rough','mood_2_meh','mood_3_okay','mood_4_good','mood_5_great'];
+  h += '<div>';
+  h += '<span class="label" style="margin-bottom:8px;display:block">Proposed (pixel art)</span>';
+  h += '<div style="display:flex;gap:8px">';
+  moodKeys.forEach((k, i) => {
+    const active = i === 3;
+    const icon = EMOJI_ICONS[k];
+    h += `<button style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;background:${active ? PALETTE.surface : 'transparent'};border:2px solid ${active ? PALETTE.accent : PALETTE.border};border-radius:2px;cursor:pointer">${makeSVGVar(icon.grid, 9, 24, moodColors[i])}</button>`;
+  });
+  h += '</div></div>';
+  h += '</div>';
+
+  // Energy selector mockup
+  h += '<h2 style="margin-top:24px">In Context: Journal Energy Selector</h2>';
+  h += '<div style="display:flex;flex-direction:column;gap:16px">';
+
+  h += '<div>';
+  h += '<span class="label" style="margin-bottom:8px;display:block">Current (emoji)</span>';
+  h += '<div style="display:flex;gap:8px">';
+  ['🪫','😴','⚡','🔥','🚀'].forEach((e, i) => {
+    const active = i === 2;
+    h += `<button style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;font-size:24px;background:${active ? PALETTE.surface : 'transparent'};border:2px solid ${active ? PALETTE.accent : PALETTE.border};border-radius:2px;cursor:pointer">${e}</button>`;
+  });
+  h += '</div></div>';
+
+  const energyColors = [PALETTE.text3, PALETTE.celestial, PALETTE.warning, PALETTE.accent, PALETTE.accent];
+  const energyKeys = ['energy_1_drained','energy_2_low','energy_3_moderate','energy_4_high','energy_5_peak'];
+  h += '<div>';
+  h += '<span class="label" style="margin-bottom:8px;display:block">Proposed (pixel art)</span>';
+  h += '<div style="display:flex;gap:8px">';
+  energyKeys.forEach((k, i) => {
+    const active = i === 2;
+    const icon = EMOJI_ICONS[k];
+    h += `<button style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;background:${active ? PALETTE.surface : 'transparent'};border:2px solid ${active ? PALETTE.accent : PALETTE.border};border-radius:2px;cursor:pointer">${makeSVGVar(icon.grid, 9, 24, energyColors[i])}</button>`;
+  });
+  h += '</div></div>';
+  h += '</div>';
+
+  // Habit picker mockup
+  h += '<h2 style="margin-top:24px">In Context: Habit Icon Picker</h2>';
+  const habitKeys = ['habit_check','habit_meditate','habit_read','habit_run','habit_water','habit_nutrition','habit_medicine','habit_sleep','habit_write','habit_music','habit_clean','habit_phonefree','habit_sunrise','habit_brain','habit_strength','habit_pray'];
+  const habitColors = [PALETTE.success, PALETTE.mystic, PALETTE.warning, PALETTE.accent, PALETTE.celestial, PALETTE.success, PALETTE.mystic, PALETTE.celestial, PALETTE.text, PALETTE.mystic, PALETTE.warning, PALETTE.danger, PALETTE.accent, PALETTE.mystic, PALETTE.accent, PALETTE.warning];
+  h += '<div style="display:grid;grid-template-columns:repeat(8,48px);gap:4px">';
+  habitKeys.forEach((k, i) => {
+    const icon = EMOJI_ICONS[k];
+    h += `<button style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;background:${PALETTE.surface};border:1px solid ${PALETTE.border};border-radius:2px;cursor:pointer">${makeSVGVar(icon.grid, 9, 20, habitColors[i])}</button>`;
+  });
+  h += '</div>';
+
+  // Integration cards mockup
+  h += '<h2 style="margin-top:24px">In Context: Settings Integration Cards</h2>';
+  const intItems = [
+    { key: 'int_health', label: 'Apple Health', color: PALETTE.danger },
+    { key: 'int_nutrition', label: 'Cronometer', color: PALETTE.success },
+    { key: 'int_bank', label: 'myBOQ', color: PALETTE.warning },
+    { key: 'int_crypto', label: 'Binance', color: PALETTE.accent },
+    { key: 'int_ical', label: 'iCal Feed', color: PALETTE.celestial },
+  ];
+  h += '<div style="display:flex;gap:12px;flex-wrap:wrap">';
+  intItems.forEach(item => {
+    const icon = EMOJI_ICONS[item.key];
+    h += `<div style="background:${PALETTE.surface};border:1px solid ${PALETTE.border};border-radius:2px;padding:16px 20px;display:flex;align-items:center;gap:12px;min-width:180px">`;
+    h += makeSVGVar(icon.grid, 9, 20, item.color);
+    h += `<span style="font-size:13px;font-weight:bold;text-transform:uppercase;letter-spacing:0.1em">${item.label}</span>`;
+    h += `</div>`;
+  });
+  h += '</div>';
+
+  // Priority inline mockup
+  h += '<h2 style="margin-top:24px">In Context: Task Priority Dropdown</h2>';
+  const priItems = [
+    { key: 'priority_urgent', label: 'Urgent', color: PALETTE.danger },
+    { key: 'priority_high', label: 'High', color: PALETTE.accent },
+    { key: 'priority_medium', label: 'Medium', color: PALETTE.celestial },
+    { key: 'priority_low', label: 'Low', color: PALETTE.text3 },
+  ];
+  h += `<div style="background:${PALETTE.surface};border:1px solid ${PALETTE.border};border-radius:2px;padding:8px;width:200px">`;
+  priItems.forEach(item => {
+    const icon = EMOJI_ICONS[item.key];
+    h += `<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;font-size:13px;color:${PALETTE.text}">`;
+    h += makeSVGVar(icon.grid, 9, 14, item.color);
+    h += `<span>${item.label}</span>`;
+    h += `</div>`;
+  });
+  h += '</div>';
+
+  document.write(h);
+}
+</script>
+
+</body>
+</html>
