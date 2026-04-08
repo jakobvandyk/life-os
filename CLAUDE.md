@@ -106,7 +106,7 @@ src/app/
     ├── sync/kubios/route.ts (scaffold, not active)
     └── export/analysis/route.ts
 src/proxy.ts (auth proxy — Next.js 16, excludes /api/ routes)
-src/components/ (Sidebar, SignOutButton, SyncStatus, ServiceWorkerRegistrar, PixelIcon)
+src/components/ (Sidebar, SignOutButton, SyncStatus, ServiceWorkerRegistrar, PixelIcon, PixelBackground)
 src/hooks/ (useOnlineStatus.ts)
 src/lib/ (supabase.ts, supabase-server.ts, supabase-service.ts, local-db.ts, sync.ts)
 src/lib/ai/ (context-builders.ts)
@@ -127,7 +127,8 @@ integration_syncs, raw_imports
 - Goal areas: finance, health, side_projects, personal_growth, personal
 - Goal progress types: percentage, milestone, numeric
 - Task priorities: urgent, high, medium, low
-- Task statuses: todo, in_progress, done
+- Task statuses: todo, in_progress, done (clickable badge cycles status)
+- Tasks support subtasks via parent_id (BIGINT FK, cascade delete)
 - Habit log types: boolean, numeric, partial
 - Journal: mood 1-5 (😞😐🙂😊🤩), energy 1-5 (🪫😴⚡🔥🚀), unique per (user_id, date)
 - Finance account types: savings, investment, cash, kiwisaver, super, credit
@@ -143,7 +144,7 @@ integration_syncs, raw_imports
 ## What's Built (All Phases Complete)
 - Login (Supabase Auth)
 - Dashboard (bento grid, contextual greetings, linked cards)
-- Tasks (full CRUD, priorities, filters, relative dates)
+- Tasks (full CRUD, inline editing, subtasks, priorities, filters, status badges, responsive mobile layout)
 - Habits (daily toggle, streaks)
 - Journal (mood/energy, gratitude/reflection/wins, upsert by date)
 - Goals (OKRs with key results, progress updates)
@@ -216,14 +217,28 @@ Jakob is based in Hamilton, New Zealand. Currency is NZD."
 - Used in: sidebar NavList (14px), page headers (18px), dashboard bento cards (12px)
 - ICON_NAMES export maps route paths to icon names
 
-## Planned: D4 Page Header Banners (User-Generated)
-Jakob will create pixel art banner strips from his own photos. Specs:
-- **Dimensions:** 960×48px (120×6 pixel grid, each cell 8×8px)
-- **Format:** SVG preferred, PNG acceptable
-- **Palette:** bg #1a1714, surface #242019, border #3d3730, border-strong #5c5345, accent #d4793c, text-3 #6b5f50
-- **Files:** public/banners/{dashboard,tasks,habits,workouts,journal,goals,finances,calendar,knowledge,review,chat,settings}.svg
-- **Wiring:** PageBanner component renders `<img>` below h1, w-full h-8 md:h-12 object-cover opacity-40
-- Keep sparse and subtle — mostly bg colour with silhouette highlights
+## Pixel Art Backgrounds (D4 — Complete)
+- PixelBackground component at src/components/PixelBackground.tsx
+- 120×40 SVG pixel grids with multi-colour palette (7 theme colours)
+- Code-generated scenes using drawing helpers (cactus, mountain, mesa, star, etc.)
+- Fixed position, bottom-aligned, 7% opacity, pointer-events-none
+- Auto-detects route via usePathname() — rendered once in layout.tsx
+- Colours use CSS variables → auto light/dark theme support
+- Scene cache prevents re-computation
+- 12 unique scenes:
+  - Dashboard: desert panorama (mesas, saguaro cacti, setting sun)
+  - Tasks: desert trail (winding path, signposts, cacti)
+  - Habits: canyon layers (rock strata, waterfall)
+  - Workouts: mountain range (jagged peaks, boulders, climbing rope)
+  - Journal: campfire (flames, smoke wisps, bedroll, starry sky)
+  - Goals: summit vista (peak with flag, eagle silhouette)
+  - Finances: gold mine (mine cart, pickaxe, gold nuggets)
+  - Calendar: desert sky (crescent moon, constellations)
+  - Knowledge: ancient library (stone archway, scroll shelves, lantern)
+  - Review: compass rose (cardinal points, map edges, trail markers)
+  - Chat: campsite (tent, smoke signals, small fire)
+  - Settings: workbench (gear wheels, tools, crafting table)
+- IMPORTANT: Page root divs must NOT use bg-desert-bg (blocks the background art). Body provides the bg colour.
 
 ## Light/Dark Theme
 - Toggle in sidebar footer: "☀ LIGHT" / "☽ DARK"
@@ -238,7 +253,8 @@ Jakob will create pixel art banner strips from his own photos. Specs:
 - Includes Cronometer expansion ideas (biometric mapping, nutrition features, cross-domain insights)
 
 ## Current Status
-All phases complete (1-7). D3 pixel art icons complete. Offline fallbacks wired.
-Data export + insight import workflow built. Kubios HRV manual entry active.
+All phases complete (1-7). D3 pixel art icons complete. D4 pixel art backgrounds complete.
+Offline fallbacks wired. Data export + insight import workflow built. Kubios HRV manual entry active.
 Light/dark theme toggle complete. Body fat percentage tracking added.
-Next: D4 banners (user-created), Cronometer biometric mapping, additional polish.
+Tasks page upgraded: inline editing, subtasks (parent_id), responsive mobile layout, always-visible status badges.
+Next: Cronometer biometric mapping, additional polish.
