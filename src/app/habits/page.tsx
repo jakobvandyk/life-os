@@ -14,31 +14,128 @@ interface Habit {
   streak: number;
 }
 
+const iconOptions = [
+  // Wellness & mindfulness
+  "✅", "🧘", "🧘‍♀️", "🙏", "🧠", "😴", "🛌", "💤",
+  // Fitness
+  "🏃", "🏋️", "💪", "🚴", "🏊", "🧗", "⛹️", "🤸",
+  // Nutrition & hydration
+  "💧", "🍎", "🥗", "🥦", "🍳", "💊", "🫖", "☕",
+  // Learning & creativity
+  "📚", "✍️", "📝", "🎵", "🎨", "🎸", "📖", "🖥️",
+  // Lifestyle & productivity
+  "🧹", "📵", "🌅", "🌙", "⏰", "🪴", "🐕", "🚶",
+  // Social & self-care
+  "💬", "📞", "🤝", "💆", "🪥", "🧴", "👨‍👩‍👧", "❤️",
+];
+
+const frequencyOptions = [
+  { value: "daily", label: "Daily" },
+  { value: "weekdays", label: "Weekdays" },
+  { value: "weekends", label: "Weekends" },
+  { value: "weekly", label: "Weekly" },
+  { value: "monthly", label: "Monthly" },
+];
+
+function getExpectedDates(frequency: string, days: number): string[] {
+  const dates: string[] = [];
+  const now = new Date();
+  for (let i = 0; i < days; i++) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    const day = d.getDay(); // 0=Sun, 6=Sat
+    const dateStr = d.toISOString().split("T")[0];
+
+    if (frequency === "daily") {
+      dates.push(dateStr);
+    } else if (frequency === "weekdays") {
+      if (day >= 1 && day <= 5) dates.push(dateStr);
+    } else if (frequency === "weekends") {
+      if (day === 0 || day === 6) dates.push(dateStr);
+    } else if (frequency === "weekly") {
+      // Every Monday counts
+      if (day === 1) dates.push(dateStr);
+    } else if (frequency === "monthly") {
+      // First day of each month
+      if (d.getDate() === 1) dates.push(dateStr);
+    }
+  }
+  return dates;
+}
+
+function calculateStreak(logs: { date: string }[], frequency: string): number {
+  const logDates = new Set(logs.map((l) => l.date));
+  const expected = getExpectedDates(frequency, 365);
+
+  // For weekly/monthly, we check if the current period is done yet
+  // If the current period hasn't passed its expected date, start checking from the next expected
+  const today = new Date().toISOString().split("T")[0];
+
+  let streak = 0;
+  for (const date of expected) {
+    // Skip today if not yet completed (grace: don't break streak for today)
+    if (date === today) {
+      if (logDates.has(date)) streak++;
+      continue;
+    }
+    if (logDates.has(date)) {
+      streak++;
+    } else {
+      break;
+    }
+  }
+  return streak;
+}
+
+function isDueToday(frequency: string): boolean {
+  const day = new Date().getDay();
+  if (frequency === "daily") return true;
+  if (frequency === "weekdays") return day >= 1 && day <= 5;
+  if (frequency === "weekends") return day === 0 || day === 6;
+  if (frequency === "weekly") return day === 1;
+  if (frequency === "monthly") return new Date().getDate() === 1;
+  return true;
+}
+
+function streakUnit(frequency: string): string {
+  if (frequency === "weekly") return "week";
+  if (frequency === "monthly") return "month";
+  return "day";
+}
+
 export default function HabitsPage() {
   const [habits, setHabits] = useState<Habit[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
+  const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [newHabit, setNewHabit] = useState({
+    name: "",
+    icon: "✅",
+    target_frequency: "daily",
+  });
+  const [editHabit, setEditHabit] = useState({
+    name: "",
+    icon: "✅",
+    target_frequency: "daily",
+  });
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) setUserId(user.id);
     });
   }, []);
-  const [showForm, setShowForm] = useState(false);
-  const [newHabit, setNewHabit] = useState({
-    name: "",
-    icon: "✅",
-    target_frequency: "daily",
-  });
 
   const fetchHabits = async () => {
-    if (!userId) return; // Guard against null userId
+    if (!userId) return;
 
-    const today = new Date().toISOString().split('T')[0];
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const today = new Date().toISOString().split("T")[0];
+    const yearAgo = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .split("T")[0];
 
     const { data: habitsData, error: habitsError } = await supabase
       .from("habits")
-      .select("*", { count: 'exact' })
+      .select("*", { count: "exact" })
       .eq("active", true)
       .eq("user_id", userId);
 
@@ -51,7 +148,7 @@ export default function HabitsPage() {
       .from("habit_logs")
       .select("habit_id, date")
       .eq("user_id", userId)
-      .gte("date", thirtyDaysAgo); // Fetch logs for the last 30 days for streak calculation
+      .gte("date", yearAgo);
 
     if (habitLogsError) {
       console.error("Error fetching habit logs:", habitLogsError);
@@ -59,22 +156,11 @@ export default function HabitsPage() {
     }
 
     const habitsWithStatusAndStreak = habitsData.map((habit) => {
-      const logsForHabit = habitLogsData.filter((log) => log.habit_id === habit.id);
+      const logsForHabit = habitLogsData.filter(
+        (log) => log.habit_id === habit.id
+      );
       const completedToday = logsForHabit.some((log) => log.date === today);
-
-      // Calculate streak
-      let streak = 0;
-      let currentDate = new Date();
-      for (let i = 0; i < 365; i++) { // Check last 365 days
-        const dateToCheck = currentDate.toISOString().split('T')[0];
-        const hasLog = logsForHabit.some(log => log.date === dateToCheck);
-        if (hasLog) {
-          streak++;
-          currentDate.setDate(currentDate.getDate() - 1);
-        } else {
-          break;
-        }
-      }
+      const streak = calculateStreak(logsForHabit, habit.target_frequency);
 
       return { ...habit, completed_today: completedToday, streak };
     });
@@ -83,9 +169,7 @@ export default function HabitsPage() {
   };
 
   useEffect(() => {
-    if (userId) {
-      fetchHabits();
-    }
+    if (userId) fetchHabits();
   }, [userId]);
 
   const addHabit = async () => {
@@ -104,10 +188,39 @@ export default function HabitsPage() {
     fetchHabits();
   };
 
+  const saveEdit = async (id: number) => {
+    if (!editHabit.name.trim() || !userId) return;
+    const payload = {
+      name: editHabit.name,
+      icon: editHabit.icon,
+      target_frequency: editHabit.target_frequency,
+    };
+    const { error } = await supabase
+      .from("habits")
+      .update(payload)
+      .eq("id", id)
+      .eq("user_id", userId);
+    if (error) await queueWrite("habits", "update", { id, ...payload });
+
+    setEditingId(null);
+    fetchHabits();
+  };
+
+  const deleteHabit = async (id: number) => {
+    if (!userId) return;
+    const { error } = await supabase
+      .from("habits")
+      .update({ active: false })
+      .eq("id", id)
+      .eq("user_id", userId);
+    if (error) await queueWrite("habits", "update", { id, active: false });
+    fetchHabits();
+  };
+
   const toggleHabit = async (id: number) => {
     if (!userId) return;
 
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toISOString().split("T")[0];
 
     const { data: existingLog, error: checkError } = await supabase
       .from("habit_logs")
@@ -117,7 +230,6 @@ export default function HabitsPage() {
       .eq("user_id", userId);
 
     if (checkError) {
-      // Offline — optimistically toggle, queue the insert
       await queueWrite("habit_logs", "insert", {
         habit_id: id,
         user_id: userId,
@@ -136,35 +248,111 @@ export default function HabitsPage() {
         .eq("date", today)
         .eq("user_id", userId);
 
-      if (deleteError) await queueWrite("habit_logs", "delete", { id: existingLog[0].id });
+      if (deleteError)
+        await queueWrite("habit_logs", "delete", { id: existingLog[0].id });
     } else {
       const payload = { habit_id: id, user_id: userId, date: today, value: 1 };
-      const { error: insertError } = await supabase.from("habit_logs").insert(payload);
+      const { error: insertError } = await supabase
+        .from("habit_logs")
+        .insert(payload);
       if (insertError) await queueWrite("habit_logs", "insert", payload);
     }
 
     fetchHabits();
   };
 
-  const completedToday = habits.filter((h) => h.completed_today).length;
-  const totalHabits = habits.length;
+  const dueToday = habits.filter((h) => isDueToday(h.target_frequency));
+  const completedToday = dueToday.filter((h) => h.completed_today).length;
+  const totalDue = dueToday.length;
   const completionRate =
-    totalHabits > 0 ? Math.round((completedToday / totalHabits) * 100) : 0;
+    totalDue > 0 ? Math.round((completedToday / totalDue) * 100) : 0;
 
-  const iconOptions = [
-    "✅", "🧘", "📚", "🏃", "💧", "🍎", "💊", "🛌",
-    "✍️", "🎵", "🧹", "📵", "🌅", "🧠", "💪", "🙏",
-  ];
+  const HabitForm = ({
+    values,
+    onChange,
+    onSave,
+    onCancel,
+    saveLabel,
+  }: {
+    values: { name: string; icon: string; target_frequency: string };
+    onChange: (v: { name: string; icon: string; target_frequency: string }) => void;
+    onSave: () => void;
+    onCancel: () => void;
+    saveLabel: string;
+  }) => (
+    <div className="bg-desert-surface rounded-sm p-5 mb-6">
+      <div className="space-y-3">
+        <input
+          type="text"
+          placeholder="Habit name... (e.g. Meditate 10 minutes)"
+          value={values.name}
+          onChange={(e) => onChange({ ...values, name: e.target.value })}
+          onKeyDown={(e) => e.key === "Enter" && onSave()}
+          autoFocus
+          className="w-full bg-desert-bg border border-desert-border-strong rounded-sm px-4 py-2 text-desert-text placeholder:text-desert-text-3 focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent transition-colors"
+        />
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex-1">
+            <p className="text-xs text-desert-text-3 mb-1">Icon</p>
+            <div className="flex gap-1 flex-wrap">
+              {iconOptions.map((icon) => (
+                <button
+                  key={icon}
+                  onClick={() => onChange({ ...values, icon })}
+                  className={`w-8 h-8 rounded-md flex items-center justify-center text-sm transition-colors ${
+                    values.icon === icon
+                      ? "bg-desert-accent"
+                      : "bg-desert-surface-hover hover:bg-desert-border"
+                  }`}
+                >
+                  {icon}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="flex gap-2 items-end sm:ml-auto">
+            <select
+              value={values.target_frequency}
+              onChange={(e) =>
+                onChange({ ...values, target_frequency: e.target.value })
+              }
+              className="bg-desert-bg border border-desert-border-strong rounded-sm px-3 py-2 text-desert-text text-sm focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent transition-colors"
+            >
+              {frequencyOptions.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={onSave}
+              className="px-4 py-2 bg-desert-accent text-desert-bg font-mono font-semibold uppercase tracking-wider text-sm rounded-sm hover:bg-desert-accent-glow transition-colors duration-150"
+            >
+              {saveLabel}
+            </button>
+            <button
+              onClick={onCancel}
+              className="px-4 py-2 text-desert-text-3 hover:text-desert-text text-sm transition-colors duration-150"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen p-6 relative z-10">
       {/* Header */}
       <div className="flex items-center justify-between mb-8 pb-6 border-b border-desert-border">
         <div>
-          <h1 className="font-pixel text-lg text-desert-text flex items-center gap-3"><PixelIcon name="habits" size={18} className="text-desert-accent" /> Habits</h1>
+          <h1 className="font-pixel text-lg text-desert-text flex items-center gap-3">
+            <PixelIcon name="habits" size={18} className="text-desert-accent" />{" "}
+            Habits
+          </h1>
           <p className="text-desert-text-3 mt-1">
-            {completedToday}/{totalHabits} completed today ·{" "}
-            {completionRate}%
+            {completedToday}/{totalDue} completed today · {completionRate}%
           </p>
         </div>
         <button
@@ -176,11 +364,11 @@ export default function HabitsPage() {
       </div>
 
       {/* Progress Bar */}
-      {totalHabits > 0 && (
+      {totalDue > 0 && (
         <div className="mb-8">
           <div className="flex justify-between text-sm mb-2">
-             <span className="text-desert-text-2">Today&apos;s Progress</span>
-             <span className="font-mono text-desert-text">{completionRate}%</span>
+            <span className="text-desert-text-2">Today&apos;s Progress</span>
+            <span className="font-mono text-desert-text">{completionRate}%</span>
           </div>
           <div className="w-full bg-desert-border rounded-full h-3">
             <div
@@ -197,68 +385,13 @@ export default function HabitsPage() {
 
       {/* Add Habit Form */}
       {showForm && (
-        <div className="bg-desert-surface rounded-sm p-5 mb-6">
-          <div className="space-y-3">
-            <input
-              type="text"
-              placeholder="Habit name... (e.g. Meditate 10 minutes)"
-              value={newHabit.name}
-              onChange={(e) =>
-                setNewHabit({...newHabit, name: e.target.value })
-              }
-              onKeyDown={(e) => e.key === "Enter" && addHabit()}
-              autoFocus
-              className="w-full bg-desert-bg border border-desert-border-strong rounded-sm px-4 py-2 text-desert-text placeholder:text-desert-text-3 focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent transition-colors"
-            />
-            <div className="flex gap-3 items-center">
-              <div>
-                <p className="text-xs text-desert-text-3 mb-1">Icon</p>
-                <div className="flex gap-1 flex-wrap max-w-xs">
-                  {iconOptions.map((icon) => (
-                    <button
-                      key={icon}
-                      onClick={() => setNewHabit({...newHabit, icon })}
-                      className={`w-8 h-8 rounded-md flex items-center justify-center text-sm transition-colors ${
-                        newHabit.icon === icon
-                          ? "bg-desert-accent"
-                          : "bg-desert-surface-hover hover:bg-desert-surface-hover"
-                      }`}
-                    >
-                      {icon}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="ml-auto flex gap-2">
-                <select
-                  value={newHabit.target_frequency}
-                  onChange={(e) =>
-                    setNewHabit({...newHabit,
-                      target_frequency: e.target.value,
-                    })
-                  }
-                  className="bg-desert-bg border border-desert-border-strong rounded-sm px-3 py-2 text-desert-text text-sm focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent transition-colors"
-                >
-                  <option value="daily">Daily</option>
-                  <option value="weekdays">Weekdays</option>
-                  <option value="weekly">Weekly</option>
-                </select>
-                <button
-                  onClick={addHabit}
-                  className="px-4 py-2 bg-desert-accent text-desert-bg font-mono font-semibold uppercase tracking-wider text-sm rounded-sm hover:bg-desert-accent-glow transition-colors duration-150"
-                >
-                  Add
-                </button>
-                <button
-                  onClick={() => setShowForm(false)}
-                  className="px-4 py-2 text-desert-text-3 hover:text-desert-text text-sm transition-colors duration-150"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <HabitForm
+          values={newHabit}
+          onChange={setNewHabit}
+          onSave={addHabit}
+          onCancel={() => setShowForm(false)}
+          saveLabel="Add"
+        />
       )}
 
       {/* Habit List */}
@@ -271,54 +404,98 @@ export default function HabitsPage() {
       ) : (
         <div className="space-y-2">
           {habits.map((habit) => (
-            <div
-              key={habit.id}
-              className="bg-desert-surface rounded-sm p-4 flex items-center gap-4 hover:border-desert-border-strong transition-colors"
-            >
-              {/* Toggle Button */}
-              <button
-                onClick={() => toggleHabit(habit.id)}
-                className={`w-12 h-12 rounded-sm flex items-center justify-center text-xl shrink-0 transition-all ${
-                  habit.completed_today
-                    ? "bg-desert-success-dim border-2 border-desert-success/50 scale-105"
-                    : "bg-desert-surface-hover border-2 border-desert-border-strong hover:border-desert-accent"
-                }`}
-              >
-                {habit.icon}
-              </button>
+            <div key={habit.id}>
+              {editingId === habit.id ? (
+                <HabitForm
+                  values={editHabit}
+                  onChange={setEditHabit}
+                  onSave={() => saveEdit(habit.id)}
+                  onCancel={() => setEditingId(null)}
+                  saveLabel="Save"
+                />
+              ) : (
+                <div className="bg-desert-surface rounded-sm p-4 flex items-center gap-4 hover:border-desert-border-strong transition-colors group">
+                  {/* Toggle Button */}
+                  <button
+                    onClick={() => toggleHabit(habit.id)}
+                    className={`w-12 h-12 rounded-sm flex items-center justify-center text-xl shrink-0 transition-all ${
+                      habit.completed_today
+                        ? "bg-desert-success-dim border-2 border-desert-success/50 scale-105"
+                        : "bg-desert-surface-hover border-2 border-desert-border-strong hover:border-desert-accent"
+                    }`}
+                  >
+                    {habit.icon}
+                  </button>
 
-              {/* Info */}
-              <div className="flex-1">
-                <p
-                  className={`font-medium ${
-                    habit.completed_today
-                      ? "text-desert-success"
-                      : "text-desert-text"
-                  }`}
-                >
-                  {habit.name}
-                </p>
-                 <p className="text-xs text-desert-text-3">
-                   {habit.target_frequency}
-                 </p>
-              </div>
+                  {/* Info */}
+                  <div className="flex-1 min-w-0">
+                    <p
+                      className={`font-medium ${
+                        habit.completed_today
+                          ? "text-desert-success"
+                          : "text-desert-text"
+                      }`}
+                    >
+                      {habit.name}
+                    </p>
+                    <p className="text-xs text-desert-text-3">
+                      {frequencyOptions.find(
+                        (f) => f.value === habit.target_frequency
+                      )?.label || habit.target_frequency}
+                      {!isDueToday(habit.target_frequency) && (
+                        <span className="ml-2 text-desert-text-3/60">
+                          · not due today
+                        </span>
+                      )}
+                    </p>
+                  </div>
 
-              {/* Streak */}
-              <div className="text-right">
-                <p className="text-lg font-bold font-mono text-desert-text">
-                  {habit.streak}
-                </p>
-                 <p className="text-xs text-desert-text-3">
-                   day{habit.streak !== 1 ? "s" : ""} streak
-                 </p>
-              </div>
+                  {/* Streak */}
+                  <div className="text-right">
+                    <p className="text-lg font-bold font-mono text-desert-text">
+                      {habit.streak}
+                    </p>
+                    <p className="text-xs text-desert-text-3">
+                      {streakUnit(habit.target_frequency)}
+                      {habit.streak !== 1 ? "s" : ""} streak
+                    </p>
+                  </div>
 
-              {/* Status */}
-              <div
-                className={`w-3 h-3 rounded-full shrink-0 ${
-                  habit.completed_today ? "bg-desert-success" : "bg-desert-surface-hover"
-                }`}
-              />
+                  {/* Edit / Delete */}
+                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={() => {
+                        setEditingId(habit.id);
+                        setEditHabit({
+                          name: habit.name,
+                          icon: habit.icon,
+                          target_frequency: habit.target_frequency,
+                        });
+                      }}
+                      className="p-1.5 text-desert-text-3 hover:text-desert-accent transition-colors"
+                      title="Edit habit"
+                    >
+                      ✎
+                    </button>
+                    <button
+                      onClick={() => deleteHabit(habit.id)}
+                      className="p-1.5 text-desert-text-3 hover:text-desert-danger transition-colors"
+                      title="Archive habit"
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  {/* Status */}
+                  <div
+                    className={`w-3 h-3 rounded-full shrink-0 ${
+                      habit.completed_today
+                        ? "bg-desert-success"
+                        : "bg-desert-surface-hover"
+                    }`}
+                  />
+                </div>
+              )}
             </div>
           ))}
         </div>
