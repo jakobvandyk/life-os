@@ -3,6 +3,7 @@ import "./globals.css";
 import { createClient } from "@/lib/supabase-server";
 import Sidebar from "@/components/Sidebar";
 import ServiceWorkerRegistrar from "@/components/ServiceWorkerRegistrar";
+import PixelBackground from "@/components/PixelBackground";
 import { Press_Start_2P, IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
 
 export const metadata: Metadata = {
@@ -60,6 +61,7 @@ export default async function RootLayout({
 
           {/* Main Content */}
           <main className="relative z-10 flex-1 overflow-y-auto pt-16 px-4 pb-4 md:pt-6 md:px-6 md:pb-6">
+            <PixelBackground />
             {children}
           </main>
         </div>
