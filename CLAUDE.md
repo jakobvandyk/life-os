@@ -130,6 +130,7 @@ integration_syncs, raw_imports
 - Task statuses: todo, in_progress, done (clickable badge cycles status)
 - Tasks support subtasks via parent_id (BIGINT FK, cascade delete)
 - Habit log types: boolean, numeric, partial
+- Habit frequencies: daily, weekdays, weekends, weekly, monthly (streaks respect frequency — skip non-due days)
 - Journal: mood 1-5 (😞😐🙂😊🤩), energy 1-5 (🪫😴⚡🔥🚀), unique per (user_id, date)
 - Finance account types: savings, investment, cash, kiwisaver, super, credit
 - Finance asset classes: cash_equivalents, equities, crypto, bonds, reits, commodities, other
@@ -145,7 +146,7 @@ integration_syncs, raw_imports
 - Login (Supabase Auth)
 - Dashboard (bento grid, contextual greetings, linked cards)
 - Tasks (full CRUD, inline editing, subtasks, priorities, filters, status badges, responsive mobile layout)
-- Habits (daily toggle, streaks)
+- Habits (daily toggle, inline editing, expanded emoji picker, frequency-aware streaks, weekends/monthly recurrence)
 - Journal (mood/energy, gratitude/reflection/wins, upsert by date)
 - Goals (OKRs with key results, progress updates)
 - Finances (accounts, cashflow P&L, tax flags, multi-currency)
@@ -257,4 +258,5 @@ All phases complete (1-7). D3 pixel art icons complete. D4 pixel art backgrounds
 Offline fallbacks wired. Data export + insight import workflow built. Kubios HRV manual entry active.
 Light/dark theme toggle complete. Body fat percentage tracking added.
 Tasks page upgraded: inline editing, subtasks (parent_id), responsive mobile layout, always-visible status badges.
+Habits page upgraded: 48-emoji picker, weekends/monthly recurrence, frequency-aware streaks, inline editing with archive.
 Next: Cronometer biometric mapping, additional polish.
