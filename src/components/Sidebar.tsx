@@ -12,19 +12,27 @@ interface SidebarProps {
   user: User | null;
 }
 
-const navItems = [
-  { href: "/", label: "Dashboard" },
-  { href: "/tasks", label: "Tasks" },
-  { href: "/habits", label: "Habits" },
-  { href: "/workouts", label: "Workouts" },
-  { href: "/journal", label: "Journal" },
-  { href: "/goals", label: "Goals" },
-  { href: "/finances", label: "Finances" },
-  { href: "/calendar", label: "Calendar" },
-  { href: "/knowledge", label: "Knowledge" },
-  { href: "/review", label: "Review" },
-  { href: "/chat", label: "AI Chat" },
-  { href: "/settings", label: "Settings" },
+const navSections = [
+  { label: null, items: [{ href: "/", label: "Dashboard" }] },
+  { label: "LIFE", items: [
+    { href: "/tasks", label: "Tasks" },
+    { href: "/habits", label: "Habits" },
+    { href: "/calendar", label: "Calendar" },
+  ]},
+  { label: "TRACK", items: [
+    { href: "/workouts", label: "Workouts" },
+    { href: "/finances", label: "Finances" },
+    { href: "/knowledge", label: "Knowledge" },
+  ]},
+  { label: "REFLECT", items: [
+    { href: "/journal", label: "Journal" },
+    { href: "/goals", label: "Goals" },
+    { href: "/review", label: "Review" },
+  ]},
+  { label: "SYSTEM", items: [
+    { href: "/chat", label: "AI Chat" },
+    { href: "/settings", label: "Settings" },
+  ]},
 ];
 
 function NavList({
@@ -35,35 +43,46 @@ function NavList({
   onNav: () => void;
 }) {
   return (
-    <ul className="space-y-0.5 flex-1 overflow-y-auto">
-      {navItems.map((item) => {
-        const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
-        return (
-          <li key={item.href}>
-            <Link
-              href={item.href}
-              className={`group flex items-center gap-3 py-2 rounded-sm text-sm transition-all duration-150 ${
-                active
-                  ? "border-l-2 border-desert-accent pl-3 text-desert-text bg-desert-surface"
-                  : "pl-5 text-desert-text-3 hover:text-desert-text hover:bg-desert-surface-hover hover:pl-4"
-              }`}
-              onClick={onNav}
-            >
-              <PixelIcon
-                name={ICON_NAMES[item.href] || "dashboard"}
-                size={14}
-                className={`transition-colors duration-150 ${
-                  active
-                    ? "text-desert-accent"
-                    : "text-desert-text-3 group-hover:text-desert-accent"
-                }`}
-              />
-              <span className="font-pixel text-[10px]">{item.label}</span>
-            </Link>
-          </li>
-        );
-      })}
-    </ul>
+    <div className="flex-1 overflow-y-auto">
+      {navSections.map((section, si) => (
+        <div key={si}>
+          {section.label && (
+            <p className="font-mono text-[8px] text-desert-text-3/60 uppercase tracking-[0.15em] mt-4 mb-1 pl-5">
+              {section.label}
+            </p>
+          )}
+          <ul className="space-y-0.5">
+            {section.items.map((item) => {
+              const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+              return (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    className={`group flex items-center gap-3 py-2 rounded-sm text-sm transition-all duration-150 ${
+                      active
+                        ? "border-l-2 border-desert-accent pl-3 text-desert-text bg-desert-accent/10"
+                        : "pl-5 text-desert-text-3 hover:text-desert-text hover:bg-desert-surface-hover hover:pl-4 hover:translate-x-0.5"
+                    }`}
+                    onClick={onNav}
+                  >
+                    <PixelIcon
+                      name={ICON_NAMES[item.href] || "dashboard"}
+                      size={14}
+                      className={`transition-colors duration-150 ${
+                        active
+                          ? "text-desert-accent"
+                          : "text-desert-text-3 group-hover:text-desert-accent"
+                      }`}
+                    />
+                    <span className="font-pixel text-[10px]">{item.label}</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      ))}
+    </div>
   );
 }
 
