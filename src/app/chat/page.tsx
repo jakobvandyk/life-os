@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { queueWrite } from "@/lib/sync";
 import PixelIcon from "@/components/PixelIcon";
+import Markdown from "@/components/Markdown";
 
 interface ChatMessage {
   id?: number;
@@ -248,7 +249,11 @@ export default function ChatPage() {
                       : "bg-desert-surface border border-desert-border text-desert-text"
                   }`}
                 >
-                  <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                  {msg.role === "assistant" ? (
+                    <Markdown content={msg.content} />
+                  ) : (
+                    <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                  )}
                   {msg.role === "assistant" && (
                     <button
                       onClick={() => saveToKB(msg.content)}

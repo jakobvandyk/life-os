@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { queueWrite } from "@/lib/sync";
 import PixelIcon from "@/components/PixelIcon";
+import Markdown from "@/components/Markdown";
 
 interface WeeklyReview {
   id: number;
@@ -588,7 +589,7 @@ export default function ReviewPage() {
           </h2>
           {review?.ai_summary ? (
             <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
-              <p className="text-desert-text text-sm whitespace-pre-wrap">{review.ai_summary}</p>
+              <Markdown content={review.ai_summary} />
               <button
                 onClick={async () => {
                   if (!review) return;

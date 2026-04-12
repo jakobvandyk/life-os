@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { queueWrite } from "@/lib/sync";
 import PixelIcon from "@/components/PixelIcon";
+import Markdown from "@/components/Markdown";
 
 interface Tag {
   id: number;
@@ -60,6 +61,7 @@ export default function KnowledgePage() {
   const [importTitle, setImportTitle] = useState("");
   const [importing, setImporting] = useState(false);
   const [importError, setImportError] = useState("");
+  const [previewMode, setPreviewMode] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -519,13 +521,47 @@ export default function KnowledgePage() {
                 className="w-full bg-desert-bg border border-desert-border-strong rounded-sm px-4 py-2 text-desert-text placeholder:text-desert-text-3 focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent transition-colors"
               />
 
-              <textarea
-                placeholder="Write your note..."
-                value={form.content}
-                onChange={(e) => setForm({ ...form, content: e.target.value })}
-                rows={12}
-                className="w-full bg-desert-bg border border-desert-border-strong rounded-sm px-4 py-3 text-desert-text font-mono text-sm placeholder:text-desert-text-3 focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent transition-colors resize-y"
-              />
+              {/* Write / Preview toggle */}
+              <div className="flex gap-1 border-b border-desert-border mb-0">
+                <button
+                  onClick={() => setPreviewMode(false)}
+                  className={`px-3 py-1.5 font-mono text-xs uppercase tracking-wider transition-colors ${
+                    !previewMode
+                      ? "text-desert-accent border-b-2 border-desert-accent"
+                      : "text-desert-text-3 hover:text-desert-text-2"
+                  }`}
+                >
+                  Write
+                </button>
+                <button
+                  onClick={() => setPreviewMode(true)}
+                  className={`px-3 py-1.5 font-mono text-xs uppercase tracking-wider transition-colors ${
+                    previewMode
+                      ? "text-desert-accent border-b-2 border-desert-accent"
+                      : "text-desert-text-3 hover:text-desert-text-2"
+                  }`}
+                >
+                  Preview
+                </button>
+              </div>
+
+              {previewMode ? (
+                <div className="bg-desert-bg border border-desert-border-strong rounded-sm px-4 py-3 min-h-[200px] overflow-y-auto">
+                  {form.content ? (
+                    <Markdown content={form.content} />
+                  ) : (
+                    <p className="text-desert-text-3 text-sm italic">Nothing to preview</p>
+                  )}
+                </div>
+              ) : (
+                <textarea
+                  placeholder="Write your note (supports markdown)..."
+                  value={form.content}
+                  onChange={(e) => setForm({ ...form, content: e.target.value })}
+                  rows={12}
+                  className="w-full bg-desert-bg border border-desert-border-strong rounded-sm px-4 py-3 text-desert-text font-mono text-sm placeholder:text-desert-text-3 focus:outline-none focus:border-desert-accent focus:ring-1 focus:ring-desert-accent transition-colors resize-y"
+                />
+              )}
 
               <div className="flex gap-3 flex-wrap items-end">
                 <div>

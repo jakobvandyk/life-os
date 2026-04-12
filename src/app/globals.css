@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 /* === Tailwind v4 Theme — Desert Mystic === */
 @theme {
@@ -136,6 +137,86 @@ body::after {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-desert-border-strong);
+}
+
+/* === Markdown prose — Desert Mystic === */
+.prose-desert {
+  color: var(--color-desert-text);
+  font-size: 0.875rem;
+  line-height: 1.7;
+  max-width: none;
+}
+.prose-desert h1, .prose-desert h2, .prose-desert h3,
+.prose-desert h4, .prose-desert h5, .prose-desert h6 {
+  color: var(--color-desert-text);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+}
+.prose-desert h1 { font-size: 1.25rem; }
+.prose-desert h2 { font-size: 1.1rem; }
+.prose-desert h3 { font-size: 1rem; }
+.prose-desert p { margin-bottom: 0.75em; }
+.prose-desert a {
+  color: var(--color-desert-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.prose-desert a:hover { color: var(--color-desert-accent-glow); }
+.prose-desert strong { color: var(--color-desert-text); font-weight: 600; }
+.prose-desert em { color: var(--color-desert-text-2); }
+.prose-desert code:not(pre code) {
+  color: var(--color-desert-accent);
+  background: var(--color-desert-bg);
+  border: 1px solid var(--color-desert-border);
+  border-radius: 2px;
+  padding: 0.15em 0.35em;
+  font-size: 0.8125rem;
+  font-family: var(--font-mono);
+}
+.prose-desert blockquote {
+  border-left: 3px solid var(--color-desert-accent);
+  padding-left: 1em;
+  color: var(--color-desert-text-2);
+  font-style: italic;
+  margin: 1em 0;
+}
+.prose-desert ul { list-style-type: disc; padding-left: 1.5em; margin-bottom: 0.75em; }
+.prose-desert ol { list-style-type: decimal; padding-left: 1.5em; margin-bottom: 0.75em; }
+.prose-desert li { margin-bottom: 0.25em; }
+.prose-desert li > ul, .prose-desert li > ol { margin-top: 0.25em; margin-bottom: 0; }
+.prose-desert hr {
+  border-color: var(--color-desert-border);
+  margin: 1.5em 0;
+}
+.prose-desert table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+  font-family: var(--font-mono);
+}
+.prose-desert th {
+  border-bottom: 2px solid var(--color-desert-border-strong);
+  padding: 0.5em 0.75em;
+  text-align: left;
+  color: var(--color-desert-text);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 0.75rem;
+}
+.prose-desert td {
+  border-bottom: 1px solid var(--color-desert-border);
+  padding: 0.5em 0.75em;
+  color: var(--color-desert-text-2);
+}
+.prose-desert tr:hover td { color: var(--color-desert-text); }
+.prose-desert img { border-radius: 2px; margin: 1em 0; }
+.prose-desert input[type="checkbox"] {
+  accent-color: var(--color-desert-accent);
+  margin-right: 0.5em;
 }
 
 /* === Selection colour === */
