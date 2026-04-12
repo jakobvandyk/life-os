@@ -27,6 +27,28 @@ const iconOptions = [
   "habit_clean", "habit_phonefree", "habit_sunrise",
 ];
 
+// Map old emoji to new pixel icon names for migration
+const EMOJI_TO_PIXEL: Record<string, string> = {
+  "✅": "habit_check", "🧘": "habit_meditate", "🧘‍♀️": "habit_meditate",
+  "🙏": "habit_pray", "🧠": "habit_brain", "😴": "habit_sleep",
+  "🛌": "habit_sleep", "💤": "habit_sleep",
+  "🏃": "habit_run", "🏋️": "habit_strength", "💪": "habit_strength",
+  "🚴": "habit_run", "🏊": "habit_run", "🧗": "habit_strength",
+  "⛹️": "habit_strength", "🤸": "habit_strength",
+  "💧": "habit_water", "🍎": "habit_nutrition", "🥗": "habit_nutrition",
+  "🥦": "habit_nutrition", "🍳": "habit_nutrition", "💊": "habit_medicine",
+  "🫖": "habit_water", "☕": "habit_water",
+  "📚": "habit_read", "✍️": "habit_write", "📝": "habit_write",
+  "🎵": "habit_music", "🎨": "habit_write", "🎸": "habit_music",
+  "📖": "habit_read", "🖥️": "habit_brain",
+  "🧹": "habit_clean", "📵": "habit_phonefree", "🌅": "habit_sunrise",
+  "🌙": "habit_sleep", "⏰": "habit_sunrise", "🪴": "habit_nutrition",
+  "🐕": "habit_run", "🚶": "habit_run",
+  "💬": "habit_write", "📞": "habit_phonefree", "🤝": "habit_pray",
+  "💆": "habit_meditate", "🪥": "habit_clean", "🧴": "habit_clean",
+  "👨‍👩‍👧": "habit_pray", "❤️": "habit_pray",
+};
+
 const frequencyOptions = [
   { value: "daily", label: "Daily" },
   { value: "weekdays", label: "Weekdays" },
@@ -422,11 +444,7 @@ export default function HabitsPage() {
                         : "bg-desert-surface-hover border-2 border-desert-border-strong hover:border-desert-accent"
                     }`}
                   >
-                    {iconOptions.includes(habit.icon) ? (
-                      <PixelIcon name={habit.icon} size={22} />
-                    ) : (
-                      <span className="text-xl">{habit.icon}</span>
-                    )}
+                    <PixelIcon name={iconOptions.includes(habit.icon) ? habit.icon : (EMOJI_TO_PIXEL[habit.icon] || "habit_check")} size={22} />
                   </button>
 
                   {/* Info */}

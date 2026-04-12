@@ -531,11 +531,7 @@ export default function Dashboard() {
                     }`}
                     title={`${habit.name}: ${habit.done_today ? "done" : "not done"}`}
                   >
-                    {habit.icon.startsWith("habit_") ? (
-                      <PixelIcon name={habit.icon} size={18} />
-                    ) : (
-                      <span className="text-lg">{habit.icon}</span>
-                    )}
+                    <PixelIcon name={habit.icon.startsWith("habit_") ? habit.icon : "habit_check"} size={18} />
                   </span>
                 ))}
               </div>
