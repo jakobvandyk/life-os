@@ -377,8 +377,20 @@ export default function Dashboard() {
 
   if (!data) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <p className="text-desert-text-3">Loading...</p>
+      <div className="min-h-screen p-6 relative z-10">
+        <div className="mb-8 pb-6">
+          <div className="skeleton-shimmer h-8 w-64 rounded-sm mb-2" />
+          <div className="skeleton-shimmer h-4 w-48 rounded-sm" />
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="skeleton-shimmer h-20 rounded-sm border border-desert-border" />
+          ))}
+          <div className="col-span-2 skeleton-shimmer h-36 rounded-sm border border-desert-border" />
+          <div className="col-span-2 skeleton-shimmer h-36 rounded-sm border border-desert-border" />
+          <div className="col-span-2 md:col-span-3 skeleton-shimmer h-36 rounded-sm border border-desert-border" />
+          <div className="col-span-2 md:col-span-1 skeleton-shimmer h-36 rounded-sm border border-desert-border" />
+        </div>
       </div>
     );
   }
@@ -417,7 +429,7 @@ export default function Dashboard() {
       </div>
 
       {/* D2: Bento grid layout */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 animate-fade-in-up">
         {/* Row 1: Stat cards — 4 across */}
         <div className="bg-desert-surface border border-desert-border border-l-2 border-l-desert-accent rounded-sm p-4 hover:border-desert-border-strong hover:border-l-desert-accent transition-colors duration-150">
           <p className="font-mono font-bold text-2xl text-desert-text">{data.taskStats.active}</p>
@@ -737,6 +749,8 @@ export default function Dashboard() {
             { label: "Protein", data: proteinData, color: "var(--color-desert-mystic)", unit: "g", format: (v) => Math.round(v).toString() },
           ];
 
+          const HERO_LABELS = new Set(["Weight", "HRV", "Sleep"]);
+
           // Only show metrics that have at least 2 data points
           const activeMetrics = metrics.filter(
             (m) => m.data.filter((v) => v != null).length >= 2
@@ -744,42 +758,57 @@ export default function Dashboard() {
 
           if (activeMetrics.length === 0) return null;
 
+          const heroMetrics = activeMetrics.filter((m) => HERO_LABELS.has(m.label));
+          const secondaryMetrics = activeMetrics.filter((m) => !HERO_LABELS.has(m.label));
+
+          const higherIsBetter = new Set(["HRV", "Sleep", "Protein", "Readiness", "Mood", "Energy", "VO2 Max", "Steps", "Active Cal"]);
+          const lowerIsBetter = new Set(["Body Fat", "Resting HR"]);
+
+          const renderMetric = (m: Metric, hero: boolean) => {
+            const valid = m.data.filter((v): v is number => v != null);
+            const latest = valid[valid.length - 1];
+            const first = valid[0];
+            const delta = latest - first;
+            const deltaStr = delta > 0 ? `+${m.format(delta)}` : m.format(delta);
+            const deltaColor = higherIsBetter.has(m.label)
+              ? delta >= 0 ? "text-desert-success" : "text-desert-danger"
+              : lowerIsBetter.has(m.label)
+              ? delta <= 0 ? "text-desert-success" : "text-desert-danger"
+              : "text-desert-text-3";
+
+            return (
+              <div key={m.label} className="flex items-center gap-3">
+                <div className={hero ? "min-w-[70px]" : "min-w-[55px]"}>
+                  <p className={`font-mono font-bold text-desert-text ${hero ? "text-lg" : "text-sm"}`}>
+                    {m.format(latest)}
+                    <span className="text-desert-text-3 text-[10px] ml-0.5">{m.unit}</span>
+                  </p>
+                  <p className="text-[10px] text-desert-text-3 font-mono uppercase">{m.label}</p>
+                  <p className={`text-[10px] font-mono ${deltaColor}`}>{deltaStr}</p>
+                </div>
+                <Sparkline data={m.data} color={m.color} width={hero ? 140 : 80} height={hero ? 40 : 24} />
+              </div>
+            );
+          };
+
           return (
             <div className="col-span-2 md:col-span-4 bg-desert-surface border border-desert-border border-l-2 border-l-desert-border-strong rounded-sm p-4 hover:border-desert-border-strong hover:border-l-desert-border-strong transition-colors duration-150">
               <p className="font-mono font-bold text-xs tracking-[0.06em] uppercase text-desert-text-2 mb-4">
                 30-Day Trends
               </p>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {activeMetrics.map((m) => {
-                  const valid = m.data.filter((v): v is number => v != null);
-                  const latest = valid[valid.length - 1];
-                  const first = valid[0];
-                  const delta = latest - first;
-                  const deltaStr = delta > 0 ? `+${m.format(delta)}` : m.format(delta);
-                  // Higher is better for these metrics
-                  const higherIsBetter = ["HRV", "Sleep", "Protein", "Readiness", "Mood", "Energy", "VO2 Max", "Steps", "Active Cal"];
-                  const lowerIsBetter = ["Body Fat", "Resting HR"];
-                  const deltaColor = higherIsBetter.includes(m.label)
-                    ? delta >= 0 ? "text-desert-success" : "text-desert-danger"
-                    : lowerIsBetter.includes(m.label)
-                    ? delta <= 0 ? "text-desert-success" : "text-desert-danger"
-                    : "text-desert-text-3";
-
-                  return (
-                    <div key={m.label} className="flex items-center gap-3">
-                      <div className="min-w-[60px]">
-                        <p className="font-mono font-bold text-sm text-desert-text">
-                          {m.format(latest)}
-                          <span className="text-desert-text-3 text-[10px] ml-0.5">{m.unit}</span>
-                        </p>
-                        <p className="text-[10px] text-desert-text-3 font-mono uppercase">{m.label}</p>
-                        <p className={`text-[10px] font-mono ${deltaColor}`}>{deltaStr}</p>
-                      </div>
-                      <Sparkline data={m.data} color={m.color} width={100} height={28} />
-                    </div>
-                  );
-                })}
-              </div>
+              {heroMetrics.length > 0 && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {heroMetrics.map((m) => renderMetric(m, true))}
+                </div>
+              )}
+              {heroMetrics.length > 0 && secondaryMetrics.length > 0 && (
+                <div className="border-t border-desert-border/50 my-3" />
+              )}
+              {secondaryMetrics.length > 0 && (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {secondaryMetrics.map((m) => renderMetric(m, false))}
+                </div>
+              )}
             </div>
           );
         })()}
