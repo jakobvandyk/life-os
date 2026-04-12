@@ -20,7 +20,7 @@ export async function POST(request: Request) {
     return Response.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const { date, hrv, hrv_rmssd, readiness, mindfulness_minutes, sleep_hours, weight, shin_pain, waist_cm, pns_index, sns_index, stress_index, kubios_readiness, mean_hr, body_fat_pct } = body;
+  const { date, hrv, hrv_rmssd, readiness, mindfulness_minutes, sleep_hours, weight, shin_pain, waist_cm, pns_index, sns_index, stress_index, kubios_readiness, mean_hr, body_fat_pct, steps, active_calories, resting_hr, vo2_max } = body;
 
   if (!date) {
     return Response.json({ error: "date is required" }, { status: 400 });
@@ -44,6 +44,10 @@ export async function POST(request: Request) {
   if (kubios_readiness != null) { checkinFields.kubios_readiness = kubios_readiness; imported.push("kubios_readiness"); }
   if (mean_hr != null) { checkinFields.mean_hr = mean_hr; imported.push("mean_hr"); }
   if (body_fat_pct != null) { checkinFields.body_fat_pct = body_fat_pct; imported.push("body_fat_pct"); }
+  if (steps != null) { checkinFields.steps = steps; imported.push("steps"); }
+  if (active_calories != null) { checkinFields.active_calories = active_calories; imported.push("active_calories"); }
+  if (resting_hr != null) { checkinFields.resting_hr = resting_hr; imported.push("resting_hr"); }
+  if (vo2_max != null) { checkinFields.vo2_max = vo2_max; imported.push("vo2_max"); }
 
   if (Object.keys(checkinFields).length > 0) {
     const { data: existing } = await db

@@ -15,6 +15,10 @@ interface BiometricPoint {
   sleep: number | null;
   readiness: number | null;
   kubios_readiness: number | null;
+  steps: number | null;
+  active_calories: number | null;
+  resting_hr: number | null;
+  vo2_max: number | null;
 }
 
 interface NutritionPoint {
@@ -333,7 +337,7 @@ export default function Dashboard() {
       const [{ data: trendCheckins }, { data: trendNutrition }, { data: trendJournal }] = await Promise.all([
         supabase
           .from("workout_checkins")
-          .select("date, weight, body_fat_pct, hrv, hrv_rmssd, sleep, readiness, kubios_readiness")
+          .select("date, weight, body_fat_pct, hrv, hrv_rmssd, sleep, readiness, kubios_readiness, steps, active_calories, resting_hr, vo2_max")
           .gte("date", thirtyDaysAgoISO)
           .lte("date", todayISO)
           .order("date", { ascending: true }),
@@ -682,6 +686,10 @@ export default function Dashboard() {
             if (c?.kubios_readiness != null) return c.kubios_readiness / 10;
             return null;
           });
+          const stepsData = dates.map((d) => checkinMap.get(d)?.steps ?? null);
+          const activeCalData = dates.map((d) => checkinMap.get(d)?.active_calories ?? null);
+          const restingHrData = dates.map((d) => checkinMap.get(d)?.resting_hr ?? null);
+          const vo2Data = dates.map((d) => checkinMap.get(d)?.vo2_max ?? null);
           const moodData = dates.map((d) => journalMap.get(d)?.mood ?? null);
           const energyData = dates.map((d) => journalMap.get(d)?.energy ?? null);
           const calData = dates.map((d) => nutMap.get(d)?.calories ?? null);
@@ -701,7 +709,11 @@ export default function Dashboard() {
             { label: "HRV", data: hrvData, color: "var(--color-desert-success)", unit: "ms", format: (v) => Math.round(v).toString() },
             { label: "Sleep", data: sleepData, color: "var(--color-desert-celestial)", unit: "hrs", format: (v) => v.toFixed(1) },
             { label: "Readiness", data: readinessData, color: "var(--color-desert-forest)", unit: "/10", format: (v) => v.toFixed(1) },
-            { label: "Mood", data: moodData, color: "var(--color-desert-accent)", unit: "/5", format: (v) => v.toFixed(1) },
+            { label: "Resting HR", data: restingHrData, color: "var(--color-desert-danger)", unit: "bpm", format: (v) => Math.round(v).toString() },
+            { label: "VO2 Max", data: vo2Data, color: "var(--color-desert-ocean)", unit: "ml/kg", format: (v) => v.toFixed(1) },
+            { label: "Steps", data: stepsData, color: "var(--color-desert-forest)", unit: "", format: (v) => (v / 1000).toFixed(1) + "k" },
+            { label: "Active Cal", data: activeCalData, color: "var(--color-desert-accent)", unit: "kcal", format: (v) => Math.round(v).toString() },
+            { label: "Mood", data: moodData, color: "var(--color-desert-warning)", unit: "/5", format: (v) => v.toFixed(1) },
             { label: "Energy", data: energyData, color: "var(--color-desert-clay)", unit: "/5", format: (v) => v.toFixed(1) },
             { label: "Calories", data: calData, color: "var(--color-desert-driftwood)", unit: "kcal", format: (v) => Math.round(v).toString() },
             { label: "Protein", data: proteinData, color: "var(--color-desert-mystic)", unit: "g", format: (v) => Math.round(v).toString() },
@@ -727,8 +739,8 @@ export default function Dashboard() {
                   const delta = latest - first;
                   const deltaStr = delta > 0 ? `+${m.format(delta)}` : m.format(delta);
                   // Higher is better for these metrics
-                  const higherIsBetter = ["HRV", "Sleep", "Protein", "Readiness", "Mood", "Energy"];
-                  const lowerIsBetter = ["Body Fat"];
+                  const higherIsBetter = ["HRV", "Sleep", "Protein", "Readiness", "Mood", "Energy", "VO2 Max", "Steps", "Active Cal"];
+                  const lowerIsBetter = ["Body Fat", "Resting HR"];
                   const deltaColor = higherIsBetter.includes(m.label)
                     ? delta >= 0 ? "text-desert-success" : "text-desert-danger"
                     : lowerIsBetter.includes(m.label)

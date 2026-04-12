@@ -23,6 +23,10 @@ export interface Checkin {
   kubios_readiness?: number | null;
   mean_hr?: number | null;
   body_fat_pct?: number | null;
+  steps?: number | null;
+  active_calories?: number | null;
+  resting_hr?: number | null;
+  vo2_max?: number | null;
   tags?: string[] | null;
   created_at?: string;
 }
@@ -141,6 +145,10 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
   const latestKubiosReadiness = checkins.find(c => c.kubios_readiness != null)?.kubios_readiness;
   const latestMeanHr = checkins.find(c => c.mean_hr != null)?.mean_hr;
   const latestBodyFatPct = checkins.find(c => c.body_fat_pct != null)?.body_fat_pct;
+  const latestSteps = checkins.find(c => c.steps != null)?.steps;
+  const latestActiveCals = checkins.find(c => c.active_calories != null)?.active_calories;
+  const latestRestingHr = checkins.find(c => c.resting_hr != null)?.resting_hr;
+  const latestVo2Max = checkins.find(c => c.vo2_max != null)?.vo2_max;
   const totalEntries = checkins.length;
 
   const getShinPainColor = (value: number | null | undefined): string => {
@@ -392,6 +400,10 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
     if (entry.sleep) parts.push(`${entry.sleep}h sleep`);
     if (entry.shin_pain != null) parts.push(`${entry.shin_pain}/10 shin`);
     else if (entry.shin != null) parts.push(`${entry.shin}/10 shin`);
+    if (entry.steps != null) parts.push(`${entry.steps.toLocaleString()} steps`);
+    if (entry.active_calories != null) parts.push(`${entry.active_calories} aCal`);
+    if (entry.resting_hr != null) parts.push(`${entry.resting_hr} rhr`);
+    if (entry.vo2_max != null) parts.push(`${entry.vo2_max.toFixed(1)} vo2`);
     if (Array.isArray(entry.tags) && entry.tags.length > 0) parts.push(entry.tags.join(", "));
     return parts.join(" · ");
   };
@@ -890,6 +902,62 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
           </div>
           <div className="font-mono text-xs text-desert-text-2 mt-1">
             bpm
+          </div>
+        </div>
+
+        {/* Steps */}
+        <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
+          <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">
+            Steps
+          </div>
+          <div className="font-mono font-bold text-2xl text-desert-forest tracking-tight">
+            {latestSteps != null ? latestSteps.toLocaleString() : "—"}
+          </div>
+          <div className="font-mono text-xs text-desert-text-2 mt-1">
+            latest
+          </div>
+        </div>
+
+        {/* Active Calories */}
+        <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
+          <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">
+            Active Cal
+          </div>
+          <div className="font-mono font-bold text-2xl text-desert-accent tracking-tight">
+            {latestActiveCals != null ? latestActiveCals.toLocaleString() : "—"}
+          </div>
+          <div className="font-mono text-xs text-desert-text-2 mt-1">
+            kcal
+          </div>
+        </div>
+
+        {/* Resting HR */}
+        <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
+          <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">
+            Resting HR
+          </div>
+          <div className={`font-mono font-bold text-2xl tracking-tight ${
+            latestRestingHr != null
+              ? latestRestingHr < 55 ? "text-desert-success" : latestRestingHr < 65 ? "text-desert-text" : "text-desert-warning"
+              : "text-desert-text"
+          }`}>
+            {latestRestingHr != null ? latestRestingHr : "—"}
+          </div>
+          <div className="font-mono text-xs text-desert-text-2 mt-1">
+            bpm
+          </div>
+        </div>
+
+        {/* VO2 Max */}
+        <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
+          <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">
+            VO2 Max
+          </div>
+          <div className="font-mono font-bold text-2xl text-desert-celestial tracking-tight">
+            {latestVo2Max != null ? latestVo2Max.toFixed(1) : "—"}
+          </div>
+          <div className="font-mono text-xs text-desert-text-2 mt-1">
+            ml/kg/min
           </div>
         </div>
 
