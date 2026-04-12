@@ -522,16 +522,20 @@ export default function Dashboard() {
                   }}
                 />
               </div>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2 items-center">
                 {data.habits.map((habit, i) => (
                   <span
                     key={i}
-                    className={`text-lg transition-opacity duration-150 ${
+                    className={`transition-opacity duration-150 ${
                       habit.done_today ? "opacity-100" : "opacity-30"
                     }`}
                     title={`${habit.name}: ${habit.done_today ? "done" : "not done"}`}
                   >
-                    {habit.icon}
+                    {habit.icon.startsWith("habit_") ? (
+                      <PixelIcon name={habit.icon} size={18} />
+                    ) : (
+                      <span className="text-lg">{habit.icon}</span>
+                    )}
                   </span>
                 ))}
               </div>

@@ -16,17 +16,15 @@ interface Habit {
 
 const iconOptions = [
   // Wellness & mindfulness
-  "✅", "🧘", "🧘‍♀️", "🙏", "🧠", "😴", "🛌", "💤",
-  // Fitness
-  "🏃", "🏋️", "💪", "🚴", "🏊", "🧗", "⛹️", "🤸",
-  // Nutrition & hydration
-  "💧", "🍎", "🥗", "🥦", "🍳", "💊", "🫖", "☕",
+  "habit_check", "habit_meditate", "habit_pray", "habit_brain", "habit_sleep",
+  // Fitness & activity
+  "habit_run", "habit_strength", "habit_water",
+  // Nutrition
+  "habit_nutrition", "habit_medicine",
   // Learning & creativity
-  "📚", "✍️", "📝", "🎵", "🎨", "🎸", "📖", "🖥️",
+  "habit_read", "habit_write", "habit_music",
   // Lifestyle & productivity
-  "🧹", "📵", "🌅", "🌙", "⏰", "🪴", "🐕", "🚶",
-  // Social & self-care
-  "💬", "📞", "🤝", "💆", "🪥", "🧴", "👨‍👩‍👧", "❤️",
+  "habit_clean", "habit_phonefree", "habit_sunrise",
 ];
 
 const frequencyOptions = [
@@ -110,12 +108,12 @@ export default function HabitsPage() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [newHabit, setNewHabit] = useState({
     name: "",
-    icon: "✅",
+    icon: "habit_check",
     target_frequency: "daily",
   });
   const [editHabit, setEditHabit] = useState({
     name: "",
-    icon: "✅",
+    icon: "habit_check",
     target_frequency: "daily",
   });
 
@@ -183,7 +181,7 @@ export default function HabitsPage() {
     const { error } = await supabase.from("habits").insert(payload);
     if (error) await queueWrite("habits", "insert", payload);
 
-    setNewHabit({ name: "", icon: "✅", target_frequency: "daily" });
+    setNewHabit({ name: "", icon: "habit_check", target_frequency: "daily" });
     setShowForm(false);
     fetchHabits();
   };
@@ -299,13 +297,13 @@ export default function HabitsPage() {
                 <button
                   key={icon}
                   onClick={() => onChange({ ...values, icon })}
-                  className={`w-8 h-8 rounded-md flex items-center justify-center text-sm transition-colors ${
+                  className={`w-8 h-8 rounded-md flex items-center justify-center transition-colors ${
                     values.icon === icon
-                      ? "bg-desert-accent"
-                      : "bg-desert-surface-hover hover:bg-desert-border"
+                      ? "bg-desert-accent text-desert-bg"
+                      : "bg-desert-surface-hover hover:bg-desert-border text-desert-text"
                   }`}
                 >
-                  {icon}
+                  <PixelIcon name={icon} size={18} />
                 </button>
               ))}
             </div>
@@ -424,7 +422,11 @@ export default function HabitsPage() {
                         : "bg-desert-surface-hover border-2 border-desert-border-strong hover:border-desert-accent"
                     }`}
                   >
-                    {habit.icon}
+                    {iconOptions.includes(habit.icon) ? (
+                      <PixelIcon name={habit.icon} size={22} />
+                    ) : (
+                      <span className="text-xl">{habit.icon}</span>
+                    )}
                   </button>
 
                   {/* Info */}
