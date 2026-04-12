@@ -13,6 +13,8 @@ interface BiometricPoint {
   hrv: number | null;
   hrv_rmssd: number | null;
   sleep: number | null;
+  readiness: number | null;
+  kubios_readiness: number | null;
 }
 
 interface NutritionPoint {
@@ -22,9 +24,16 @@ interface NutritionPoint {
   water_ml: number | null;
 }
 
+interface JournalPoint {
+  date: string;
+  mood: number | null;
+  energy: number | null;
+}
+
 interface TrendsData {
   checkins: BiometricPoint[];
   nutrition: NutritionPoint[];
+  journal: JournalPoint[];
 }
 
 interface NutritionData {
@@ -321,16 +330,22 @@ export default function Dashboard() {
         .maybeSingle();
 
       // 30-day trends for biometrics
-      const [{ data: trendCheckins }, { data: trendNutrition }] = await Promise.all([
+      const [{ data: trendCheckins }, { data: trendNutrition }, { data: trendJournal }] = await Promise.all([
         supabase
           .from("workout_checkins")
-          .select("date, weight, body_fat_pct, hrv, hrv_rmssd, sleep")
+          .select("date, weight, body_fat_pct, hrv, hrv_rmssd, sleep, readiness, kubios_readiness")
           .gte("date", thirtyDaysAgoISO)
           .lte("date", todayISO)
           .order("date", { ascending: true }),
         supabase
           .from("nutrition_daily")
           .select("date, calories, protein_g, water_ml")
+          .gte("date", thirtyDaysAgoISO)
+          .lte("date", todayISO)
+          .order("date", { ascending: true }),
+        supabase
+          .from("journal_entries")
+          .select("date, mood, energy")
           .gte("date", thirtyDaysAgoISO)
           .lte("date", todayISO)
           .order("date", { ascending: true }),
@@ -348,6 +363,7 @@ export default function Dashboard() {
         trends: {
           checkins: (trendCheckins as BiometricPoint[]) || [],
           nutrition: (trendNutrition as NutritionPoint[]) || [],
+          journal: (trendJournal as JournalPoint[]) || [],
         },
       });
     }
@@ -638,10 +654,11 @@ export default function Dashboard() {
 
         {/* Row 5: Biometric Trends (30 days) */}
         {(() => {
-          const { checkins, nutrition: nutTrends } = data.trends;
+          const { checkins, nutrition: nutTrends, journal: journalTrends } = data.trends;
           // Build day-indexed maps for proper sparkline alignment
           const checkinMap = new Map(checkins.map((c) => [c.date, c]));
           const nutMap = new Map(nutTrends.map((n) => [n.date, n]));
+          const journalMap = new Map(journalTrends.map((j) => [j.date, j]));
 
           // Generate all 30 dates
           const dates: string[] = [];
@@ -658,6 +675,15 @@ export default function Dashboard() {
             return c?.hrv_rmssd ?? c?.hrv ?? null;
           });
           const sleepData = dates.map((d) => checkinMap.get(d)?.sleep ?? null);
+          const readinessData = dates.map((d) => {
+            const c = checkinMap.get(d);
+            // Normalize kubios (0-100) to 1-10 scale if no Apple Health readiness
+            if (c?.readiness != null) return c.readiness;
+            if (c?.kubios_readiness != null) return c.kubios_readiness / 10;
+            return null;
+          });
+          const moodData = dates.map((d) => journalMap.get(d)?.mood ?? null);
+          const energyData = dates.map((d) => journalMap.get(d)?.energy ?? null);
           const calData = dates.map((d) => nutMap.get(d)?.calories ?? null);
           const proteinData = dates.map((d) => nutMap.get(d)?.protein_g ?? null);
 
@@ -674,7 +700,10 @@ export default function Dashboard() {
             { label: "Body Fat", data: bodyFatData, color: "var(--color-desert-warning)", unit: "%", format: (v) => v.toFixed(1) },
             { label: "HRV", data: hrvData, color: "var(--color-desert-success)", unit: "ms", format: (v) => Math.round(v).toString() },
             { label: "Sleep", data: sleepData, color: "var(--color-desert-celestial)", unit: "hrs", format: (v) => v.toFixed(1) },
-            { label: "Calories", data: calData, color: "var(--color-desert-accent)", unit: "kcal", format: (v) => Math.round(v).toString() },
+            { label: "Readiness", data: readinessData, color: "var(--color-desert-forest)", unit: "/10", format: (v) => v.toFixed(1) },
+            { label: "Mood", data: moodData, color: "var(--color-desert-accent)", unit: "/5", format: (v) => v.toFixed(1) },
+            { label: "Energy", data: energyData, color: "var(--color-desert-clay)", unit: "/5", format: (v) => v.toFixed(1) },
+            { label: "Calories", data: calData, color: "var(--color-desert-driftwood)", unit: "kcal", format: (v) => Math.round(v).toString() },
             { label: "Protein", data: proteinData, color: "var(--color-desert-mystic)", unit: "g", format: (v) => Math.round(v).toString() },
           ];
 
@@ -697,17 +726,14 @@ export default function Dashboard() {
                   const first = valid[0];
                   const delta = latest - first;
                   const deltaStr = delta > 0 ? `+${m.format(delta)}` : m.format(delta);
-                  const deltaColor =
-                    // For body fat and calories, down is usually good; for HRV and sleep, up is good
-                    m.label === "HRV" || m.label === "Sleep" || m.label === "Protein"
-                      ? delta >= 0
-                        ? "text-desert-success"
-                        : "text-desert-danger"
-                      : m.label === "Body Fat"
-                      ? delta <= 0
-                        ? "text-desert-success"
-                        : "text-desert-danger"
-                      : "text-desert-text-3";
+                  // Higher is better for these metrics
+                  const higherIsBetter = ["HRV", "Sleep", "Protein", "Readiness", "Mood", "Energy"];
+                  const lowerIsBetter = ["Body Fat"];
+                  const deltaColor = higherIsBetter.includes(m.label)
+                    ? delta >= 0 ? "text-desert-success" : "text-desert-danger"
+                    : lowerIsBetter.includes(m.label)
+                    ? delta <= 0 ? "text-desert-success" : "text-desert-danger"
+                    : "text-desert-text-3";
 
                   return (
                     <div key={m.label} className="flex items-center gap-3">
