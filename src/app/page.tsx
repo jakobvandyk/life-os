@@ -191,7 +191,8 @@ export default function Dashboard() {
         const name =
           user.user_metadata?.full_name ||
           user.user_metadata?.name ||
-          "Jakob";
+          user.email?.split("@")[0] ||
+          "there";
         setUserName(name);
       }
     }
