@@ -32,6 +32,7 @@ export async function GET(request: NextRequest) {
     { data: weeklyReviews },
     { data: habits },
     { data: goals },
+    { data: nutrition },
   ] = await Promise.all([
     supabase
       .from("workout_checkins")
@@ -80,6 +81,12 @@ export async function GET(request: NextRequest) {
       .select("*")
       .eq("user_id", userId)
       .eq("status", "active"),
+    supabase
+      .from("nutrition_daily")
+      .select("*")
+      .eq("user_id", userId)
+      .gte("date", from)
+      .lte("date", to),
   ]);
 
   // Fetch workout exercises by session IDs
@@ -119,6 +126,7 @@ export async function GET(request: NextRequest) {
     habits: strip(habits || []),
     goals: strip(goals || []),
     key_results: strip(keyResults),
+    nutrition: strip(nutrition || []),
     tasks_completed: strip(completedTasks || []),
     weekly_reviews: strip(weeklyReviews || []),
   };

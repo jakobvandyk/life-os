@@ -5,6 +5,16 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import PixelIcon from "@/components/PixelIcon";
 
+interface NutritionData {
+  calories: number | null;
+  protein_g: number | null;
+  carbs_g: number | null;
+  fat_g: number | null;
+  fiber_g: number | null;
+  water_ml: number | null;
+  caffeine_mg: number | null;
+}
+
 interface DashboardData {
   taskStats: { active: number; completed_this_week: number; overdue: number };
   todayTasks: { id: number; title: string; priority: string; due_date: string }[];
@@ -13,6 +23,7 @@ interface DashboardData {
   goals: { title: string; progress: number }[];
   recentJournal: { date: string; mood: number; energy: number }[];
   streak: number;
+  nutrition: NutritionData | null;
 }
 
 const priorityColors: Record<string, string> = {
@@ -277,6 +288,12 @@ export default function Dashboard() {
         .order("date", { ascending: false })
         .limit(7);
 
+      const { data: nutritionData } = await supabase
+        .from("nutrition_daily")
+        .select("calories, protein_g, carbs_g, fat_g, fiber_g, water_ml, caffeine_mg")
+        .eq("date", todayISO)
+        .maybeSingle();
+
       setData({
         taskStats,
         todayTasks,
@@ -285,6 +302,7 @@ export default function Dashboard() {
         goals,
         recentJournal: recentJournalData || [],
         streak,
+        nutrition: nutritionData || null,
       });
     }
 
@@ -491,7 +509,88 @@ export default function Dashboard() {
           )}
         </Link>
 
-        {/* Row 4: Quick links */}
+        {/* Row 4: Nutrition */}
+        {data.nutrition && data.nutrition.calories != null && (() => {
+          const n = data.nutrition!;
+          const totalMacroG = (n.protein_g || 0) + (n.carbs_g || 0) + (n.fat_g || 0);
+          const proteinPct = totalMacroG > 0 ? ((n.protein_g || 0) / totalMacroG) * 100 : 0;
+          const carbsPct = totalMacroG > 0 ? ((n.carbs_g || 0) / totalMacroG) * 100 : 0;
+          const fatPct = totalMacroG > 0 ? ((n.fat_g || 0) / totalMacroG) * 100 : 0;
+          return (
+            <div className="col-span-2 md:col-span-4 bg-desert-surface border border-desert-border rounded-sm p-4 hover:border-desert-border-strong transition-colors duration-150">
+              <p className="font-mono font-bold text-xs tracking-[0.06em] uppercase text-desert-text-2 mb-3">
+                Today&apos;s Nutrition
+              </p>
+              <div className="flex items-end gap-6 flex-wrap">
+                {/* Calories hero */}
+                <div>
+                  <p className="font-mono font-bold text-2xl text-desert-text">
+                    {Math.round(n.calories!)}
+                  </p>
+                  <p className="text-[10px] text-desert-text-3 font-mono uppercase">kcal</p>
+                </div>
+                {/* Macros */}
+                <div className="flex gap-4">
+                  <div>
+                    <p className="font-mono font-bold text-sm text-desert-accent">
+                      {Math.round(n.protein_g || 0)}g
+                    </p>
+                    <p className="text-[10px] text-desert-text-3 font-mono uppercase">Protein</p>
+                  </div>
+                  <div>
+                    <p className="font-mono font-bold text-sm text-desert-warning">
+                      {Math.round(n.carbs_g || 0)}g
+                    </p>
+                    <p className="text-[10px] text-desert-text-3 font-mono uppercase">Carbs</p>
+                  </div>
+                  <div>
+                    <p className="font-mono font-bold text-sm text-desert-text-2">
+                      {Math.round(n.fat_g || 0)}g
+                    </p>
+                    <p className="text-[10px] text-desert-text-3 font-mono uppercase">Fat</p>
+                  </div>
+                  {n.fiber_g != null && (
+                    <div>
+                      <p className="font-mono font-bold text-sm text-desert-forest">
+                        {Math.round(n.fiber_g)}g
+                      </p>
+                      <p className="text-[10px] text-desert-text-3 font-mono uppercase">Fiber</p>
+                    </div>
+                  )}
+                </div>
+                {/* Extras */}
+                <div className="flex gap-4 ml-auto">
+                  {n.water_ml != null && (
+                    <div className="text-right">
+                      <p className="font-mono font-bold text-sm text-desert-celestial">
+                        {(n.water_ml / 1000).toFixed(1)}L
+                      </p>
+                      <p className="text-[10px] text-desert-text-3 font-mono uppercase">Water</p>
+                    </div>
+                  )}
+                  {n.caffeine_mg != null && n.caffeine_mg > 0 && (
+                    <div className="text-right">
+                      <p className="font-mono font-bold text-sm text-desert-clay">
+                        {Math.round(n.caffeine_mg)}mg
+                      </p>
+                      <p className="text-[10px] text-desert-text-3 font-mono uppercase">Caffeine</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+              {/* Macro ratio bar */}
+              {totalMacroG > 0 && (
+                <div className="flex h-1.5 rounded-full overflow-hidden mt-3">
+                  <div className="bg-desert-accent" style={{ width: `${proteinPct}%` }} />
+                  <div className="bg-desert-warning" style={{ width: `${carbsPct}%` }} />
+                  <div className="bg-desert-text-3" style={{ width: `${fatPct}%` }} />
+                </div>
+              )}
+            </div>
+          );
+        })()}
+
+        {/* Row 5: Quick links */}
         <Link
           href="/finances"
           className="bg-desert-surface border border-desert-border rounded-sm p-4 hover:border-desert-border-strong hover:bg-desert-surface-hover transition-all duration-150 group"

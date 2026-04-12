@@ -121,7 +121,7 @@ finance_liabilities, finance_transactions, finance_snapshots,
 finance_tax_flags, finance_exchange_rates, projects, workout_sessions,
 workout_exercises, workout_checkins, calendar_events, kb_notes,
 kb_tags, kb_note_tags, weekly_reviews, chat_sessions, chat_messages,
-integration_syncs, raw_imports
+integration_syncs, raw_imports, nutrition_daily
 
 ## Key Schema Details
 - Goal areas: finance, health, side_projects, personal_growth, personal
@@ -141,6 +141,7 @@ integration_syncs, raw_imports
 - Exchange rate pairs stored as e.g. "NZDAUD" (no slash) with rate as real
 - kb_notes types: note, ai_response, research
 - chat_messages capabilities: focus, review, spending, journal, general
+- nutrition_daily: unique per (user_id, date), macros (calories, protein_g, carbs_g, fat_g, fiber_g), hydration (water_ml), stimulants (caffeine_mg, alcohol_g), micros (vitamin_d_iu, iron_mg, magnesium_mg, zinc_mg, sodium_mg, potassium_mg), source defaults to 'cronometer'
 
 ## What's Built (All Phases Complete)
 - Login (Supabase Auth)
@@ -251,7 +252,7 @@ Jakob is based in Hamilton, New Zealand. Currency is NZD."
 
 ## Data Inventory
 - DATA-INVENTORY.md in project root — comprehensive list of all tracked data points, sources, and ingestion methods
-- Includes Cronometer expansion ideas (biometric mapping, nutrition features, cross-domain insights)
+- Includes Cronometer expansion ideas (nutrition features, cross-domain insights)
 
 ## Current Status
 All phases complete (1-7). D3 pixel art icons complete. D4 pixel art backgrounds complete.
@@ -259,4 +260,15 @@ Offline fallbacks wired. Data export + insight import workflow built. Kubios HRV
 Light/dark theme toggle complete. Body fat percentage tracking added.
 Tasks page upgraded: inline editing, subtasks (parent_id), responsive mobile layout, always-visible status badges.
 Habits page upgraded: 48-emoji picker, weekends/monthly recurrence, frequency-aware streaks, inline editing with archive.
-Next: Cronometer biometric mapping, additional polish.
+Cronometer biometric mapping complete (nutrition_daily table, import endpoint parses CSV → nutrition/checkins/journal, dashboard nutrition card, export includes nutrition).
+Markdown rendering added (react-markdown + remark-gfm + syntax highlighting, prose-desert theme, wired into AI Chat, KB preview, Review summary).
+Next: additional polish.
+
+## graphify
+
+This project has a graphify knowledge graph at graphify-out/.
+
+Rules:
+- Before answering architecture or codebase questions, read graphify-out/GRAPH_REPORT.md for god nodes and community structure
+- If graphify-out/wiki/index.md exists, navigate it instead of reading raw files
+- After modifying code files in this session, run `python3 -c "from graphify.watch import _rebuild_code; from pathlib import Path; _rebuild_code(Path('.'))"` to keep the graph current
