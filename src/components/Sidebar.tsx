@@ -61,7 +61,7 @@ function NavList({
                     className={`group flex items-center gap-3 py-2 rounded-sm text-sm transition-all duration-150 ${
                       active
                         ? "border-l-2 border-desert-accent pl-3 text-desert-text bg-desert-accent/10"
-                        : "pl-5 text-desert-text-3 hover:text-desert-text hover:bg-desert-surface-hover hover:pl-4 hover:translate-x-0.5"
+                        : "pl-5 text-desert-text-3 hover:text-desert-text hover:bg-desert-surface-hover"
                     }`}
                     onClick={onNav}
                   >
