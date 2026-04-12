@@ -4,6 +4,28 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import PixelIcon from "@/components/PixelIcon";
+import Sparkline from "@/components/Sparkline";
+
+interface BiometricPoint {
+  date: string;
+  weight: number | null;
+  body_fat_pct: number | null;
+  hrv: number | null;
+  hrv_rmssd: number | null;
+  sleep: number | null;
+}
+
+interface NutritionPoint {
+  date: string;
+  calories: number | null;
+  protein_g: number | null;
+  water_ml: number | null;
+}
+
+interface TrendsData {
+  checkins: BiometricPoint[];
+  nutrition: NutritionPoint[];
+}
 
 interface NutritionData {
   calories: number | null;
@@ -24,6 +46,7 @@ interface DashboardData {
   recentJournal: { date: string; mood: number; energy: number }[];
   streak: number;
   nutrition: NutritionData | null;
+  trends: TrendsData;
 }
 
 const priorityColors: Record<string, string> = {
@@ -166,6 +189,9 @@ export default function Dashboard() {
   useEffect(() => {
     async function fetchDashboardData() {
       const todayISO = new Date().toISOString().split("T")[0];
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const thirtyDaysAgoISO = thirtyDaysAgo.toISOString().split("T")[0];
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
       const sevenDaysAgoISO = sevenDaysAgo.toISOString();
@@ -294,6 +320,22 @@ export default function Dashboard() {
         .eq("date", todayISO)
         .maybeSingle();
 
+      // 30-day trends for biometrics
+      const [{ data: trendCheckins }, { data: trendNutrition }] = await Promise.all([
+        supabase
+          .from("workout_checkins")
+          .select("date, weight, body_fat_pct, hrv, hrv_rmssd, sleep")
+          .gte("date", thirtyDaysAgoISO)
+          .lte("date", todayISO)
+          .order("date", { ascending: true }),
+        supabase
+          .from("nutrition_daily")
+          .select("date, calories, protein_g, water_ml")
+          .gte("date", thirtyDaysAgoISO)
+          .lte("date", todayISO)
+          .order("date", { ascending: true }),
+      ]);
+
       setData({
         taskStats,
         todayTasks,
@@ -303,6 +345,10 @@ export default function Dashboard() {
         recentJournal: recentJournalData || [],
         streak,
         nutrition: nutritionData || null,
+        trends: {
+          checkins: (trendCheckins as BiometricPoint[]) || [],
+          nutrition: (trendNutrition as NutritionPoint[]) || [],
+        },
       });
     }
 
@@ -590,7 +636,99 @@ export default function Dashboard() {
           );
         })()}
 
-        {/* Row 5: Quick links */}
+        {/* Row 5: Biometric Trends (30 days) */}
+        {(() => {
+          const { checkins, nutrition: nutTrends } = data.trends;
+          // Build day-indexed maps for proper sparkline alignment
+          const checkinMap = new Map(checkins.map((c) => [c.date, c]));
+          const nutMap = new Map(nutTrends.map((n) => [n.date, n]));
+
+          // Generate all 30 dates
+          const dates: string[] = [];
+          for (let i = 30; i >= 0; i--) {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            dates.push(d.toISOString().split("T")[0]);
+          }
+
+          const weightData = dates.map((d) => checkinMap.get(d)?.weight ?? null);
+          const bodyFatData = dates.map((d) => checkinMap.get(d)?.body_fat_pct ?? null);
+          const hrvData = dates.map((d) => {
+            const c = checkinMap.get(d);
+            return c?.hrv_rmssd ?? c?.hrv ?? null;
+          });
+          const sleepData = dates.map((d) => checkinMap.get(d)?.sleep ?? null);
+          const calData = dates.map((d) => nutMap.get(d)?.calories ?? null);
+          const proteinData = dates.map((d) => nutMap.get(d)?.protein_g ?? null);
+
+          type Metric = {
+            label: string;
+            data: (number | null)[];
+            color: string;
+            unit: string;
+            format: (v: number) => string;
+          };
+
+          const metrics: Metric[] = [
+            { label: "Weight", data: weightData, color: "var(--color-desert-text)", unit: "kg", format: (v) => v.toFixed(1) },
+            { label: "Body Fat", data: bodyFatData, color: "var(--color-desert-warning)", unit: "%", format: (v) => v.toFixed(1) },
+            { label: "HRV", data: hrvData, color: "var(--color-desert-success)", unit: "ms", format: (v) => Math.round(v).toString() },
+            { label: "Sleep", data: sleepData, color: "var(--color-desert-celestial)", unit: "hrs", format: (v) => v.toFixed(1) },
+            { label: "Calories", data: calData, color: "var(--color-desert-accent)", unit: "kcal", format: (v) => Math.round(v).toString() },
+            { label: "Protein", data: proteinData, color: "var(--color-desert-mystic)", unit: "g", format: (v) => Math.round(v).toString() },
+          ];
+
+          // Only show metrics that have at least 2 data points
+          const activeMetrics = metrics.filter(
+            (m) => m.data.filter((v) => v != null).length >= 2
+          );
+
+          if (activeMetrics.length === 0) return null;
+
+          return (
+            <div className="col-span-2 md:col-span-4 bg-desert-surface border border-desert-border rounded-sm p-4 hover:border-desert-border-strong transition-colors duration-150">
+              <p className="font-mono font-bold text-xs tracking-[0.06em] uppercase text-desert-text-2 mb-4">
+                30-Day Trends
+              </p>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {activeMetrics.map((m) => {
+                  const valid = m.data.filter((v): v is number => v != null);
+                  const latest = valid[valid.length - 1];
+                  const first = valid[0];
+                  const delta = latest - first;
+                  const deltaStr = delta > 0 ? `+${m.format(delta)}` : m.format(delta);
+                  const deltaColor =
+                    // For body fat and calories, down is usually good; for HRV and sleep, up is good
+                    m.label === "HRV" || m.label === "Sleep" || m.label === "Protein"
+                      ? delta >= 0
+                        ? "text-desert-success"
+                        : "text-desert-danger"
+                      : m.label === "Body Fat"
+                      ? delta <= 0
+                        ? "text-desert-success"
+                        : "text-desert-danger"
+                      : "text-desert-text-3";
+
+                  return (
+                    <div key={m.label} className="flex items-center gap-3">
+                      <div className="min-w-[60px]">
+                        <p className="font-mono font-bold text-sm text-desert-text">
+                          {m.format(latest)}
+                          <span className="text-desert-text-3 text-[10px] ml-0.5">{m.unit}</span>
+                        </p>
+                        <p className="text-[10px] text-desert-text-3 font-mono uppercase">{m.label}</p>
+                        <p className={`text-[10px] font-mono ${deltaColor}`}>{deltaStr}</p>
+                      </div>
+                      <Sparkline data={m.data} color={m.color} width={100} height={28} />
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* Row 6: Quick links */}
         <Link
           href="/finances"
           className="bg-desert-surface border border-desert-border rounded-sm p-4 hover:border-desert-border-strong hover:bg-desert-surface-hover transition-all duration-150 group"
