@@ -1,155 +1,138 @@
 # Life OS — Data Point Inventory
 
-Complete inventory of every data point tracked, where it's recorded, and how it enters Life OS.
+Complete inventory of every data point tracked, where it originates, and how it enters Life OS.
+
+For workflow details, source authority rules, and the iOS Shortcut spec, see **DATA-STRATEGY.md**.
 
 ---
 
-## Body & Recovery
+## Body & Recovery (`workout_checkins`)
 
-| Data Point | Source of Recording | How It Gets Into Life OS |
-|---|---|---|
-| Weight (kg) | Bathroom scale | Manual — DailyCheckin form OR Apple Health webhook |
-| Body Fat (%) | Bathroom scale (bioimpedance) | Manual — DailyCheckin form OR Apple Health webhook |
-| Waist (cm) | Tape measure | Manual — DailyCheckin form OR Apple Health webhook |
-| Sleep (hrs) | Apple Watch / manual | Manual — DailyCheckin form OR Apple Health webhook |
-| HRV SDNN (ms) | Apple Watch | Apple Health webhook (iOS Shortcut) OR manual |
-| HRV RMSSD (ms) | Polar H10 → Kubios app | Manual — DailyCheckin Kubios section |
-| PNS Index | Polar H10 → Kubios app | Manual — DailyCheckin Kubios section |
-| SNS Index | Polar H10 → Kubios app | Manual — DailyCheckin Kubios section |
-| Stress Index (Baevsky) | Polar H10 → Kubios app | Manual — DailyCheckin Kubios section |
-| Kubios Readiness (0-100) | Polar H10 → Kubios app | Manual — DailyCheckin Kubios section |
-| Mean HR (bpm) | Polar H10 → Kubios app | Manual — DailyCheckin Kubios section |
-| Readiness (1-10) | Subjective self-assessment | Manual — DailyCheckin form OR Apple Health webhook |
-| Shin Pain (0-10) | Subjective self-assessment | Manual — DailyCheckin form OR Apple Health webhook |
-| Mindfulness (mins) | Apple Watch / manual | Apple Health webhook → habit_logs auto-match |
-| Tags | Subjective annotation | Manual — DailyCheckin form |
+| Data Point | Origin Device/Source | Ingestion Path | Authority |
+|---|---|---|---|
+| Weight (kg) | Bathroom scale | Apple Health webhook OR Cronometer CSV (fills nulls) OR manual | Apple Health |
+| Body Fat (%) | Scale (bioimpedance) | Apple Health webhook OR Cronometer CSV (fills nulls) OR manual | Apple Health |
+| Waist (cm) | Tape measure | Manual OR Cronometer CSV (fills nulls) | Manual |
+| Sleep (hrs) | Apple Watch (auto-detect) | Apple Health webhook OR manual fallback | Apple Health |
+| HRV SDNN (ms) | Apple Watch | Apple Health webhook | Apple Health |
+| HRV RMSSD (ms) | Polar H10 → Kubios app | Manual (DailyCheckin Kubios section) | Kubios |
+| PNS Index | Polar H10 → Kubios app | Manual (DailyCheckin Kubios section) | Kubios |
+| SNS Index | Polar H10 → Kubios app | Manual (DailyCheckin Kubios section) | Kubios |
+| Stress Index (Baevsky) | Polar H10 → Kubios app | Manual (DailyCheckin Kubios section) | Kubios |
+| Kubios Readiness (0-100) | Polar H10 → Kubios app | Manual (DailyCheckin Kubios section) | Kubios |
+| Mean HR (bpm) | Polar H10 → Kubios app | Manual (DailyCheckin Kubios section) | Kubios |
+| Readiness (1-10) | Subjective | Apple Health webhook OR manual | Apple Health |
+| Shin Pain (0-10) | Subjective | Manual OR Apple Health webhook | Manual |
+| Steps | Garmin → Apple Health | Apple Health webhook | Apple Health |
+| Active Calories (kcal) | Garmin → Apple Health | Apple Health webhook | Apple Health |
+| Resting HR (bpm) | Garmin → Apple Health | Apple Health webhook | Apple Health |
+| VO2 Max (ml/kg/min) | Garmin → Apple Health | Apple Health webhook | Apple Health |
+| Mindfulness (mins) | Apple Watch | Apple Health webhook → habit_logs auto-match | Apple Health |
+| Tags | Subjective annotation | Manual (DailyCheckin) | Manual |
 
-## Training
+## Nutrition (`nutrition_daily`)
 
-| Data Point | Source of Recording | How It Gets Into Life OS |
-|---|---|---|
-| Session type | User selection | Manual — SessionLogger (upper/lower strength/volume) |
-| Session label | User input | Manual — SessionLogger |
-| Session date | Auto (today) or manual | Manual — SessionLogger |
-| Session notes | User input | Manual — SessionLogger |
-| Exercise name | Predefined list per session type | Manual — SessionLogger |
-| Exercise weight (kg) | Gym — plates on bar | Manual — SessionLogger |
-| Exercise sets | Counting | Manual — SessionLogger |
-| Exercise reps | Counting | Manual — SessionLogger |
-| Exercise RPE | Subjective (easy/med/hard/fail) | Manual — SessionLogger |
+| Data Point | Origin | Ingestion Path | Authority |
+|---|---|---|---|
+| Calories (kcal) | Food logging | Cronometer CSV import | Cronometer |
+| Protein (g) | Food logging | Cronometer CSV import | Cronometer |
+| Carbs (g) | Food logging | Cronometer CSV import | Cronometer |
+| Fat (g) | Food logging | Cronometer CSV import | Cronometer |
+| Fiber (g) | Food logging | Cronometer CSV import | Cronometer |
+| Water (ml) | Food/drink logging | Cronometer CSV import | Cronometer |
+| Caffeine (mg) | Food/drink logging | Cronometer CSV import | Cronometer |
+| Alcohol (g) | Food/drink logging | Cronometer CSV import | Cronometer |
+| Vitamin D (IU) | Food logging | Cronometer CSV import | Cronometer |
+| Iron (mg) | Food logging | Cronometer CSV import | Cronometer |
+| Magnesium (mg) | Food logging | Cronometer CSV import | Cronometer |
+| Zinc (mg) | Food logging | Cronometer CSV import | Cronometer |
+| Sodium (mg) | Food logging | Cronometer CSV import | Cronometer |
+| Potassium (mg) | Food logging | Cronometer CSV import | Cronometer |
 
-## Journal
+## Training (`workout_sessions`, `workout_exercises`)
 
-| Data Point | Source of Recording | How It Gets Into Life OS |
-|---|---|---|
-| Mood (1-5) | Subjective self-assessment | Manual — Journal page |
-| Energy (1-5) | Subjective self-assessment | Manual — Journal page |
-| Gratitude | Written reflection | Manual — Journal page |
-| Reflection | Written reflection | Manual — Journal page |
-| Wins | Written reflection | Manual — Journal page |
+| Data Point | Origin | Ingestion Path | Authority |
+|---|---|---|---|
+| Session type | User selection | Manual (SessionLogger) | Manual |
+| Exercise name | Predefined per session type | Manual (SessionLogger) | Manual |
+| Weight (kg) | Plates on bar | Manual (SessionLogger) | Manual |
+| Sets / Reps | Counting | Manual (SessionLogger) | Manual |
+| RPE (easy/med/hard/fail) | Subjective effort | Manual (SessionLogger) | Manual |
+| Session notes | Annotation | Manual (SessionLogger) | Manual |
 
-## Habits
+## Journal (`journal_entries`)
 
-| Data Point | Source of Recording | How It Gets Into Life OS |
-|---|---|---|
-| Habit completion (boolean) | Self-tracking | Manual — Habits page toggle |
-| Habit value (numeric) | Self-tracking or webhook | Manual toggle OR Apple Health webhook (mindfulness) |
-| Streak (computed) | Derived from habit_logs | Calculated client-side |
+| Data Point | Origin | Ingestion Path | Authority |
+|---|---|---|---|
+| Mood (1-5) | Self-assessment | Manual (Journal page) — Cronometer fills nulls on existing entries | Manual |
+| Energy (1-5) | Self-assessment | Manual (Journal page) — Cronometer fills nulls on existing entries | Manual |
+| Gratitude / Reflection / Wins | Written reflection | Manual (Journal page) | Manual |
 
-## Goals & Tasks
+## Habits (`habits`, `habit_logs`)
 
-| Data Point | Source of Recording | How It Gets Into Life OS |
-|---|---|---|
-| Goal title, area, timeframe | Planning | Manual — Goals page |
-| Goal % complete | Derived from key results | Calculated from KR progress |
-| Key result title, target, current, unit | Tracking | Manual — Goals page |
-| Task title, description, priority, status | Planning / doing | Manual — Tasks page |
-| Task due date | Planning | Manual — Tasks page |
-| Task completed_at | Automatic on status change | Auto-set when marked done |
+| Data Point | Origin | Ingestion Path | Authority |
+|---|---|---|---|
+| Habit completion | Self-tracking | Manual toggle (Habits page) | Manual |
+| Mindfulness auto-log | Apple Watch | Apple Health webhook → auto-match habit by name | Apple Health |
+| Streak | Derived from habit_logs + frequency | Calculated client-side | Derived |
+
+## Goals & Tasks (`goals`, `key_results`, `tasks`)
+
+| Data Point | Origin | Ingestion Path | Authority |
+|---|---|---|---|
+| Goal / KR definition | Planning | Manual (Goals page) | Manual |
+| KR current value | Tracking | Manual update (Goals page) | Manual |
+| Task CRUD | Planning / doing | Manual (Tasks page) | Manual |
 
 ## Finances
 
-| Data Point | Source of Recording | How It Gets Into Life OS |
-|---|---|---|
-| Account balances | Bank apps / Binance | Manual — Finances page OR Binance API sync (daily cron) |
-| Account metadata (type, currency, tier, asset class) | Configuration | Manual — Finances page |
-| Income streams (amount, frequency) | Payslips / knowledge | Manual — Finances page |
-| Expense items (category, amount, frequency) | Bills / knowledge | Manual — Finances page |
-| Liabilities (amount, due day) | Statements | Manual — Finances page |
-| Bank transactions | myBOQ bank export | OFX file upload — Settings page |
-| Exchange rates (NZD/AUD/USD) | Binance API | Binance sync cron (daily) |
-| Tax flags | Tax planning | Manual — Finances page |
-| Finance snapshots | Point-in-time capture | Manual or auto — Finances page |
-| Crypto balances | Binance account | API sync — Binance cron (daily, auto-creates accounts) |
+| Data Point | Origin | Ingestion Path | Authority |
+|---|---|---|---|
+| Crypto balances | Binance account | API sync (daily 8am cron) — auto-creates accounts | Binance API |
+| Bank balances | Bank apps | Manual update (Finances page) | Manual |
+| Income / Expenses | Payslips / bills | Manual entry (Finances page) | Manual |
+| Transactions | myBOQ bank | OFX file upload (Settings) — deduplicated by FITID | OFX file |
+| Exchange rates | Binance API | Daily cron sync | Binance API |
+| Tax flags | Tax planning | Manual (Finances page) | Manual |
 
-## Calendar
+## Calendar (`calendar_events`)
 
-| Data Point | Source of Recording | How It Gets Into Life OS |
-|---|---|---|
-| Events (title, date, time, all_day) | Google Calendar / manual | iCal feed sync — Settings page OR manual entry |
-| Event notes, colour | User annotation | Manual — Calendar page |
+| Data Point | Origin | Ingestion Path | Authority |
+|---|---|---|---|
+| Events | Google Calendar | iCal feed sync (one-way pull, 90-day window) | Google Calendar |
+| Manual events | User creation | Manual (Calendar page) — not synced back | Manual |
 
-## Knowledge Base
+## Knowledge Base (`kb_notes`)
 
-| Data Point | Source of Recording | How It Gets Into Life OS |
-|---|---|---|
-| Notes (title, content, type) | Writing / research / AI | Manual — Knowledge page |
-| Note tags | Categorisation | Manual — Knowledge page |
-| Linked goals/tasks | Cross-referencing | Manual — Knowledge page |
-| AI insights | Claude analysis export | Import Insight modal (.md/.txt upload or paste) |
+| Data Point | Origin | Ingestion Path | Authority |
+|---|---|---|---|
+| Notes | Writing / research | Manual (Knowledge page) | Manual |
+| AI insights | Claude analysis | Import Insight modal (.md/.txt) OR AI Chat "Save to KB" | Import |
 
-## Weekly Review
+## Weekly Review (`weekly_reviews`)
 
-| Data Point | Source of Recording | How It Gets Into Life OS |
-|---|---|---|
-| 8-section reflection (habits, goals, tasks, finance, wins, challenges, intentions) | Written reflection | Manual — Review page |
-| Auto-pulled snapshots (habits, goals, tasks, finance) | Derived from other tables | Auto-fetched on review creation |
-| AI summary | Anthropic API | Generated on review completion |
+| Data Point | Origin | Ingestion Path | Authority |
+|---|---|---|---|
+| 8-section reflection | Written reflection | Manual (Review page) | Manual |
+| Auto-pulled data | Derived from other tables | Fetched on page load | Derived |
+| AI summary | Anthropic API | Generated on form submission | Claude |
 
 ## Integration Metadata
 
-| Data Point | Source of Recording | How It Gets Into Life OS |
+| Data Point | Origin | Ingestion Path |
 |---|---|---|
-| Sync logs (source, status, record count) | System | Auto-logged by each integration endpoint |
-| Raw imports (Cronometer payload) | Cronometer CSV | CSV upload — Settings page (stored raw, not parsed) |
+| Sync logs | System | Auto-logged by each endpoint → `integration_syncs` |
+| Raw imports | Cronometer CSV | Stored as JSONB → `raw_imports` |
 
 ---
 
-## Cronometer — Potential New Data Points
-
-These fields are available in Cronometer CSV exports but **not currently mapped** into Life OS.
-
-### Biometric Mapping (eliminates double-entry)
-
-| Cronometer Field | Maps To | Life OS Table | Priority |
-|---|---|---|---|
-| Weight | weight | workout_checkins | **High** — currently manual |
-| Body Fat | body_fat_pct | workout_checkins | **High** — currently manual |
-| Waist | waist_cm | workout_checkins | **High** — currently manual |
-| Mood | mood (1-5) | journal_entries | **High** — currently manual |
-| Energy | energy (1-5) | journal_entries | **High** — currently manual |
-| Sleep Score | sleep | workout_checkins | **Medium** — also from Apple Health |
-
-### Nutrition Data (new capabilities)
-
-| Cronometer Field | Potential Feature | Priority |
-|---|---|---|
-| Calories (in) | Daily calorie card + deficit/surplus vs weight trend | **High** |
-| Protein (g) | Protein per kg card on workout days (target 1.6-2.2g/kg) | **High** |
-| Carbs (g) | Macro ratio breakdown (donut/bar chart) | **Medium** |
-| Fat (g) | Macro ratio breakdown | **Medium** |
-| Fibre (g) | Trend line, gut health tracking | **Low** |
-| Water (ml) | Daily hydration tracker | **Low** |
-| Magnesium, Zinc, Vitamin D, Iron | Micronutrient flags — alert when below RDA (affects recovery/HRV) | **Medium** |
-| Sodium, Potassium | Electrolyte balance tracking | **Low** |
-| Caffeine | Correlate with sleep quality and HRV | **Medium** |
-| Alcohol | Correlate with HRV drop and sleep disruption | **Medium** |
-
-### Cross-Domain Insights (AI context enrichment)
+## Cross-Domain Insight Opportunities
 
 | Insight | Data Required | Value |
 |---|---|---|
 | Underfueling alert | Calories + weight trend + HRV drop | Flag calorie deficit + declining RMSSD |
-| Protein target check | Protein + weight + training day | Did you hit 1.8g/kg on training days? |
-| Sleep-nutrition link | Caffeine/alcohol + sleep score + next-day HRV | Quantify impact of late caffeine |
+| Protein target check | Protein + weight + training day | Hit 1.8g/kg on training days? |
+| Sleep-nutrition link | Caffeine/alcohol + sleep hours + next-day HRV | Quantify late caffeine impact |
 | Recovery nutrition | Calories + RPE + next-day readiness | Were rest day calories sufficient? |
+| Overtraining signal | HRV trend + resting HR trend + sleep trend | Detect sympathetic overload |
+| Step-activity correlation | Steps + active calories + mood/energy | Movement impact on wellbeing |

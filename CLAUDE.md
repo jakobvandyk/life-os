@@ -250,9 +250,10 @@ Jakob is based in Hamilton, New Zealand. Currency is NZD."
 - All components automatically adapt — no per-page changes needed
 - Preference persisted in localStorage key: "theme" (values: "light" | "dark")
 
-## Data Inventory
-- DATA-INVENTORY.md in project root — comprehensive list of all tracked data points, sources, and ingestion methods
-- Includes Cronometer expansion ideas (nutrition features, cross-domain insights)
+## Data Inventory & Strategy
+- DATA-INVENTORY.md — every data point, its origin device, ingestion path, and authoritative source
+- DATA-STRATEGY.md — source authority hierarchy, daily/weekly workflow, conflict resolution rules, device chain diagram, full iOS Shortcut specification
+- Authority rule: device/API > structured import (CSV) > manual entry. Manual always wins as override.
 
 ## Current Status
 All phases complete (1-7). D3 pixel art icons complete. D4 pixel art backgrounds complete.
