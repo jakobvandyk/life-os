@@ -67,11 +67,10 @@ Custom CSS variables defined in globals.css via `@theme {}`. Use Tailwind desert
 - Numbers/data: IBM Plex Mono
 - Pixel headers: Press Start 2P (font-pixel class)
 
-## Current Icon System (D3)
-Sidebar and page headers use monospace Unicode glyphs instead of emoji:
-- Dashboard: ◈  Tasks: ☐  Habits: ↻  Workouts: ▲
-- Journal: ✎  Goals: ◎  Finances: $  Calendar: ▦
-- Knowledge: ≡  Review: ⟳  AI Chat: ⟡  Settings: ⚙
+## Current Icon System (D3+D7)
+Sidebar and page headers use 9x9 pixel art SVG icons (PixelIcon component).
+Navigation grouped into sections: LIFE (tasks/habits/calendar), TRACK (workouts/finances/knowledge), REFLECT (journal/goals/review), SYSTEM (chat/settings).
+Active sidebar item uses bg-desert-accent/10 warm tint. Dashboard cards have domain-coloured left border accents.
 
 ## Project Structure
 src/app/
@@ -106,7 +105,7 @@ src/app/
     ├── sync/kubios/route.ts (scaffold, not active)
     └── export/analysis/route.ts
 src/proxy.ts (auth proxy — Next.js 16, excludes /api/ routes)
-src/components/ (Sidebar, SignOutButton, SyncStatus, ServiceWorkerRegistrar, PixelIcon, PixelBackground)
+src/components/ (Sidebar, SignOutButton, SyncStatus, ServiceWorkerRegistrar, PixelIcon, PixelBackground, Sparkline, Markdown)
 src/hooks/ (useOnlineStatus.ts)
 src/lib/ (supabase.ts, supabase-server.ts, supabase-service.ts, local-db.ts, sync.ts)
 src/lib/ai/ (context-builders.ts)
@@ -145,9 +144,9 @@ integration_syncs, raw_imports, nutrition_daily
 
 ## What's Built (All Phases Complete)
 - Login (Supabase Auth)
-- Dashboard (bento grid, contextual greetings, linked cards)
+- Dashboard (bento grid, contextual greetings, linked cards, nutrition card, 30-day biometric sparklines, skeleton loading)
 - Tasks (full CRUD, inline editing, subtasks, priorities, filters, status badges, responsive mobile layout)
-- Habits (daily toggle, inline editing, expanded emoji picker, frequency-aware streaks, weekends/monthly recurrence)
+- Habits (daily toggle, inline editing, pixel art icon picker, frequency-aware streaks, weekends/monthly recurrence)
 - Journal (mood/energy, gratitude/reflection/wins, upsert by date)
 - Goals (OKRs with key results, progress updates)
 - Finances (accounts, cashflow P&L, tax flags, multi-currency)
@@ -168,7 +167,7 @@ integration_syncs, raw_imports, nutrition_daily
   - Upserts to workout_checkins, logs mindfulness to habit_logs if matching habit exists
   - maxDuration=10, uses maybeSingle() to avoid crash on missing rows
 - Kubios HRV: Manual entry via DailyCheckin form (Polar H10 → Kubios app → read values → enter in Life OS). Metrics: RMSSD, PNS index, SNS index, Baevsky stress index, readiness 0-100, mean HR. Sync scaffold at /api/sync/kubios (not active, requires paid Kubios Cloud).
-- Cronometer: POST /api/import/cronometer (CSV upload, session auth)
+- Cronometer: POST /api/import/cronometer (CSV upload, session auth) — parses CSV → nutrition_daily (macros/micros), workout_checkins (weight/body_fat/waist, selective merge), journal_entries (mood/energy, existing entries only)
 - myBOQ: POST /api/import/ofx (OFX upload, session auth)
 - Binance: GET /api/sync/binance (HMAC-SHA256, env: BINANCE_API_KEY, BINANCE_SECRET, CRON_SECRET, daily 8am via vercel.json)
 - iCal: GET /api/sync/ical (env: ICAL_URL_1..ICAL_URL_10)
@@ -209,14 +208,13 @@ integration_syncs, raw_imports, nutrition_daily
 Be concise, direct, and practical. Use plain text unless markdown genuinely helps.
 Jakob is based in Hamilton, New Zealand. Currency is NZD."
 
-## Pixel Art Icons (D3 — Complete)
+## Pixel Art Icons (D3 + D7 — Complete)
 - PixelIcon component at src/components/PixelIcon.tsx
-- 7x7 SVG pixel grids with crispEdges rendering, uses currentColor
-- 12 icons: dashboard (bento grid), tasks (checkbox), habits (circle arrow),
-  workouts (dumbbell), journal (open book), goals (bullseye), finances (dollar),
-  calendar (grid), knowledge (book spines), review (refresh arrows),
-  chat (speech bubble), settings (gear cog)
-- Used in: sidebar NavList (14px), page headers (18px), dashboard bento cards (12px)
+- 9x9 SVG pixel grids with crispEdges rendering, uses currentColor (upgraded from 7x7)
+- 12 nav/page icons: dashboard, tasks, habits, workouts, journal, goals, finances, calendar, knowledge, review, chat, settings
+- 50+ emoji replacement icons: mood faces (5), energy levels (5), habit icons (16), chat capabilities (5), integration icons (5), journal sections (3), task priorities (4), empty states (4), branding bolt
+- Used in: sidebar NavList (16px), page headers (22px), dashboard bento cards (14px), mood/energy selectors (24px), habit picker (18px)
+- Habit icons use backward compat: PixelIcon names for new habits, emoji fallback for existing DB records
 - ICON_NAMES export maps route paths to icon names
 
 ## Pixel Art Backgrounds (D4 — Complete)
@@ -256,14 +254,21 @@ Jakob is based in Hamilton, New Zealand. Currency is NZD."
 - Authority rule: device/API > structured import (CSV) > manual entry. Manual always wins as override.
 
 ## Current Status
-All phases complete (1-7). D3 pixel art icons complete. D4 pixel art backgrounds complete.
-Offline fallbacks wired. Data export + insight import workflow built. Kubios HRV manual entry active.
-Light/dark theme toggle complete. Body fat percentage tracking added.
-Tasks page upgraded: inline editing, subtasks (parent_id), responsive mobile layout, always-visible status badges.
-Habits page upgraded: 48-emoji picker, weekends/monthly recurrence, frequency-aware streaks, inline editing with archive.
-Cronometer biometric mapping complete (nutrition_daily table, import endpoint parses CSV → nutrition/checkins/journal, dashboard nutrition card, export includes nutrition).
-Markdown rendering added (react-markdown + remark-gfm + syntax highlighting, prose-desert theme, wired into AI Chat, KB preview, Review summary).
-Next: additional polish.
+All phases complete (1-7). All design phases complete (D1-D7).
+
+Recent additions (2026-04-12):
+- Markdown rendering (react-markdown + remark-gfm + syntax highlighting, prose-desert theme)
+- Cronometer biometric mapping (nutrition_daily table, CSV import → nutrition/checkins/journal)
+- Garmin health metrics (steps, active_calories, resting_hr, vo2_max via Apple Health webhook)
+- Dashboard: nutrition card, 30-day biometric sparklines (13 metrics, hero/secondary split), skeleton loading + fade-in
+- Design elevation: card accent borders, gradient header divider, sidebar section grouping (LIFE/TRACK/REFLECT/SYSTEM)
+- 9x9 pixel icon upgrade (12 nav icons + 50+ emoji replacements across all pages)
+- Workouts trends grid grouped into Body Composition / HRV & Recovery / Activity / Kubios sections
+- Data strategy docs: DATA-STRATEGY.md (workflow, iOS Shortcut spec), DATA-INVENTORY.md (rewritten)
+- Press Start 2P font fix (CSS variable resolution)
+- Export route includes nutrition_daily
+
+Next: Cronometer auto-import via Apple Health (eliminates CSV), goal auto-progress, review snapshots.
 
 ## graphify
 
