@@ -452,10 +452,13 @@ export default function Dashboard() {
           className="col-span-2 bg-desert-surface border border-desert-border border-l-2 border-l-desert-accent rounded-sm p-5 hover:border-desert-border-strong hover:border-l-desert-accent hover:bg-desert-surface-hover transition-all duration-150 group"
         >
           <h2 className="font-mono font-bold text-xs tracking-[0.06em] uppercase text-desert-text-2 mb-3 group-hover:text-desert-text transition-colors flex items-center gap-2">
-            <PixelIcon name="tasks" size={12} /> Today&apos;s Focus
+            <PixelIcon name="tasks" size={14} /> Today&apos;s Focus
           </h2>
           {data.todayTasks.length === 0 ? (
-            <p className="text-desert-text-3 text-sm">Clear schedule</p>
+            <div className="flex flex-col items-center justify-center py-3 gap-2">
+              <PixelIcon name="tumbleweed" size={24} className="text-desert-text-3" />
+              <p className="text-desert-text-3 text-xs">Clear schedule</p>
+            </div>
           ) : (
             <ul className="space-y-1.5">
               {data.todayTasks.slice(0, 6).map((task) => (
@@ -479,7 +482,7 @@ export default function Dashboard() {
         >
           <div className="flex items-center justify-between mb-3">
             <h2 className="font-mono font-bold text-xs tracking-[0.06em] uppercase text-desert-text-2 group-hover:text-desert-text transition-colors flex items-center gap-2">
-              <PixelIcon name="habits" size={12} /> Habits
+              <PixelIcon name="habits" size={14} /> Habits
             </h2>
             {habitsTotal > 0 && (
               <span className="font-mono text-xs text-desert-text-3">
@@ -488,7 +491,10 @@ export default function Dashboard() {
             )}
           </div>
           {data.habits.length === 0 ? (
-            <p className="text-desert-text-3 text-sm">No habits yet</p>
+            <div className="flex flex-col items-center justify-center py-3 gap-2">
+              <PixelIcon name="seedling" size={24} className="text-desert-text-3" />
+              <p className="text-desert-text-3 text-xs">No habits yet</p>
+            </div>
           ) : (
             <>
               {/* Progress bar */}
@@ -527,10 +533,13 @@ export default function Dashboard() {
           className="col-span-2 md:col-span-3 bg-desert-surface border border-desert-border border-l-2 border-l-desert-mystic rounded-sm p-5 hover:border-desert-border-strong hover:border-l-desert-mystic hover:bg-desert-surface-hover transition-all duration-150 group"
         >
           <h2 className="font-mono font-bold text-xs tracking-[0.06em] uppercase text-desert-text-2 mb-3 group-hover:text-desert-text transition-colors flex items-center gap-2">
-            <PixelIcon name="goals" size={12} /> Goals
+            <PixelIcon name="goals" size={14} /> Goals
           </h2>
           {data.goals.length === 0 ? (
-            <p className="text-desert-text-3 text-sm">No active goals</p>
+            <div className="flex flex-col items-center justify-center py-3 gap-2">
+              <PixelIcon name="scroll_blank" size={24} className="text-desert-text-3" />
+              <p className="text-desert-text-3 text-xs">No active goals</p>
+            </div>
           ) : (
             <div className="space-y-2.5">
               {data.goals.slice(0, 4).map((goal, i) => (
@@ -558,10 +567,13 @@ export default function Dashboard() {
           className="col-span-2 md:col-span-1 bg-desert-surface border border-desert-border border-l-2 border-l-desert-celestial rounded-sm p-5 hover:border-desert-border-strong hover:border-l-desert-celestial hover:bg-desert-surface-hover transition-all duration-150 group"
         >
           <h2 className="font-mono font-bold text-xs tracking-[0.06em] uppercase text-desert-text-2 mb-3 group-hover:text-desert-text transition-colors flex items-center gap-2">
-            <PixelIcon name="journal" size={12} /> Mood
+            <PixelIcon name="journal" size={14} /> Mood
           </h2>
           {data.recentJournal.length === 0 ? (
-            <p className="text-desert-text-3 text-sm">No entries</p>
+            <div className="flex flex-col items-center justify-center py-3 gap-2">
+              <PixelIcon name="campfire_out" size={24} className="text-desert-text-3" />
+              <p className="text-desert-text-3 text-xs">No entries</p>
+            </div>
           ) : (
             <div className="space-y-1.5">
               {data.recentJournal.slice(0, 5).map((entry, i) => (
@@ -778,7 +790,7 @@ export default function Dashboard() {
           className="bg-desert-surface border border-desert-border border-l-2 border-l-desert-warning rounded-sm p-4 hover:border-desert-border-strong hover:border-l-desert-warning hover:bg-desert-surface-hover transition-all duration-150 group"
         >
           <p className="font-mono font-bold text-xs tracking-[0.06em] uppercase text-desert-text-2 group-hover:text-desert-text transition-colors flex items-center gap-2">
-            <PixelIcon name="finances" size={12} /> Finances
+            <PixelIcon name="finances" size={14} /> Finances
           </p>
           <p className="font-mono text-lg text-desert-text mt-2">
             ${(data.spending.month_income / 100).toLocaleString("en-NZ", { maximumFractionDigits: 0 })}
@@ -791,7 +803,7 @@ export default function Dashboard() {
           className="bg-desert-surface border border-desert-border border-l-2 border-l-desert-celestial rounded-sm p-4 hover:border-desert-border-strong hover:border-l-desert-celestial hover:bg-desert-surface-hover transition-all duration-150 group"
         >
           <p className="font-mono font-bold text-xs tracking-[0.06em] uppercase text-desert-text-2 group-hover:text-desert-text transition-colors flex items-center gap-2">
-            <PixelIcon name="calendar" size={12} /> Calendar
+            <PixelIcon name="calendar" size={14} /> Calendar
           </p>
           <p className="text-desert-text-3 text-sm mt-2">View schedule →</p>
         </Link>
@@ -801,7 +813,7 @@ export default function Dashboard() {
           className="bg-desert-surface border border-desert-border border-l-2 border-l-desert-driftwood rounded-sm p-4 hover:border-desert-border-strong hover:border-l-desert-driftwood hover:bg-desert-surface-hover transition-all duration-150 group"
         >
           <p className="font-mono font-bold text-xs tracking-[0.06em] uppercase text-desert-text-2 group-hover:text-desert-text transition-colors flex items-center gap-2">
-            <PixelIcon name="review" size={12} /> Review
+            <PixelIcon name="review" size={14} /> Review
           </p>
           <p className="text-desert-text-3 text-sm mt-2">Weekly check-in →</p>
         </Link>
@@ -811,7 +823,7 @@ export default function Dashboard() {
           className="bg-desert-surface border border-desert-border border-l-2 border-l-desert-clay rounded-sm p-4 hover:border-desert-border-strong hover:border-l-desert-clay hover:bg-desert-surface-hover transition-all duration-150 group"
         >
           <p className="font-mono font-bold text-xs tracking-[0.06em] uppercase text-desert-text-2 group-hover:text-desert-text transition-colors flex items-center gap-2">
-            <PixelIcon name="chat" size={12} /> AI Chat
+            <PixelIcon name="chat" size={14} /> AI Chat
           </p>
           <p className="text-desert-text-3 text-sm mt-2">Ask anything →</p>
         </Link>

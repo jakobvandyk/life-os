@@ -394,7 +394,7 @@ export default function TasksPage() {
       <div className="flex items-center justify-between mb-8 pb-6 border-b border-desert-border">
         <div>
           <h1 className="font-pixel text-lg text-desert-text flex items-center gap-3">
-            <PixelIcon name="tasks" size={18} className="text-desert-accent" /> Tasks
+            <PixelIcon name="tasks" size={22} className="text-desert-accent" /> Tasks
           </h1>
           <p className="text-desert-text-3 mt-1">
             {activeTasks.length} active · {doneTasks.length} completed

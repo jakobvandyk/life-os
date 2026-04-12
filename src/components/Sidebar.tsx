@@ -67,7 +67,7 @@ function NavList({
                   >
                     <PixelIcon
                       name={ICON_NAMES[item.href] || "dashboard"}
-                      size={14}
+                      size={16}
                       className={`transition-colors duration-150 ${
                         active
                           ? "text-desert-accent"
