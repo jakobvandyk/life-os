@@ -95,6 +95,9 @@ html.light body::after {
 body {
   background-color: var(--color-desert-bg);
   color: var(--color-desert-text);
+  --font-pixel: var(--font-pixel-var), "Press Start 2P", cursive;
+  --font-mono: var(--font-mono-var), "IBM Plex Mono", monospace;
+  --font-sans: var(--font-sans-var), "IBM Plex Sans", sans-serif;
 }
 
 /* === Subtle grain texture overlay === */
