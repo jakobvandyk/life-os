@@ -69,8 +69,8 @@ const priorityColors: Record<string, string> = {
   low: "text-desert-success",
 };
 
-const moodEmoji = ["", "😞", "😐", "🙂", "😊", "🤩"];
-const energyEmoji = ["", "🪫", "😴", "⚡", "🔥", "🚀"];
+const moodIcons = ["", "mood_1", "mood_2", "mood_3", "mood_4", "mood_5"];
+const energyIcons = ["", "energy_1", "energy_2", "energy_3", "energy_4", "energy_5"];
 
 // D5: Contextual greeting messages
 function getGreeting(data: DashboardData | null): { text: string; sub: string } {
@@ -595,9 +595,9 @@ export default function Dashboard() {
                       weekday: "short",
                     })}
                   </span>
-                  <div className="flex gap-1.5">
-                    <span className="text-sm">{moodEmoji[entry.mood] || "—"}</span>
-                    <span className="text-sm">{energyEmoji[entry.energy] || "—"}</span>
+                  <div className="flex gap-1.5 items-center">
+                    {moodIcons[entry.mood] ? <PixelIcon name={moodIcons[entry.mood]} size={14} /> : <span className="text-desert-text-3 text-xs">—</span>}
+                    {energyIcons[entry.energy] ? <PixelIcon name={energyIcons[entry.energy]} size={14} /> : <span className="text-desert-text-3 text-xs">—</span>}
                   </div>
                 </div>
               ))}

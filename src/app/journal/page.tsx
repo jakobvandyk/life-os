@@ -16,19 +16,19 @@ interface JournalEntry {
 }
 
 const moodOptions = [
-  { value: 1, emoji: "😞", label: "Rough" },
-  { value: 2, emoji: "😐", label: "Meh" },
-  { value: 3, emoji: "🙂", label: "Okay" },
-  { value: 4, emoji: "😊", label: "Good" },
-  { value: 5, emoji: "🤩", label: "Great" },
+  { value: 1, icon: "mood_1", label: "Rough" },
+  { value: 2, icon: "mood_2", label: "Meh" },
+  { value: 3, icon: "mood_3", label: "Okay" },
+  { value: 4, icon: "mood_4", label: "Good" },
+  { value: 5, icon: "mood_5", label: "Great" },
 ];
 
 const energyOptions = [
-  { value: 1, emoji: "🪫", label: "Drained" },
-  { value: 2, emoji: "😴", label: "Low" },
-  { value: 3, emoji: "⚡", label: "Moderate" },
-  { value: 4, emoji: "🔥", label: "High" },
-  { value: 5, emoji: "🚀", label: "Peak" },
+  { value: 1, icon: "energy_1", label: "Drained" },
+  { value: 2, icon: "energy_2", label: "Low" },
+  { value: 3, icon: "energy_3", label: "Moderate" },
+  { value: 4, icon: "energy_4", label: "High" },
+  { value: 5, icon: "energy_5", label: "Peak" },
 ];
 
 const textareaClass =
@@ -200,7 +200,7 @@ export default function JournalPage() {
                       : "bg-desert-surface border-2 border-desert-border hover:border-desert-border-strong"
                   }`}
                 >
-                  <span className="text-2xl">{opt.emoji}</span>
+                  <PixelIcon name={opt.icon} size={24} />
                   <span className="text-xs text-desert-text-3">{opt.label}</span>
                 </button>
               ))}
@@ -221,7 +221,7 @@ export default function JournalPage() {
                       : "bg-desert-surface border-2 border-desert-border hover:border-desert-border-strong"
                   }`}
                 >
-                  <span className="text-2xl">{opt.emoji}</span>
+                  <PixelIcon name={opt.icon} size={24} />
                   <span className="text-xs text-desert-text-3">{opt.label}</span>
                 </button>
               ))}
@@ -231,7 +231,7 @@ export default function JournalPage() {
           {/* Gratitude */}
           <div>
             <p className="text-sm font-mono text-desert-text-3 mb-2">
-              🙏 What are you grateful for today?
+              <PixelIcon name="gratitude" size={14} className="inline-block mr-1 align-middle" /> What are you grateful for today?
             </p>
             <textarea
               value={gratitude}
@@ -244,7 +244,7 @@ export default function JournalPage() {
 
           {/* Wins */}
           <div>
-            <p className="text-sm font-mono text-desert-text-3 mb-2">🏆 Wins & accomplishments</p>
+            <p className="text-sm font-mono text-desert-text-3 mb-2"><PixelIcon name="wins" size={14} className="inline-block mr-1 align-middle" /> Wins & accomplishments</p>
             <textarea
               value={wins}
               onChange={(e) => setWins(e.target.value)}
@@ -256,7 +256,7 @@ export default function JournalPage() {
 
           {/* Reflection */}
           <div>
-            <p className="text-sm font-mono text-desert-text-3 mb-2">💭 Reflection</p>
+            <p className="text-sm font-mono text-desert-text-3 mb-2"><PixelIcon name="reflection" size={14} className="inline-block mr-1 align-middle" /> Reflection</p>
             <textarea
               value={reflection}
               onChange={(e) => setReflection(e.target.value)}
@@ -310,16 +310,14 @@ export default function JournalPage() {
                       })}
                     </span>
                     <div className="flex gap-1">
-                      {e.mood && (
-                        <span className="text-sm">
-                          {moodOptions.find((m) => m.value === e.mood)?.emoji}
-                        </span>
-                      )}
-                      {e.energy && (
-                        <span className="text-sm">
-                          {energyOptions.find((en) => en.value === e.energy)?.emoji}
-                        </span>
-                      )}
+                      {e.mood && (() => {
+                        const icon = moodOptions.find((m) => m.value === e.mood)?.icon;
+                        return icon ? <PixelIcon name={icon} size={14} /> : null;
+                      })()}
+                      {e.energy && (() => {
+                        const icon = energyOptions.find((en) => en.value === e.energy)?.icon;
+                        return icon ? <PixelIcon name={icon} size={14} /> : null;
+                      })()}
                     </div>
                   </div>
                   {e.gratitude && (
