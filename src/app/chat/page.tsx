@@ -20,11 +20,11 @@ interface ChatSession {
 }
 
 const CAPABILITIES = [
-  { key: "focus", label: "Focus", icon: "🎯", hint: "What should I focus on today?" },
-  { key: "review", label: "Review", icon: "🔄", hint: "How did my week go?" },
-  { key: "spending", label: "Spending", icon: "💰", hint: "How's my spending looking?" },
-  { key: "journal", label: "Journal", icon: "📔", hint: "Give me a journalling prompt" },
-  { key: "general", label: "General", icon: "💬", hint: "" },
+  { key: "focus", label: "Focus", icon: "cap_focus", hint: "What should I focus on today?" },
+  { key: "review", label: "Review", icon: "cap_review", hint: "How did my week go?" },
+  { key: "spending", label: "Spending", icon: "cap_spending", hint: "How's my spending looking?" },
+  { key: "journal", label: "Journal", icon: "cap_journal", hint: "Give me a journalling prompt" },
+  { key: "general", label: "General", icon: "cap_general", hint: "" },
 ];
 
 const CAPABILITY_STYLES: Record<string, string> = {
@@ -216,7 +216,7 @@ export default function ChatPage() {
                   : "bg-desert-surface border-desert-border text-desert-text-3 hover:text-desert-text-2"
               }`}
             >
-              {cap.icon} {cap.label}
+              <PixelIcon name={cap.icon} size={12} /> {cap.label}
             </button>
           ))}
         </div>

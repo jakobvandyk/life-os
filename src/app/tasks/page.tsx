@@ -228,10 +228,10 @@ export default function TasksPage() {
                 onChange={(e) => setEditForm({ ...editForm, priority: e.target.value })}
                 className={selectClass}
               >
-                <option value="urgent">🔴 Urgent</option>
-                <option value="high">🟠 High</option>
-                <option value="medium">🔵 Medium</option>
-                <option value="low">⚪ Low</option>
+                <option value="urgent">◆ Urgent</option>
+                <option value="high">▲ High</option>
+                <option value="medium">● Medium</option>
+                <option value="low">○ Low</option>
               </select>
               <input
                 type="date"
@@ -430,10 +430,10 @@ export default function TasksPage() {
                 onChange={(e) => setNewTask({ ...newTask, priority: e.target.value })}
                 className={selectClass}
               >
-                <option value="urgent">🔴 Urgent</option>
-                <option value="high">🟠 High</option>
-                <option value="medium">🔵 Medium</option>
-                <option value="low">⚪ Low</option>
+                <option value="urgent">◆ Urgent</option>
+                <option value="high">▲ High</option>
+                <option value="medium">● Medium</option>
+                <option value="low">○ Low</option>
               </select>
               <input
                 type="date"

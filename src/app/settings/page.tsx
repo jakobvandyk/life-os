@@ -187,7 +187,7 @@ export default function SettingsPage() {
             <div className="bg-desert-surface border border-desert-border rounded-sm p-4 hover:border-desert-border-strong transition-colors duration-150">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <span className="text-xl w-8 text-center">♥</span>
+                  <span className="w-8 text-center flex items-center justify-center"><PixelIcon name="int_health" size={20} className="text-desert-danger" /></span>
                   <div>
                     <p className="text-desert-text font-mono text-sm font-medium">Apple Health</p>
                     <p className="text-desert-text-3 text-xs">
@@ -205,7 +205,7 @@ export default function SettingsPage() {
             <div className="bg-desert-surface border border-desert-border rounded-sm p-4 hover:border-desert-border-strong transition-colors duration-150">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <span className="text-xl w-8 text-center">🥗</span>
+                  <span className="w-8 text-center flex items-center justify-center"><PixelIcon name="int_nutrition" size={20} className="text-desert-success" /></span>
                   <div>
                     <p className="text-desert-text font-mono text-sm font-medium">Cronometer</p>
                     <p className="text-desert-text-3 text-xs">Upload CSV nutrition export</p>
@@ -240,7 +240,7 @@ export default function SettingsPage() {
             <div className="bg-desert-surface border border-desert-border rounded-sm p-4 hover:border-desert-border-strong transition-colors duration-150">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <span className="text-xl w-8 text-center">🏦</span>
+                  <span className="w-8 text-center flex items-center justify-center"><PixelIcon name="int_bank" size={20} className="text-desert-celestial" /></span>
                   <div>
                     <p className="text-desert-text font-mono text-sm font-medium">myBOQ</p>
                     <p className="text-desert-text-3 text-xs">Upload OFX bank export</p>
@@ -275,7 +275,7 @@ export default function SettingsPage() {
             <div className="bg-desert-surface border border-desert-border rounded-sm p-4 hover:border-desert-border-strong transition-colors duration-150">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <span className="text-xl w-8 text-center">₿</span>
+                  <span className="w-8 text-center flex items-center justify-center"><PixelIcon name="int_crypto" size={20} className="text-desert-warning" /></span>
                   <div>
                     <p className="text-desert-text font-mono text-sm font-medium">Binance</p>
                     <p className="text-desert-text-3 text-xs">Sync crypto portfolio balances</p>
@@ -300,7 +300,7 @@ export default function SettingsPage() {
             <div className="bg-desert-surface border border-desert-border rounded-sm p-4 hover:border-desert-border-strong transition-colors duration-150">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <span className="text-xl w-8 text-center">📅</span>
+                  <span className="w-8 text-center flex items-center justify-center"><PixelIcon name="int_ical" size={20} className="text-desert-accent" /></span>
                   <div>
                     <p className="text-desert-text font-mono text-sm font-medium">iCal</p>
                     <p className="text-desert-text-3 text-xs">
