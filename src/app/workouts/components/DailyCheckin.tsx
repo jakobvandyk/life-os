@@ -714,263 +714,131 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
       </div>
 
       {/* Section 2: Trends */}
-      <div className="grid grid-cols-3 gap-4">
-        {/* 7-day avg weight */}
-        <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
-          <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">
-            7-day avg weight
-          </div>
-          <div className="font-mono font-bold text-2xl text-desert-text tracking-tight">
-            {avg7Day !== null ? `${avg7Day.toFixed(1)}kg` : "—"}
-          </div>
-          <div className="font-mono text-xs text-desert-text-2 mt-1">
-            {trend.arrow} {trend.diff}kg vs prev
-          </div>
-        </div>
-
-        {/* Streak */}
-        <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
-          <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">
-            Streak
-          </div>
-          <div className="font-mono font-bold text-2xl text-desert-text tracking-tight">
-            {streak} day{streak !== 1 ? "s" : ""}
-          </div>
-          <div className="font-mono text-xs text-desert-text-2 mt-1">
-            consecutive check-ins
+      <div className="space-y-6">
+        {/* Body Composition */}
+        <div>
+          <p className="font-mono text-[10px] text-desert-text-3 uppercase tracking-widest mb-2">Body Composition</p>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
+              <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">7-day avg weight</div>
+              <div className="font-mono font-bold text-2xl text-desert-text tracking-tight">{avg7Day !== null ? `${avg7Day.toFixed(1)}kg` : "—"}</div>
+              <div className="font-mono text-xs text-desert-text-2 mt-1">{trend.arrow} {trend.diff}kg vs prev</div>
+            </div>
+            <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
+              <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">Body Fat</div>
+              <div className="font-mono font-bold text-2xl text-desert-text tracking-tight">{latestBodyFatPct != null ? `${latestBodyFatPct.toFixed(1)}%` : "—"}</div>
+              <div className="font-mono text-xs text-desert-text-2 mt-1">scale estimate</div>
+            </div>
+            <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
+              <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">Waist</div>
+              <div className="font-mono font-bold text-2xl text-desert-text tracking-tight">{latestWaistCm != null ? `${latestWaistCm.toFixed(1)}cm` : "—"}</div>
+              <div className="font-mono text-xs text-desert-text-2 mt-1">latest</div>
+            </div>
           </div>
         </div>
 
-        {/* RMSSD (primary HRV metric) */}
-        <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
-          <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">
-            RMSSD (Polar)
-          </div>
-          <div className="font-mono font-bold text-2xl text-desert-accent tracking-tight">
-            {latestRmssd !== undefined ? latestRmssd?.toFixed(0) : "—"}
-          </div>
-          <div className="font-mono text-xs text-desert-text-2 mt-1">
-            ms · recovery
-          </div>
-        </div>
-
-        {/* SDNN (Apple Health) */}
-        <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
-          <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">
-            SDNN (Apple)
-          </div>
-          <div className="font-mono font-bold text-2xl text-desert-text tracking-tight">
-            {latestHrv !== undefined ? latestHrv : "—"}
-          </div>
-          <div className="font-mono text-xs text-desert-text-2 mt-1">
-            ms
-          </div>
-        </div>
-
-        {/* Readiness */}
-        <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
-          <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">
-            Readiness
-          </div>
-          <div className="font-mono font-bold text-2xl text-desert-text tracking-tight">
-            {latestReadiness !== undefined ? `${latestReadiness}/10` : "—"}
-          </div>
-          <div className="font-mono text-xs text-desert-text-2 mt-1">
-            latest
+        {/* HRV & Recovery */}
+        <div>
+          <p className="font-mono text-[10px] text-desert-text-3 uppercase tracking-widest mb-2">HRV & Recovery</p>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
+              <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">RMSSD (Polar)</div>
+              <div className="font-mono font-bold text-2xl text-desert-accent tracking-tight">{latestRmssd !== undefined ? latestRmssd?.toFixed(0) : "—"}</div>
+              <div className="font-mono text-xs text-desert-text-2 mt-1">ms · recovery</div>
+            </div>
+            <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
+              <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">SDNN (Apple)</div>
+              <div className="font-mono font-bold text-2xl text-desert-text tracking-tight">{latestHrv !== undefined ? latestHrv : "—"}</div>
+              <div className="font-mono text-xs text-desert-text-2 mt-1">ms</div>
+            </div>
+            <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
+              <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">Readiness</div>
+              <div className="font-mono font-bold text-2xl text-desert-text tracking-tight">{latestReadiness !== undefined ? `${latestReadiness}/10` : "—"}</div>
+              <div className="font-mono text-xs text-desert-text-2 mt-1">latest</div>
+            </div>
+            <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
+              <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">Sleep</div>
+              <div className="font-mono font-bold text-2xl text-desert-text tracking-tight">{latestSleep !== undefined ? `${latestSleep}h` : "—"}</div>
+              <div className="font-mono text-xs text-desert-text-2 mt-1">latest</div>
+            </div>
+            <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
+              <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">PNS Index</div>
+              <div className={`font-mono font-bold text-2xl tracking-tight ${latestPns != null ? (latestPns >= 0 ? "text-desert-success" : "text-desert-danger") : "text-desert-text"}`}>{latestPns != null ? latestPns.toFixed(2) : "—"}</div>
+              <div className="font-mono text-xs text-desert-text-2 mt-1">parasympathetic</div>
+            </div>
+            <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
+              <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">SNS Index</div>
+              <div className={`font-mono font-bold text-2xl tracking-tight ${latestSns != null ? (latestSns <= 0 ? "text-desert-success" : "text-desert-danger") : "text-desert-text"}`}>{latestSns != null ? latestSns.toFixed(2) : "—"}</div>
+              <div className="font-mono text-xs text-desert-text-2 mt-1">sympathetic</div>
+            </div>
           </div>
         </div>
 
-        {/* Sleep */}
-        <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
-          <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">
-            Sleep
-          </div>
-          <div className="font-mono font-bold text-2xl text-desert-text tracking-tight">
-            {latestSleep !== undefined ? `${latestSleep}h` : "—"}
-          </div>
-          <div className="font-mono text-xs text-desert-text-2 mt-1">
-            latest
-          </div>
-        </div>
-
-        {/* Shin Pain */}
-        <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
-          <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">
-            Shin Pain
-          </div>
-          <div className={`font-mono font-bold text-2xl tracking-tight ${getShinPainColor(latestShinPain)}`}>
-            {latestShinPain != null ? `${latestShinPain}/10` : "—"}
-          </div>
-          <div className="font-mono text-xs text-desert-text-2 mt-1">
-            latest
-          </div>
-        </div>
-
-        {/* Waist */}
-        <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
-          <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">
-            Waist
-          </div>
-          <div className="font-mono font-bold text-2xl text-desert-text tracking-tight">
-            {latestWaistCm != null ? `${latestWaistCm.toFixed(1)}cm` : "—"}
-          </div>
-          <div className="font-mono text-xs text-desert-text-2 mt-1">
-            latest
+        {/* Activity */}
+        <div>
+          <p className="font-mono text-[10px] text-desert-text-3 uppercase tracking-widest mb-2">Activity</p>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
+              <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">Steps</div>
+              <div className="font-mono font-bold text-2xl text-desert-forest tracking-tight">{latestSteps != null ? latestSteps.toLocaleString() : "—"}</div>
+              <div className="font-mono text-xs text-desert-text-2 mt-1">latest</div>
+            </div>
+            <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
+              <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">Active Cal</div>
+              <div className="font-mono font-bold text-2xl text-desert-accent tracking-tight">{latestActiveCals != null ? latestActiveCals.toLocaleString() : "—"}</div>
+              <div className="font-mono text-xs text-desert-text-2 mt-1">kcal</div>
+            </div>
+            <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
+              <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">Resting HR</div>
+              <div className={`font-mono font-bold text-2xl tracking-tight ${latestRestingHr != null ? latestRestingHr < 55 ? "text-desert-success" : latestRestingHr < 65 ? "text-desert-text" : "text-desert-warning" : "text-desert-text"}`}>{latestRestingHr != null ? latestRestingHr : "—"}</div>
+              <div className="font-mono text-xs text-desert-text-2 mt-1">bpm</div>
+            </div>
+            <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
+              <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">VO2 Max</div>
+              <div className="font-mono font-bold text-2xl text-desert-celestial tracking-tight">{latestVo2Max != null ? latestVo2Max.toFixed(1) : "—"}</div>
+              <div className="font-mono text-xs text-desert-text-2 mt-1">ml/kg/min</div>
+            </div>
           </div>
         </div>
 
-        {/* Body Fat */}
-        <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
-          <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">
-            Body Fat
-          </div>
-          <div className="font-mono font-bold text-2xl text-desert-text tracking-tight">
-            {latestBodyFatPct != null ? `${latestBodyFatPct.toFixed(1)}%` : "—"}
-          </div>
-          <div className="font-mono text-xs text-desert-text-2 mt-1">
-            scale estimate
-          </div>
-        </div>
-
-        {/* PNS Index */}
-        <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
-          <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">
-            PNS Index
-          </div>
-          <div className={`font-mono font-bold text-2xl tracking-tight ${
-            latestPns != null ? (latestPns >= 0 ? "text-desert-success" : "text-desert-danger") : "text-desert-text"
-          }`}>
-            {latestPns != null ? latestPns.toFixed(2) : "—"}
-          </div>
-          <div className="font-mono text-xs text-desert-text-2 mt-1">
-            parasympathetic
+        {/* Kubios */}
+        <div>
+          <p className="font-mono text-[10px] text-desert-text-3 uppercase tracking-widest mb-2">Kubios</p>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
+              <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">Stress Index</div>
+              <div className={`font-mono font-bold text-2xl tracking-tight ${latestStress != null ? latestStress < 100 ? "text-desert-success" : latestStress < 200 ? "text-desert-warning" : "text-desert-danger" : "text-desert-text"}`}>{latestStress != null ? latestStress.toFixed(0) : "—"}</div>
+              <div className="font-mono text-xs text-desert-text-2 mt-1">Baevsky</div>
+            </div>
+            <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
+              <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">Kubios Readiness</div>
+              <div className="font-mono font-bold text-2xl text-desert-accent tracking-tight">{latestKubiosReadiness != null ? `${latestKubiosReadiness.toFixed(0)}` : "—"}</div>
+              <div className="font-mono text-xs text-desert-text-2 mt-1">/100</div>
+            </div>
+            <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
+              <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">Mean HR</div>
+              <div className="font-mono font-bold text-2xl text-desert-text tracking-tight">{latestMeanHr != null ? `${latestMeanHr.toFixed(0)}` : "—"}</div>
+              <div className="font-mono text-xs text-desert-text-2 mt-1">bpm</div>
+            </div>
           </div>
         </div>
 
-        {/* SNS Index */}
-        <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
-          <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">
-            SNS Index
+        {/* Meta */}
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+          <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
+            <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">Streak</div>
+            <div className="font-mono font-bold text-2xl text-desert-text tracking-tight">{streak} day{streak !== 1 ? "s" : ""}</div>
+            <div className="font-mono text-xs text-desert-text-2 mt-1">consecutive check-ins</div>
           </div>
-          <div className={`font-mono font-bold text-2xl tracking-tight ${
-            latestSns != null ? (latestSns <= 0 ? "text-desert-success" : "text-desert-danger") : "text-desert-text"
-          }`}>
-            {latestSns != null ? latestSns.toFixed(2) : "—"}
+          <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
+            <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">Shin Pain</div>
+            <div className={`font-mono font-bold text-2xl tracking-tight ${getShinPainColor(latestShinPain)}`}>{latestShinPain != null ? `${latestShinPain}/10` : "—"}</div>
+            <div className="font-mono text-xs text-desert-text-2 mt-1">latest</div>
           </div>
-          <div className="font-mono text-xs text-desert-text-2 mt-1">
-            sympathetic
-          </div>
-        </div>
-
-        {/* Stress Index */}
-        <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
-          <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">
-            Stress Index
-          </div>
-          <div className={`font-mono font-bold text-2xl tracking-tight ${
-            latestStress != null
-              ? latestStress < 100 ? "text-desert-success" : latestStress < 200 ? "text-desert-warning" : "text-desert-danger"
-              : "text-desert-text"
-          }`}>
-            {latestStress != null ? latestStress.toFixed(0) : "—"}
-          </div>
-          <div className="font-mono text-xs text-desert-text-2 mt-1">
-            Baevsky
-          </div>
-        </div>
-
-        {/* Kubios Readiness */}
-        <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
-          <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">
-            Kubios Readiness
-          </div>
-          <div className="font-mono font-bold text-2xl text-desert-accent tracking-tight">
-            {latestKubiosReadiness != null ? `${latestKubiosReadiness.toFixed(0)}` : "—"}
-          </div>
-          <div className="font-mono text-xs text-desert-text-2 mt-1">
-            /100
-          </div>
-        </div>
-
-        {/* Mean HR */}
-        <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
-          <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">
-            Mean HR
-          </div>
-          <div className="font-mono font-bold text-2xl text-desert-text tracking-tight">
-            {latestMeanHr != null ? `${latestMeanHr.toFixed(0)}` : "—"}
-          </div>
-          <div className="font-mono text-xs text-desert-text-2 mt-1">
-            bpm
-          </div>
-        </div>
-
-        {/* Steps */}
-        <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
-          <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">
-            Steps
-          </div>
-          <div className="font-mono font-bold text-2xl text-desert-forest tracking-tight">
-            {latestSteps != null ? latestSteps.toLocaleString() : "—"}
-          </div>
-          <div className="font-mono text-xs text-desert-text-2 mt-1">
-            latest
-          </div>
-        </div>
-
-        {/* Active Calories */}
-        <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
-          <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">
-            Active Cal
-          </div>
-          <div className="font-mono font-bold text-2xl text-desert-accent tracking-tight">
-            {latestActiveCals != null ? latestActiveCals.toLocaleString() : "—"}
-          </div>
-          <div className="font-mono text-xs text-desert-text-2 mt-1">
-            kcal
-          </div>
-        </div>
-
-        {/* Resting HR */}
-        <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
-          <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">
-            Resting HR
-          </div>
-          <div className={`font-mono font-bold text-2xl tracking-tight ${
-            latestRestingHr != null
-              ? latestRestingHr < 55 ? "text-desert-success" : latestRestingHr < 65 ? "text-desert-text" : "text-desert-warning"
-              : "text-desert-text"
-          }`}>
-            {latestRestingHr != null ? latestRestingHr : "—"}
-          </div>
-          <div className="font-mono text-xs text-desert-text-2 mt-1">
-            bpm
-          </div>
-        </div>
-
-        {/* VO2 Max */}
-        <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
-          <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">
-            VO2 Max
-          </div>
-          <div className="font-mono font-bold text-2xl text-desert-celestial tracking-tight">
-            {latestVo2Max != null ? latestVo2Max.toFixed(1) : "—"}
-          </div>
-          <div className="font-mono text-xs text-desert-text-2 mt-1">
-            ml/kg/min
-          </div>
-        </div>
-
-        {/* Total Entries */}
-        <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
-          <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">
-            Total entries
-          </div>
-          <div className="font-mono font-bold text-2xl text-desert-text tracking-tight">
-            {totalEntries}
-          </div>
-          <div className="font-mono text-xs text-desert-text-2 mt-1">
-            all time
+          <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
+            <div className="font-mono text-xs text-desert-text-3 uppercase tracking-widest mb-1">Total entries</div>
+            <div className="font-mono font-bold text-2xl text-desert-text tracking-tight">{totalEntries}</div>
+            <div className="font-mono text-xs text-desert-text-2 mt-1">all time</div>
           </div>
         </div>
       </div>
