@@ -398,32 +398,38 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen p-6 relative z-10">
       {/* D4: Header banner */}
-      <div className="mb-8 pb-6 border-b border-desert-border">
-        <h1 className="font-pixel text-lg text-desert-text">
+      <div className="mb-8 pb-6">
+        <h1 className="font-pixel text-xl md:text-2xl text-desert-text">
           {greeting.text}, {userName}
         </h1>
-        <p className="text-desert-text-3 mt-1">
-          {todayFormatted} · Week {weekNumber}
-        </p>
+        <div className="flex items-center gap-3 mt-2">
+          <p className="text-desert-text-2 text-sm">
+            {todayFormatted}
+          </p>
+          <span className="bg-desert-accent-dim text-desert-accent font-mono text-[10px] px-2 py-0.5 rounded-lg">
+            W{weekNumber}
+          </span>
+        </div>
         {greeting.sub && (
-          <p className="text-desert-text-2 text-sm mt-2">{greeting.sub}</p>
+          <p className="text-desert-text-2 text-sm italic mt-2">{greeting.sub}</p>
         )}
+        <div className="h-px bg-gradient-to-r from-transparent via-desert-border to-transparent mt-6" />
       </div>
 
       {/* D2: Bento grid layout */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {/* Row 1: Stat cards — 4 across */}
-        <div className="bg-desert-surface border border-desert-border rounded-sm p-4 hover:border-desert-border-strong transition-colors duration-150">
+        <div className="bg-desert-surface border border-desert-border border-l-2 border-l-desert-accent rounded-sm p-4 hover:border-desert-border-strong hover:border-l-desert-accent transition-colors duration-150">
           <p className="font-mono font-bold text-2xl text-desert-text">{data.taskStats.active}</p>
           <p className="text-xs text-desert-text-3 font-mono uppercase tracking-wider mt-1">Active Tasks</p>
         </div>
-        <div className="bg-desert-surface border border-desert-border rounded-sm p-4 hover:border-desert-border-strong transition-colors duration-150">
+        <div className="bg-desert-surface border border-desert-border border-l-2 border-l-desert-success rounded-sm p-4 hover:border-desert-border-strong hover:border-l-desert-success transition-colors duration-150">
           <p className="font-mono font-bold text-2xl text-desert-success">
             {data.taskStats.completed_this_week}
           </p>
           <p className="text-xs text-desert-text-3 font-mono uppercase tracking-wider mt-1">Done This Week</p>
         </div>
-        <div className="bg-desert-surface border border-desert-border rounded-sm p-4 hover:border-desert-border-strong transition-colors duration-150">
+        <div className="bg-desert-surface border border-desert-border border-l-2 border-l-desert-danger rounded-sm p-4 hover:border-desert-border-strong hover:border-l-desert-danger transition-colors duration-150">
           <p
             className={`font-mono font-bold text-2xl ${
               data.taskStats.overdue > 0 ? "text-desert-danger" : "text-desert-text"
@@ -433,7 +439,7 @@ export default function Dashboard() {
           </p>
           <p className="text-xs text-desert-text-3 font-mono uppercase tracking-wider mt-1">Overdue</p>
         </div>
-        <div className="bg-desert-surface border border-desert-border rounded-sm p-4 hover:border-desert-border-strong transition-colors duration-150">
+        <div className="bg-desert-surface border border-desert-border border-l-2 border-l-desert-accent rounded-sm p-4 hover:border-desert-border-strong hover:border-l-desert-accent transition-colors duration-150">
           <p className="font-mono font-bold text-2xl text-desert-accent">
             {data.streak > 0 ? `${data.streak}d` : "—"}
           </p>
@@ -443,7 +449,7 @@ export default function Dashboard() {
         {/* Row 2: Today's Focus (wide) + Habits */}
         <Link
           href="/tasks"
-          className="col-span-2 bg-desert-surface border border-desert-border rounded-sm p-5 hover:border-desert-border-strong hover:bg-desert-surface-hover transition-all duration-150 group"
+          className="col-span-2 bg-desert-surface border border-desert-border border-l-2 border-l-desert-accent rounded-sm p-5 hover:border-desert-border-strong hover:border-l-desert-accent hover:bg-desert-surface-hover transition-all duration-150 group"
         >
           <h2 className="font-mono font-bold text-xs tracking-[0.06em] uppercase text-desert-text-2 mb-3 group-hover:text-desert-text transition-colors flex items-center gap-2">
             <PixelIcon name="tasks" size={12} /> Today&apos;s Focus
@@ -469,7 +475,7 @@ export default function Dashboard() {
 
         <Link
           href="/habits"
-          className="col-span-2 bg-desert-surface border border-desert-border rounded-sm p-5 hover:border-desert-border-strong hover:bg-desert-surface-hover transition-all duration-150 group"
+          className="col-span-2 bg-desert-surface border border-desert-border border-l-2 border-l-desert-success rounded-sm p-5 hover:border-desert-border-strong hover:border-l-desert-success hover:bg-desert-surface-hover transition-all duration-150 group"
         >
           <div className="flex items-center justify-between mb-3">
             <h2 className="font-mono font-bold text-xs tracking-[0.06em] uppercase text-desert-text-2 group-hover:text-desert-text transition-colors flex items-center gap-2">
@@ -518,7 +524,7 @@ export default function Dashboard() {
         {/* Row 3: Goals (wide) + Mood (compact) */}
         <Link
           href="/goals"
-          className="col-span-2 md:col-span-3 bg-desert-surface border border-desert-border rounded-sm p-5 hover:border-desert-border-strong hover:bg-desert-surface-hover transition-all duration-150 group"
+          className="col-span-2 md:col-span-3 bg-desert-surface border border-desert-border border-l-2 border-l-desert-mystic rounded-sm p-5 hover:border-desert-border-strong hover:border-l-desert-mystic hover:bg-desert-surface-hover transition-all duration-150 group"
         >
           <h2 className="font-mono font-bold text-xs tracking-[0.06em] uppercase text-desert-text-2 mb-3 group-hover:text-desert-text transition-colors flex items-center gap-2">
             <PixelIcon name="goals" size={12} /> Goals
@@ -549,7 +555,7 @@ export default function Dashboard() {
 
         <Link
           href="/journal"
-          className="col-span-2 md:col-span-1 bg-desert-surface border border-desert-border rounded-sm p-5 hover:border-desert-border-strong hover:bg-desert-surface-hover transition-all duration-150 group"
+          className="col-span-2 md:col-span-1 bg-desert-surface border border-desert-border border-l-2 border-l-desert-celestial rounded-sm p-5 hover:border-desert-border-strong hover:border-l-desert-celestial hover:bg-desert-surface-hover transition-all duration-150 group"
         >
           <h2 className="font-mono font-bold text-xs tracking-[0.06em] uppercase text-desert-text-2 mb-3 group-hover:text-desert-text transition-colors flex items-center gap-2">
             <PixelIcon name="journal" size={12} /> Mood
@@ -583,7 +589,7 @@ export default function Dashboard() {
           const carbsPct = totalMacroG > 0 ? ((n.carbs_g || 0) / totalMacroG) * 100 : 0;
           const fatPct = totalMacroG > 0 ? ((n.fat_g || 0) / totalMacroG) * 100 : 0;
           return (
-            <div className="col-span-2 md:col-span-4 bg-desert-surface border border-desert-border rounded-sm p-4 hover:border-desert-border-strong transition-colors duration-150">
+            <div className="col-span-2 md:col-span-4 bg-desert-surface border border-desert-border border-l-2 border-l-desert-forest rounded-sm p-4 hover:border-desert-border-strong hover:border-l-desert-forest transition-colors duration-150">
               <p className="font-mono font-bold text-xs tracking-[0.06em] uppercase text-desert-text-2 mb-3">
                 Today&apos;s Nutrition
               </p>
@@ -727,7 +733,7 @@ export default function Dashboard() {
           if (activeMetrics.length === 0) return null;
 
           return (
-            <div className="col-span-2 md:col-span-4 bg-desert-surface border border-desert-border rounded-sm p-4 hover:border-desert-border-strong transition-colors duration-150">
+            <div className="col-span-2 md:col-span-4 bg-desert-surface border border-desert-border border-l-2 border-l-desert-border-strong rounded-sm p-4 hover:border-desert-border-strong hover:border-l-desert-border-strong transition-colors duration-150">
               <p className="font-mono font-bold text-xs tracking-[0.06em] uppercase text-desert-text-2 mb-4">
                 30-Day Trends
               </p>
@@ -769,7 +775,7 @@ export default function Dashboard() {
         {/* Row 6: Quick links */}
         <Link
           href="/finances"
-          className="bg-desert-surface border border-desert-border rounded-sm p-4 hover:border-desert-border-strong hover:bg-desert-surface-hover transition-all duration-150 group"
+          className="bg-desert-surface border border-desert-border border-l-2 border-l-desert-warning rounded-sm p-4 hover:border-desert-border-strong hover:border-l-desert-warning hover:bg-desert-surface-hover transition-all duration-150 group"
         >
           <p className="font-mono font-bold text-xs tracking-[0.06em] uppercase text-desert-text-2 group-hover:text-desert-text transition-colors flex items-center gap-2">
             <PixelIcon name="finances" size={12} /> Finances
@@ -782,7 +788,7 @@ export default function Dashboard() {
 
         <Link
           href="/calendar"
-          className="bg-desert-surface border border-desert-border rounded-sm p-4 hover:border-desert-border-strong hover:bg-desert-surface-hover transition-all duration-150 group"
+          className="bg-desert-surface border border-desert-border border-l-2 border-l-desert-celestial rounded-sm p-4 hover:border-desert-border-strong hover:border-l-desert-celestial hover:bg-desert-surface-hover transition-all duration-150 group"
         >
           <p className="font-mono font-bold text-xs tracking-[0.06em] uppercase text-desert-text-2 group-hover:text-desert-text transition-colors flex items-center gap-2">
             <PixelIcon name="calendar" size={12} /> Calendar
@@ -792,7 +798,7 @@ export default function Dashboard() {
 
         <Link
           href="/review"
-          className="bg-desert-surface border border-desert-border rounded-sm p-4 hover:border-desert-border-strong hover:bg-desert-surface-hover transition-all duration-150 group"
+          className="bg-desert-surface border border-desert-border border-l-2 border-l-desert-driftwood rounded-sm p-4 hover:border-desert-border-strong hover:border-l-desert-driftwood hover:bg-desert-surface-hover transition-all duration-150 group"
         >
           <p className="font-mono font-bold text-xs tracking-[0.06em] uppercase text-desert-text-2 group-hover:text-desert-text transition-colors flex items-center gap-2">
             <PixelIcon name="review" size={12} /> Review
@@ -802,7 +808,7 @@ export default function Dashboard() {
 
         <Link
           href="/chat"
-          className="bg-desert-surface border border-desert-border rounded-sm p-4 hover:border-desert-border-strong hover:bg-desert-surface-hover transition-all duration-150 group"
+          className="bg-desert-surface border border-desert-border border-l-2 border-l-desert-clay rounded-sm p-4 hover:border-desert-border-strong hover:border-l-desert-clay hover:bg-desert-surface-hover transition-all duration-150 group"
         >
           <p className="font-mono font-bold text-xs tracking-[0.06em] uppercase text-desert-text-2 group-hover:text-desert-text transition-colors flex items-center gap-2">
             <PixelIcon name="chat" size={12} /> AI Chat
