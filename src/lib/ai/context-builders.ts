@@ -68,7 +68,7 @@ export async function buildFocusContext(
       .limit(10),
     supabase
       .from("workout_checkins")
-      .select("date, hrv, hrv_rmssd, sleep, weight, readiness, shin_pain, waist_cm, pns_index, sns_index, stress_index, kubios_readiness, mean_hr, body_fat_pct, tags")
+      .select("date, hrv, hrv_rmssd, sleep, sleep_score, weight, readiness, shin_pain, waist_cm, pns_index, sns_index, stress_index, kubios_readiness, mean_hr, body_fat_pct, tags")
       .eq("user_id", userId)
       .order("date", { ascending: false })
       .limit(3),
@@ -138,6 +138,7 @@ export async function buildFocusContext(
     if (latest.hrv_rmssd != null) parts.push(`RMSSD: ${latest.hrv_rmssd}ms (primary parasympathetic recovery metric — use this for training readiness, not SDNN)`);
     if (latest.hrv != null) parts.push(`SDNN: ${latest.hrv}ms (overall HRV from Apple Health)`);
     if (latest.sleep != null) parts.push(`Sleep: ${latest.sleep}h`);
+    if (latest.sleep_score != null) parts.push(`Sleep Score: ${latest.sleep_score}%`);
     if (latest.readiness != null) parts.push(`Readiness: ${latest.readiness}/10`);
     if (latest.weight != null) parts.push(`Weight: ${latest.weight}kg`);
     if (latest.pns_index != null) parts.push(`PNS Index: ${latest.pns_index} (>0 = good parasympathetic tone, <0 = suppressed)`);

@@ -13,6 +13,7 @@ interface BiometricPoint {
   hrv: number | null;
   hrv_rmssd: number | null;
   sleep: number | null;
+  sleep_score: number | null;
   readiness: number | null;
   kubios_readiness: number | null;
   steps: number | null;
@@ -285,7 +286,7 @@ export default function Dashboard() {
       const [{ data: trendCheckins }, { data: trendNutrition }, { data: trendJournal }] = await Promise.all([
         supabase
           .from("workout_checkins")
-          .select("date, weight, body_fat_pct, hrv, hrv_rmssd, sleep, readiness, kubios_readiness, steps, active_calories, resting_hr, vo2_max")
+          .select("date, weight, body_fat_pct, hrv, hrv_rmssd, sleep, sleep_score, readiness, kubios_readiness, steps, active_calories, resting_hr, vo2_max")
           .gte("date", thirtyDaysAgoISO)
           .lte("date", todayISO)
           .order("date", { ascending: true }),
@@ -657,6 +658,7 @@ export default function Dashboard() {
             return c?.hrv_rmssd ?? c?.hrv ?? null;
           });
           const sleepData = dates.map((d) => checkinMap.get(d)?.sleep ?? null);
+          const sleepScoreData = dates.map((d) => checkinMap.get(d)?.sleep_score ?? null);
           const readinessData = dates.map((d) => {
             const c = checkinMap.get(d);
             // Normalize kubios (0-100) to 1-10 scale if no Apple Health readiness
@@ -686,6 +688,7 @@ export default function Dashboard() {
             { label: "Body Fat", data: bodyFatData, color: "var(--color-desert-warning)", unit: "%", format: (v) => v.toFixed(1) },
             { label: "HRV", data: hrvData, color: "var(--color-desert-success)", unit: "ms", format: (v) => Math.round(v).toString() },
             { label: "Sleep", data: sleepData, color: "var(--color-desert-celestial)", unit: "hrs", format: (v) => v.toFixed(1) },
+            { label: "Sleep Score", data: sleepScoreData, color: "var(--color-desert-celestial)", unit: "%", format: (v) => v.toFixed(0) },
             { label: "Readiness", data: readinessData, color: "var(--color-desert-forest)", unit: "/10", format: (v) => v.toFixed(1) },
             { label: "Resting HR", data: restingHrData, color: "var(--color-desert-danger)", unit: "bpm", format: (v) => Math.round(v).toString() },
             { label: "VO2 Max", data: vo2Data, color: "var(--color-desert-ocean)", unit: "ml/kg", format: (v) => v.toFixed(1) },
@@ -697,7 +700,7 @@ export default function Dashboard() {
             { label: "Protein", data: proteinData, color: "var(--color-desert-mystic)", unit: "g", format: (v) => Math.round(v).toString() },
           ];
 
-          const HERO_LABELS = new Set(["Weight", "HRV", "Sleep"]);
+          const HERO_LABELS = new Set(["Weight", "HRV", "Sleep", "Sleep Score"]);
 
           // Only show metrics that have at least 2 data points
           const activeMetrics = metrics.filter(
@@ -709,7 +712,7 @@ export default function Dashboard() {
           const heroMetrics = activeMetrics.filter((m) => HERO_LABELS.has(m.label));
           const secondaryMetrics = activeMetrics.filter((m) => !HERO_LABELS.has(m.label));
 
-          const higherIsBetter = new Set(["HRV", "Sleep", "Protein", "Readiness", "Mood", "Energy", "VO2 Max", "Steps", "Active Cal"]);
+          const higherIsBetter = new Set(["HRV", "Sleep", "Sleep Score", "Protein", "Readiness", "Mood", "Energy", "VO2 Max", "Steps", "Active Cal"]);
           const lowerIsBetter = new Set(["Body Fat", "Resting HR"]);
 
           const renderMetric = (m: Metric, hero: boolean) => {
