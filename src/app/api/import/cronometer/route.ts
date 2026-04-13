@@ -33,6 +33,152 @@ function compact<T extends Record<string, unknown>>(obj: T): Partial<T> {
   ) as Partial<T>;
 }
 
+/** Detect if CSV is biometrics long-format (Day,Group,Metric,Unit,Amount) */
+function isBiometricsFormat(headers: string[]): boolean {
+  const normalized = headers.map((h) => h.toLowerCase().trim());
+  return normalized.includes("day") && normalized.includes("metric") && normalized.includes("amount");
+}
+
+interface BiometricDay {
+  weight?: number;
+  body_fat_pct?: number;
+  sleep_total?: number;
+  sleep_score?: number;
+  hrv?: number;
+  resting_hr?: number;
+  hr_sum?: number;
+  hr_count?: number;
+  mood?: number;
+  energy?: number;
+}
+
+/** Pivot long-format biometric rows into per-date records */
+function pivotBiometrics(rows: Record<string, string>[]): Map<string, BiometricDay> {
+  const byDate = new Map<string, BiometricDay>();
+
+  for (const row of rows) {
+    const date = row["Day"] || row["day"];
+    const metric = (row["Metric"] || row["metric"] || "").replace(/"/g, "");
+    const amount = parseFloat(row["Amount"] || row["amount"] || "");
+    if (!date || !metric || isNaN(amount)) continue;
+
+    let day = byDate.get(date);
+    if (!day) {
+      day = {};
+      byDate.set(date, day);
+    }
+
+    switch (metric) {
+      case "Weight":
+      case "Weight (Apple Health)":
+        if (day.weight == null) day.weight = amount;
+        break;
+      case "Body Fat":
+      case "Body Fat (Apple Health)":
+        if (day.body_fat_pct == null) day.body_fat_pct = amount;
+        break;
+      case "Sleep":
+      case "Sleep (Apple Health)":
+        day.sleep_total = (day.sleep_total ?? 0) + amount;
+        break;
+      case "Sleep Score":
+        day.sleep_score = amount;
+        break;
+      case "Heart Rate Variability (HRV) (Apple Health)":
+        day.hrv = amount;
+        break;
+      case "Resting Heart Rate (Apple Health)":
+        day.resting_hr = amount;
+        break;
+      case "Heart Rate (Apple Health)":
+      case "Heart Rate (Garmin)":
+        day.hr_sum = (day.hr_sum ?? 0) + amount;
+        day.hr_count = (day.hr_count ?? 0) + 1;
+        break;
+      case "Mood":
+        day.mood = Math.min(5, Math.max(1, Math.round(amount)));
+        break;
+      case "Energy Level":
+        day.energy = Math.min(5, Math.max(1, Math.round(amount)));
+        break;
+    }
+  }
+
+  return byDate;
+}
+
+async function importBiometrics(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+  rows: Record<string, string>[]
+): Promise<{ imported: number; skipped: number; checkins: number; journal: number }> {
+  const byDate = pivotBiometrics(rows);
+  let checkinCount = 0;
+  let journalCount = 0;
+
+  for (const [date, day] of byDate) {
+    const checkinFields: Record<string, unknown> = {};
+    const fieldMap: [string, unknown][] = [
+      ["weight", day.weight],
+      ["body_fat_pct", day.body_fat_pct],
+      ["sleep", day.sleep_total],
+      ["sleep_score", day.sleep_score],
+      ["hrv", day.hrv],
+      ["resting_hr", day.resting_hr],
+      ["mean_hr", day.hr_sum != null && day.hr_count ? Math.round(day.hr_sum / day.hr_count) : null],
+    ];
+
+    const hasCheckinData = fieldMap.some(([, v]) => v != null);
+
+    if (hasCheckinData) {
+      const { data: existing } = await supabase
+        .from("workout_checkins")
+        .select("id, weight, body_fat_pct, sleep, sleep_score, hrv, resting_hr, mean_hr")
+        .eq("user_id", userId)
+        .eq("date", date)
+        .maybeSingle();
+
+      for (const [key, value] of fieldMap) {
+        if (value != null && (!existing || (existing as Record<string, unknown>)[key] == null)) {
+          checkinFields[key] = value;
+        }
+      }
+
+      if (Object.keys(checkinFields).length > 0) {
+        if (existing) {
+          await supabase.from("workout_checkins").update(checkinFields).eq("id", existing.id);
+        } else {
+          await supabase.from("workout_checkins").insert({ user_id: userId, date, ...checkinFields });
+        }
+        checkinCount++;
+      }
+    }
+
+    if (day.mood != null || day.energy != null) {
+      const { data: journalEntry } = await supabase
+        .from("journal_entries")
+        .select("id, mood, energy")
+        .eq("user_id", userId)
+        .eq("date", date)
+        .maybeSingle();
+
+      if (journalEntry) {
+        const journalUpdates: Record<string, unknown> = {};
+        if (day.mood != null && journalEntry.mood == null) journalUpdates.mood = day.mood;
+        if (day.energy != null && journalEntry.energy == null) journalUpdates.energy = day.energy;
+
+        if (Object.keys(journalUpdates).length > 0) {
+          await supabase.from("journal_entries").update(journalUpdates).eq("id", journalEntry.id);
+          journalCount++;
+        }
+      }
+    }
+  }
+
+  const skipped = rows.length - byDate.size;
+  return { imported: byDate.size, skipped, checkins: checkinCount, journal: journalCount };
+}
+
 export async function POST(request: Request) {
   const supabase = await createClient();
   const {
@@ -51,6 +197,26 @@ export async function POST(request: Request) {
   const text = await file.text();
   const rows = parseCSV(text);
 
+  if (rows.length === 0) {
+    return Response.json({ error: "Empty CSV" }, { status: 400 });
+  }
+
+  // Detect format: biometrics (long) vs nutrition (wide)
+  const headers = Object.keys(rows[0]);
+  if (isBiometricsFormat(headers)) {
+    const result = await importBiometrics(supabase, user.id, rows);
+
+    await supabase.from("integration_syncs").insert({
+      user_id: user.id,
+      source: "cronometer",
+      status: "ok",
+      records_imported: result.imported,
+    });
+
+    return Response.json(result);
+  }
+
+  // Existing nutrition import continues below unchanged...
   let imported = 0;
   let skipped = 0;
   let nutritionCount = 0;
