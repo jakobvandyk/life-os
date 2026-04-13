@@ -13,9 +13,9 @@ export async function GET(request: NextRequest) {
 
   const userId = user.id;
 
-  // Parse days param (default 14, max 90)
+  // Parse days param (default 14, max 9999 for full backup)
   const daysParam = request.nextUrl.searchParams.get("days");
-  const days = Math.min(Math.max(parseInt(daysParam || "14", 10) || 14, 1), 90);
+  const days = Math.min(Math.max(parseInt(daysParam || "14", 10) || 14, 1), 9999);
 
   const to = new Date().toISOString().split("T")[0];
   const fromDate = new Date();

@@ -29,6 +29,8 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState<string | null>(null);
   const [uploadResult, setUploadResult] = useState<string | null>(null);
+  const [exportDays, setExportDays] = useState(14);
+  const [exporting, setExporting] = useState<string | null>(null);
   const cronometerRef = useRef<HTMLInputElement>(null);
   const ofxRef = useRef<HTMLInputElement>(null);
 
@@ -349,34 +351,91 @@ export default function SettingsPage() {
           </div>
         </section>
 
-        {/* Data Section */}
+        {/* Data Export */}
         <section>
           <h2 className="font-mono font-bold text-sm tracking-[0.06em] uppercase text-desert-text mb-4">
-            Data
+            Data Export
           </h2>
-          <div className="bg-desert-surface border border-desert-border rounded-sm p-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-desert-text text-sm">Export all data</p>
+          <div className="space-y-3">
+            {/* Export for Analysis */}
+            <div className="bg-desert-surface border border-desert-border rounded-sm p-5">
+              <div className="mb-3">
+                <p className="text-desert-text text-sm font-medium">Export for Analysis</p>
                 <p className="text-desert-text-3 text-xs">
-                  Download a JSON backup of your Life OS data (90 days)
+                  JSON bundle for AI analysis — checkins, nutrition, journal, habits, workouts, goals, tasks, reviews
                 </p>
               </div>
-              <button
-                onClick={async () => {
-                  const res = await fetch("/api/export/analysis?days=90", { credentials: "include" });
-                  const blob = await res.blob();
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement("a");
-                  a.href = url;
-                  a.download = `life-os-export-${new Date().toISOString().split("T")[0]}.json`;
-                  a.click();
-                  URL.revokeObjectURL(url);
-                }}
-                className="px-4 py-2 bg-desert-accent text-desert-bg font-mono font-semibold uppercase tracking-wider text-sm rounded-sm hover:bg-desert-accent-glow transition-colors duration-150"
-              >
-                Export
-              </button>
+              <div className="flex items-center gap-3 flex-wrap">
+                <div className="flex gap-1.5">
+                  {[7, 14, 30, 60, 90].map((d) => (
+                    <button
+                      key={d}
+                      onClick={() => setExportDays(d)}
+                      className={`px-2.5 py-1 font-mono text-xs rounded-sm transition-colors duration-150 ${
+                        exportDays === d
+                          ? "bg-desert-accent text-desert-bg"
+                          : "bg-desert-bg border border-desert-border-strong text-desert-text-2 hover:text-desert-text hover:border-desert-accent"
+                      }`}
+                    >
+                      {d}d
+                    </button>
+                  ))}
+                </div>
+                <button
+                  onClick={async () => {
+                    setExporting("analysis");
+                    try {
+                      const res = await fetch(`/api/export/analysis?days=${exportDays}`, { credentials: "include" });
+                      const blob = await res.blob();
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement("a");
+                      a.href = url;
+                      a.download = `life-os-export-${new Date().toISOString().split("T")[0]}.json`;
+                      a.click();
+                      URL.revokeObjectURL(url);
+                    } finally {
+                      setExporting(null);
+                    }
+                  }}
+                  disabled={exporting === "analysis"}
+                  className="px-4 py-1.5 bg-desert-accent text-desert-bg font-mono font-semibold uppercase tracking-wider text-xs rounded-sm hover:bg-desert-accent-glow transition-colors duration-150 disabled:opacity-50"
+                >
+                  {exporting === "analysis" ? "Exporting..." : "Download JSON"}
+                </button>
+              </div>
+            </div>
+
+            {/* Full Data Backup */}
+            <div className="bg-desert-surface border border-desert-border rounded-sm p-5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-desert-text text-sm font-medium">Full Data Backup</p>
+                  <p className="text-desert-text-3 text-xs">
+                    Download all data across all tables — no date filter
+                  </p>
+                </div>
+                <button
+                  onClick={async () => {
+                    setExporting("full");
+                    try {
+                      const res = await fetch("/api/export/analysis?days=9999", { credentials: "include" });
+                      const blob = await res.blob();
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement("a");
+                      a.href = url;
+                      a.download = `life-os-backup-${new Date().toISOString().split("T")[0]}.json`;
+                      a.click();
+                      URL.revokeObjectURL(url);
+                    } finally {
+                      setExporting(null);
+                    }
+                  }}
+                  disabled={exporting === "full"}
+                  className="px-4 py-2 bg-desert-surface-hover border border-desert-border-strong text-desert-text font-mono font-semibold uppercase tracking-wider text-sm rounded-sm hover:border-desert-accent hover:text-desert-accent transition-colors duration-150 disabled:opacity-50"
+                >
+                  {exporting === "full" ? "Exporting..." : "Backup All"}
+                </button>
+              </div>
             </div>
           </div>
         </section>

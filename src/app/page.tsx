@@ -125,58 +125,6 @@ function getISOWeek(date: Date): number {
   return Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
 }
 
-const EXPORT_DAYS = [7, 14, 30, 60, 90] as const;
-
-function ExportCard() {
-  const [days, setDays] = useState(14);
-  const [loading, setLoading] = useState(false);
-
-  const handleExport = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/export/analysis?days=${days}`, { credentials: "include" });
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `life-os-export-${new Date().toISOString().split("T")[0]}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="col-span-2 md:col-span-4 bg-desert-surface border border-desert-border rounded-sm p-4 hover:border-desert-border-strong transition-colors duration-150">
-      <p className="font-mono font-bold text-xs tracking-[0.06em] uppercase text-desert-text-2 mb-3">Export for Analysis</p>
-      <div className="flex items-center gap-3 flex-wrap">
-        <div className="flex gap-1.5">
-          {EXPORT_DAYS.map((d) => (
-            <button
-              key={d}
-              onClick={() => setDays(d)}
-              className={`px-2.5 py-1 font-mono text-xs rounded-sm transition-colors duration-150 ${
-                days === d
-                  ? "bg-desert-accent text-desert-bg"
-                  : "bg-desert-bg border border-desert-border-strong text-desert-text-2 hover:text-desert-text hover:border-desert-accent"
-              }`}
-            >
-              {d}d
-            </button>
-          ))}
-        </div>
-        <button
-          onClick={handleExport}
-          disabled={loading}
-          className="px-4 py-1.5 bg-desert-accent text-desert-bg font-mono font-semibold uppercase tracking-wider text-xs rounded-sm hover:bg-desert-accent-glow transition-colors duration-150 disabled:opacity-50"
-        >
-          {loading ? "Exporting..." : "Download JSON"}
-        </button>
-      </div>
-    </div>
-  );
-}
 
 export default function Dashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
@@ -857,8 +805,6 @@ export default function Dashboard() {
           <p className="text-desert-text-3 text-sm mt-2">Ask anything →</p>
         </Link>
 
-        {/* Export for Analysis */}
-        <ExportCard />
       </div>
     </div>
   );
