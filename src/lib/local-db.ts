@@ -70,6 +70,7 @@ export interface LocalWorkoutCheckin {
   date: string;
   weight: number | null;
   sleep: number | null;
+  sleep_score: number | null;
   hrv: number | null;
   readiness: number | null;
   shin: number | null;

@@ -10,6 +10,7 @@ export interface Checkin {
   date: string;
   weight?: number | null;
   sleep?: number | null;
+  sleep_score?: number | null;
   hrv?: number | null;
   hrv_rmssd?: number | null;
   readiness?: number | null;
