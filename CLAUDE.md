@@ -104,12 +104,16 @@ src/app/
     ├── sync/binance/route.ts
     ├── sync/ical/route.ts
     ├── sync/kubios/route.ts (scaffold, not active)
+    ├── cron/notifications/route.ts
+    ├── notifications/snooze/route.ts
+    ├── integrations/telegram/route.ts
     └── export/analysis/route.ts
 src/proxy.ts (auth proxy — Next.js 16, excludes /api/, /manifest.json, /sw.js)
-src/components/ (Sidebar, SignOutButton, SyncStatus, ServiceWorkerRegistrar, PixelIcon, PixelBackground, Sparkline, Markdown)
+src/components/ (Sidebar, SignOutButton, SyncStatus, ServiceWorkerRegistrar, PixelIcon, PixelBackground, Sparkline, Markdown, NotificationBell)
 src/hooks/ (useOnlineStatus.ts)
 src/lib/ (supabase.ts, supabase-server.ts, supabase-service.ts, local-db.ts, sync.ts)
 src/lib/ai/ (context-builders.ts)
+src/lib/notifications/ (types.ts, defaults.ts, channels.ts, evaluate.ts, summary.ts)
 src/types/ (modules.d.ts)
 public/ (manifest.json, sw.js, icon-192.svg, icon-512.svg, banners/)
 vercel.json (Binance cron schedule)
@@ -121,7 +125,8 @@ finance_liabilities, finance_transactions, finance_snapshots,
 finance_tax_flags, finance_exchange_rates, projects, workout_sessions,
 workout_exercises, workout_checkins, calendar_events, kb_notes,
 kb_tags, kb_note_tags, weekly_reviews, chat_sessions, chat_messages,
-integration_syncs, raw_imports, nutrition_daily
+integration_syncs, raw_imports, nutrition_daily,
+notification_preferences, notification_rules, notifications, telegram_pairing_codes
 
 ## Key Schema Details
 - Goal areas: finance, health, side_projects, personal_growth, personal
@@ -142,6 +147,9 @@ integration_syncs, raw_imports, nutrition_daily
 - kb_notes types: note, ai_response, research
 - chat_messages capabilities: focus, review, spending, journal, general
 - nutrition_daily: unique per (user_id, date), macros (calories, protein_g, carbs_g, fat_g, fiber_g), hydration (water_ml), stimulants (caffeine_mg, alcohol_g), micros (vitamin_d_iu, iron_mg, magnesium_mg, zinc_mg, sodium_mg, potassium_mg), source defaults to 'cronometer'
+- Notification rule types: morning_checkin, habit_reminder, journal_prompt, weekly_review, daily_summary, streak_at_risk, goal_deadline, task_overdue, task_reminder, sync_event
+- Notification channels: push, telegram, inapp
+- Tasks support reminder_before (Postgres interval, nullable) for pre-due-date reminders
 
 ## What's Built (All Phases Complete)
 - Login (Supabase Auth)
@@ -185,6 +193,14 @@ integration_syncs, raw_imports, nutrition_daily
 - Insight Import: Knowledge Base "Import Insight" modal. Accepts .md/.txt or pasted markdown. Saves as kb_notes type: ai_response, auto-tagged: claude-analysis.
 - Analysis prompt template: public/analysis-prompt.md
 - Workflow: Export JSON → analyse in Claude (subscription) → save markdown → import insight to KB
+- Telegram Bot: POST /api/integrations/telegram (webhook, env: TELEGRAM_BOT_TOKEN, TELEGRAM_WEBHOOK_SECRET)
+  - Pairing flow via /pair <code>, commands: /done, /mood, /energy, /snooze, /help
+  - Inline keyboards on habit reminders and daily summaries for one-tap habit completion
+  - Callback queries update button state after habit logged
+- Notification Cron: GET /api/cron/notifications (every 15min via vercel.json, CRON_SECRET auth)
+  - Evaluates timed + data-driven rules, dispatches to push/telegram/inapp
+  - Respects timezone, quiet hours, deduplication, snooze re-firing
+- Notification Snooze: POST /api/notifications/snooze (session auth, { notification_id, duration_minutes })
 
 ## Required Vercel Environment Variables
 - NEXT_PUBLIC_SUPABASE_URL — Supabase project URL
@@ -196,6 +212,10 @@ integration_syncs, raw_imports, nutrition_daily
 - BINANCE_API_KEY, BINANCE_SECRET — Binance read-only API credentials
 - CRON_SECRET — protects cron-triggered endpoints
 - ICAL_URL_1..ICAL_URL_10 — iCal feed URLs (Google Calendar secret address etc.)
+- VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT — Web Push VAPID keys
+- NEXT_PUBLIC_VAPID_PUBLIC_KEY — public VAPID key (client-side, for push subscription)
+- TELEGRAM_BOT_TOKEN — Telegram bot API token
+- TELEGRAM_WEBHOOK_SECRET — secret for verifying Telegram webhook requests
 # Future (Kubios sync, requires paid cloud): KUBIOS_CLIENT_ID, KUBIOS_CLIENT_SECRET, KUBIOS_ACCESS_TOKEN
 
 ## Auth / Routing
@@ -296,6 +316,11 @@ Recent additions (2026-04-14):
 - Cronometer biometrics CSV import (long-format parser, sleep summing, HR averaging, selective merge)
 - sleep_score column added to workout_checkins (dashboard sparkline, AI context, webhook support)
 - Garmin Recovery documented: map to readiness via iOS Shortcut (divide by 10)
+- Notification system: 3 channels (Web Push, Telegram, in-app), 10 rule types, configurable in Settings
+- Telegram bot: pairing, /done /mood /energy /snooze /help commands, inline keyboards for habit completion
+- NotificationBell component in sidebar with unread badge, dropdown, snooze buttons
+- Notification cron (every 15min): timed reminders, data-driven alerts, daily summary, snooze re-firing
+- Task reminder_before: per-task pre-due-date reminders with custom interval support
 
 Next: Goal auto-progress, review snapshots.
 
