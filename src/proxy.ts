@@ -3,7 +3,13 @@ import { NextResponse, type NextRequest } from 'next/server'
 
 export async function proxy(request: NextRequest) {
   // Skip API routes — they handle their own auth (webhooks, crons)
-  if (request.nextUrl.pathname.startsWith("/api/")) {
+  // Skip PWA assets (manifest, service worker)
+  const path = request.nextUrl.pathname;
+  if (
+    path.startsWith("/api/") ||
+    path === "/manifest.json" ||
+    path === "/sw.js"
+  ) {
     return NextResponse.next();
   }
 

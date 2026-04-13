@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import PixelIcon from "@/components/PixelIcon";
+import SignOutButton from "@/components/SignOutButton";
 
 interface ExchangeRate {
   id: number;
@@ -367,6 +368,20 @@ export default function SettingsPage() {
               >
                 Export
               </button>
+            </div>
+          </div>
+        </section>
+
+        {/* Account */}
+        <section>
+          <h2 className="font-mono font-bold text-sm tracking-[0.06em] uppercase text-desert-text mb-4">Account</h2>
+          <div className="bg-desert-surface border border-desert-border rounded-sm p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-desert-text text-sm">{email}</p>
+                <p className="text-desert-text-3 text-xs">Signed in</p>
+              </div>
+              <SignOutButton />
             </div>
           </div>
         </section>

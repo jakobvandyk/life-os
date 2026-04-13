@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import SignOutButton from "@/components/SignOutButton";
 import SyncStatus from "@/components/SyncStatus";
 import PixelIcon, { ICON_NAMES } from "@/components/PixelIcon";
 import { User } from "@supabase/supabase-js";
@@ -155,7 +154,6 @@ export default function Sidebar({ user }: SidebarProps) {
               {isLight ? "☽ DARK" : "☀ LIGHT"}
             </button>
             <SyncStatus />
-            <SignOutButton />
           </div>
         </nav>
       )}
@@ -185,7 +183,6 @@ export default function Sidebar({ user }: SidebarProps) {
             {isLight ? "☽ DARK" : "☀ LIGHT"}
           </button>
           <SyncStatus />
-          <SignOutButton />
         </div>
       </nav>
     </>

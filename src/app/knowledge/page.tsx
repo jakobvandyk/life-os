@@ -453,7 +453,7 @@ export default function KnowledgePage() {
                 <div className="flex items-start justify-between gap-2 mb-1">
                   <div className="flex items-center gap-2 min-w-0">
                     {note.pinned && (
-                      <span className="text-desert-accent text-xs shrink-0">📌</span>
+                      <PixelIcon name="kb_pinned" size={12} className="text-desert-accent shrink-0" />
                     )}
                     <p className="text-desert-text text-sm font-medium truncate">
                       {note.title}

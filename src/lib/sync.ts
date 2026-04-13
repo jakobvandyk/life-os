@@ -52,12 +52,25 @@ export async function processSyncQueue(): Promise<{
   return { synced, errors };
 }
 
+// Tables with unique constraints where insert should use upsert
+const UPSERT_TABLES: Record<string, string> = {
+  kb_tags: "user_id,name",
+  kb_note_tags: "note_id,tag_id",
+  habit_logs: "habit_id,date",
+  journal_entries: "user_id,date",
+  workout_checkins: "user_id,date",
+  nutrition_daily: "user_id,date",
+};
+
 async function replayOperation(item: SyncQueueItem) {
   const { table_name, operation, payload } = item;
 
   switch (operation) {
     case "insert": {
-      const { error } = await supabase.from(table_name).insert(payload);
+      const onConflict = UPSERT_TABLES[table_name];
+      const { error } = onConflict
+        ? await supabase.from(table_name).upsert(payload, { onConflict })
+        : await supabase.from(table_name).insert(payload);
       if (error) throw new Error(error.message);
       break;
     }
