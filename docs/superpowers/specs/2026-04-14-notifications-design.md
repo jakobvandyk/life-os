@@ -75,6 +75,8 @@ Log of sent notifications. In-app display + audit trail.
 | link | text, nullable | | Deep link path, e.g. "/habits" |
 | entity_id | text, nullable | | Task/goal/habit ID for deduplication |
 | read | boolean | false | For in-app dismissal |
+| snoozed_until | timestamptz, nullable | null | If set, notification re-fires after this time |
+| telegram_message_id | bigint, nullable | null | Telegram message ID, for matching /snooze replies |
 | created_at | timestamptz | now() | |
 
 RLS: `auth.uid() = user_id`
@@ -140,6 +142,18 @@ The cron endpoint (`POST /api/cron/notifications`) runs every 15 minutes, protec
 - Data-driven alerts: Check `notifications` table for existing row with same `rule_type` + `entity_id` + same day.
 - Task reminders: Check `notifications` table for existing row with `rule_type = 'task_reminder'` + `entity_id = task.id`.
 
+### Snooze
+
+When a notification has `snoozed_until` set:
+- The cron skips it during normal deduplication (it's "pending re-fire")
+- When `now() >= snoozed_until`, the cron re-fires the notification to its original channels and clears `snoozed_until`
+- Snooze is available via:
+  - **In-app:** "Snooze" button on each notification item in the bell dropdown, with options: 15 min, 30 min, 1 hour, 2 hours
+  - **Telegram:** Reply to a notification message with `/snooze <duration>` (e.g. `/snooze 1h`, `/snooze 30m`)
+  - **Web Push:** Action button "Snooze 1h" on push notifications (uses the Notification Actions API, handled by service worker posting to a snooze endpoint)
+
+**Snooze API endpoint:** `POST /api/notifications/snooze` — accepts `{ notification_id, duration_minutes }`, sets `snoozed_until = now() + duration`, marks `read = false`. Session-authenticated.
+
 ### Daily Summary Content
 
 Built from queries against the day's data:
@@ -182,20 +196,39 @@ self.addEventListener("push", (event) => {
       body: data.body,
       icon: "/icon-192.svg",
       badge: "/icon-192.svg",
-      data: { link: data.link },
+      data: { link: data.link, notificationId: data.notificationId },
+      actions: [
+        { action: "open", title: "Open" },
+        { action: "snooze", title: "Snooze 1h" },
+      ],
     })
   );
 });
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-  const link = event.notification.data?.link || "/";
+  const { link, notificationId } = event.notification.data || {};
+
+  if (event.action === "snooze" && notificationId) {
+    // Fire-and-forget snooze request
+    event.waitUntil(
+      fetch("/api/notifications/snooze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ notification_id: notificationId, duration_minutes: 60 }),
+      })
+    );
+    return;
+  }
+
+  // Default: open the link
+  const target = link || "/";
   event.waitUntil(
     clients.matchAll({ type: "window" }).then((windowClients) => {
       for (const client of windowClients) {
-        if (client.url.includes(link) && "focus" in client) return client.focus();
+        if (client.url.includes(target) && "focus" in client) return client.focus();
       }
-      return clients.openWindow(link);
+      return clients.openWindow(target);
     })
   );
 });
@@ -221,17 +254,25 @@ self.addEventListener("notificationclick", (event) => {
 
 **Webhook endpoint (`POST /api/integrations/telegram`):**
 - Verify `X-Telegram-Bot-Api-Secret-Token` header matches `TELEGRAM_WEBHOOK_SECRET`
+- Look up user by `chat_id` from `notification_preferences` (for all commands except `/start` and `/pair`)
 - Parse message text:
   - `/start` → reply with connection instructions
   - `/pair <code>` → validate code, save chat_id, confirm
-  - Anything else → reply "Unknown command"
+  - `/done <habit>` → fuzzy match habit name against user's active habits, log today's date. Reply with confirmation + updated streak count. If ambiguous (multiple matches), reply with numbered options.
+  - `/mood <1-5>` → upsert journal entry for today with mood value. Reply with confirmation.
+  - `/energy <1-5>` → upsert journal entry for today with energy value. Reply with confirmation.
+  - `/snooze <duration>` → if sent as a reply to a notification message, parse duration (e.g. "1h", "30m", "2h"), set `snoozed_until` on the notification. Reply with confirmation. If not a reply, reply with usage instructions.
+  - `/help` → list available commands
+  - Anything else → reply "Unknown command. Send /help for available commands."
 - Uses service-role Supabase client (no user session, bot messages are external)
+- Habit fuzzy matching: case-insensitive substring match on `habits.name`. If exactly one match, execute. If multiple, reply with numbered list. If none, reply "No habit found matching '<input>'".
 
 **Sending notifications:**
 ```
 POST https://api.telegram.org/bot<TOKEN>/sendMessage
 { "chat_id": "<chat_id>", "text": "<markdown>", "parse_mode": "Markdown" }
 ```
+The Telegram API returns `result.message_id` — save this to `notifications.telegram_message_id` so `/snooze` replies can be matched back to the notification.
 
 **Disconnecting:** "Disconnect" button clears `telegram_chat_id`. Optional: send a goodbye message to the chat before clearing.
 
@@ -309,7 +350,8 @@ Not in this section. Per-task `reminder_before` dropdown on the task create/edit
 | File | Action | Responsibility |
 |---|---|---|
 | `src/app/api/cron/notifications/route.ts` | Create | Cron endpoint — load preferences, evaluate rules, dispatch |
-| `src/app/api/integrations/telegram/route.ts` | Create | Telegram webhook — pairing, /start |
+| `src/app/api/integrations/telegram/route.ts` | Create | Telegram webhook — pairing, /start, /done, /mood, /energy, /snooze, /help |
+| `src/app/api/notifications/snooze/route.ts` | Create | Snooze endpoint — sets snoozed_until on a notification |
 | `src/lib/notifications/evaluate.ts` | Create | Rule evaluation — timed checks, data queries, dedup |
 | `src/lib/notifications/channels.ts` | Create | sendPush(), sendTelegram(), writeInApp() |
 | `src/lib/notifications/defaults.ts` | Create | Default rule definitions, seed function |
@@ -342,8 +384,8 @@ Not in this section. Per-task `reminder_before` dropdown on the task create/edit
 
 ## Out of Scope (v1)
 
-- Telegram reply interactions (e.g., "done" to mark a habit) — future enhancement
 - Supabase Realtime for in-app notifications — polling is sufficient for v1
 - Notification preferences sync to offline/local-db — settings are online-only
 - Email notifications — not needed for single-user PWA
-- Snooze / reschedule notifications
+- Extended Telegram interactions beyond /done, /mood, /energy, /snooze (e.g., creating tasks, updating goals)
+- Telegram inline keyboards / callback queries — text commands are sufficient for v1
