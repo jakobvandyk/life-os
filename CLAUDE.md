@@ -136,7 +136,7 @@ integration_syncs, raw_imports, nutrition_daily
 - Finance liquidity tiers: immediate, short_term, illiquid
 - Workout sessions: upper-strength, lower-strength, upper-volume, lower-volume (defined in constants.ts)
 - Workout RPE values: easy, med, hard, fail (display: easy=green, med=amber, hard=red, fail=purple)
-- workout_checkins: hrv (SDNN, Apple Health), hrv_rmssd (RMSSD, Kubios/Polar H10), pns_index, sns_index, stress_index, kubios_readiness (0-100), mean_hr, shin_pain (0-10), waist_cm, body_fat_pct (scale bioimpedance estimate), steps, active_calories, resting_hr, vo2_max (Garmin → Apple Health), tags (text array)
+- workout_checkins: hrv (SDNN, Apple Health), hrv_rmssd (RMSSD, Kubios/Polar H10), pns_index, sns_index, stress_index, kubios_readiness (0-100), mean_hr, shin_pain (0-10), waist_cm, body_fat_pct (scale bioimpedance estimate), sleep_score (real, Garmin/Apple Health sleep quality percentage), steps, active_calories, resting_hr, vo2_max (Garmin → Apple Health), tags (text array)
 - Exchange rate pairs stored as e.g. "NZDAUD" (no slash) with rate as real
 - kb_notes types: note, ai_response, research
 - chat_messages capabilities: focus, review, spending, journal, general
@@ -162,12 +162,15 @@ integration_syncs, raw_imports, nutrition_daily
 
 ## Integrations (Phase 6)
 - Apple Health: POST /api/integrations/health (x-api-key auth, env: HEALTH_WEBHOOK_KEY, HEALTH_USER_ID)
-  - JSON body: { date (required, YYYY-MM-DD), hrv (SDNN), hrv_rmssd (RMSSD from Kubios/Polar H10), sleep_hours, weight, readiness (1-10), mindfulness_minutes, shin_pain (0-10), waist_cm, pns_index, sns_index, stress_index, kubios_readiness (0-100), mean_hr, body_fat_pct, steps, active_calories, resting_hr, vo2_max }
+  - JSON body: { date (required, YYYY-MM-DD), hrv (SDNN), hrv_rmssd (RMSSD from Kubios/Polar H10), sleep_hours, sleep_score, weight, readiness (1-10), mindfulness_minutes, shin_pain (0-10), waist_cm, pns_index, sns_index, stress_index, kubios_readiness (0-100), mean_hr, body_fat_pct, steps, active_calories, resting_hr, vo2_max }
   - All fields except date are optional — only send what the iOS Shortcut pulls
   - Upserts to workout_checkins, logs mindfulness to habit_logs if matching habit exists
   - maxDuration=10, uses maybeSingle() to avoid crash on missing rows
+- Garmin Recovery: not a direct API integration — map recovery % to readiness field via iOS Shortcut (divide by 10 for 0-10 scale)
 - Kubios HRV: Manual entry via DailyCheckin form (Polar H10 → Kubios app → read values → enter in Life OS). Metrics: RMSSD, PNS index, SNS index, Baevsky stress index, readiness 0-100, mean HR. Sync scaffold at /api/sync/kubios (not active, requires paid Kubios Cloud).
-- Cronometer: POST /api/import/cronometer (CSV upload, session auth) — parses CSV → nutrition_daily (macros/micros), workout_checkins (weight/body_fat/waist, selective merge), journal_entries (mood/energy, existing entries only)
+- Cronometer: POST /api/import/cronometer (CSV upload, session auth) — auto-detects format:
+  - Nutrition CSV (wide format): parses → nutrition_daily (macros/micros), workout_checkins (weight/body_fat/waist, selective merge), journal_entries (mood/energy, existing entries only)
+  - Biometrics CSV (long format: Day,Group,Metric,Unit,Amount): pivots → workout_checkins (weight, body_fat_pct, sleep, sleep_score, hrv, resting_hr, mean_hr — selective merge), journal_entries (mood/energy, existing entries only)
 - myBOQ: POST /api/import/ofx (OFX upload, session auth)
 - Binance: GET /api/sync/binance (HMAC-SHA256, env: BINANCE_API_KEY, BINANCE_SECRET, CRON_SECRET, daily 8am via vercel.json)
 - iCal: GET /api/sync/ical (env: ICAL_URL_1..ICAL_URL_10)

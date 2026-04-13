@@ -115,9 +115,13 @@ export default function SettingsPage() {
       const res = await fetch(endpoint, { method: "POST", body: formData });
       const data = await res.json();
       if (res.ok) {
-        setUploadResult(
-          `${source}: Imported ${data.imported} records${data.skipped ? `, ${data.skipped} skipped` : ""}${data.total_value ? ` ($${data.total_value})` : ""}`
-        );
+        const parts = [`${source}: ${data.imported} dates imported`];
+        if (data.skipped) parts.push(`${data.skipped} skipped`);
+        if (data.checkins) parts.push(`${data.checkins} checkin records`);
+        if (data.journal) parts.push(`${data.journal} journal updates`);
+        if (data.nutrition) parts.push(`${data.nutrition} nutrition records`);
+        if (data.total_value) parts.push(`$${data.total_value}`);
+        setUploadResult(parts.join(", "));
       } else {
         setUploadResult(`${source}: ${data.error || "Failed"}`);
       }
@@ -211,7 +215,7 @@ export default function SettingsPage() {
                   <span className="w-8 text-center flex items-center justify-center"><PixelIcon name="int_nutrition" size={20} className="text-desert-success" /></span>
                   <div>
                     <p className="text-desert-text font-mono text-sm font-medium">Cronometer</p>
-                    <p className="text-desert-text-3 text-xs">Upload CSV nutrition export</p>
+                    <p className="text-desert-text-3 text-xs">Upload CSV — nutrition or biometrics export</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
