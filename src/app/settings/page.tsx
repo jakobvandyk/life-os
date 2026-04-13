@@ -359,12 +359,21 @@ export default function SettingsPage() {
               <div>
                 <p className="text-desert-text text-sm">Export all data</p>
                 <p className="text-desert-text-3 text-xs">
-                  Download a JSON backup of your Life OS data
+                  Download a JSON backup of your Life OS data (90 days)
                 </p>
               </div>
               <button
-                disabled
-                className="px-4 py-2 bg-desert-surface-hover border border-desert-border-strong text-desert-text-3 font-mono font-semibold uppercase tracking-wider text-sm rounded-sm cursor-not-allowed"
+                onClick={async () => {
+                  const res = await fetch("/api/export/analysis?days=90", { credentials: "include" });
+                  const blob = await res.blob();
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = `life-os-export-${new Date().toISOString().split("T")[0]}.json`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                }}
+                className="px-4 py-2 bg-desert-accent text-desert-bg font-mono font-semibold uppercase tracking-wider text-sm rounded-sm hover:bg-desert-accent-glow transition-colors duration-150"
               >
                 Export
               </button>
