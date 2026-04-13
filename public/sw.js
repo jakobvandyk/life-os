@@ -48,3 +48,47 @@ self.addEventListener("fetch", (event) => {
       })
   );
 });
+
+// --- Push Notifications ---
+
+self.addEventListener("push", (event) => {
+  const data = event.data?.json() ?? {};
+  event.waitUntil(
+    self.registration.showNotification(data.title || "Life OS", {
+      body: data.body,
+      icon: "/icon-192.svg",
+      badge: "/icon-192.svg",
+      data: { link: data.link, notificationId: data.notificationId },
+      actions: [
+        { action: "open", title: "Open" },
+        { action: "snooze", title: "Snooze 1h" },
+      ],
+    })
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const { link, notificationId } = event.notification.data || {};
+
+  if (event.action === "snooze" && notificationId) {
+    event.waitUntil(
+      fetch("/api/notifications/snooze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ notification_id: notificationId, duration_minutes: 60 }),
+      })
+    );
+    return;
+  }
+
+  const target = link || "/";
+  event.waitUntil(
+    clients.matchAll({ type: "window" }).then((windowClients) => {
+      for (const client of windowClients) {
+        if (client.url.includes(target) && "focus" in client) return client.focus();
+      }
+      return clients.openWindow(target);
+    })
+  );
+});
