@@ -20,7 +20,7 @@ export async function POST(request: Request) {
     return Response.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const { date, hrv, hrv_rmssd, readiness, mindfulness_minutes, sleep_hours, weight, shin_pain, waist_cm, pns_index, sns_index, stress_index, kubios_readiness, mean_hr, body_fat_pct, steps, active_calories, resting_hr, vo2_max } = body;
+  const { date, hrv, hrv_rmssd, readiness, mindfulness_minutes, sleep_hours, sleep_score, weight, shin_pain, waist_cm, pns_index, sns_index, stress_index, kubios_readiness, mean_hr, body_fat_pct, steps, active_calories, resting_hr, vo2_max } = body;
 
   if (!date) {
     return Response.json({ error: "date is required" }, { status: 400 });
@@ -34,6 +34,7 @@ export async function POST(request: Request) {
   if (hrv != null) { checkinFields.hrv = hrv; imported.push("hrv"); }
   if (hrv_rmssd != null) { checkinFields.hrv_rmssd = hrv_rmssd; imported.push("hrv_rmssd"); }
   if (sleep_hours != null) { checkinFields.sleep = sleep_hours; imported.push("sleep"); }
+  if (sleep_score != null) { checkinFields.sleep_score = sleep_score; imported.push("sleep_score"); }
   if (weight != null) { checkinFields.weight = weight; imported.push("weight"); }
   if (readiness != null) { checkinFields.readiness = readiness; imported.push("readiness"); }
   if (shin_pain != null) { checkinFields.shin_pain = shin_pain; imported.push("shin_pain"); }
