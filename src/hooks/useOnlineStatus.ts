@@ -41,9 +41,22 @@ export function useOnlineStatus() {
     window.addEventListener("online", goOnline);
     window.addEventListener("offline", goOffline);
 
-    // Check queue periodically
+    // Check queue and retry pending items periodically
     checkQueue();
-    const interval = setInterval(checkQueue, 30000);
+    const retryAndCheck = async () => {
+      if (navigator.onLine) {
+        const { db } = await import("@/lib/local-db");
+        const pendingCount = await db.sync_queue
+          .where("status")
+          .equals("pending")
+          .count();
+        if (pendingCount > 0) {
+          await processSyncQueue();
+        }
+      }
+      await checkQueue();
+    };
+    const interval = setInterval(retryAndCheck, 30000);
 
     return () => {
       window.removeEventListener("online", goOnline);
