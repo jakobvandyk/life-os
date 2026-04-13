@@ -99,6 +99,7 @@ src/app/
     ├── review-summary/route.ts
     ├── integrations/health/route.ts
     ├── import/cronometer/route.ts
+    ├── import/apple-health/route.ts
     ├── import/ofx/route.ts
     ├── sync/binance/route.ts
     ├── sync/ical/route.ts
@@ -168,6 +169,12 @@ integration_syncs, raw_imports, nutrition_daily
   - maxDuration=10, uses maybeSingle() to avoid crash on missing rows
 - Garmin Recovery: not a direct API integration — map recovery % to readiness field via iOS Shortcut (divide by 10 for 0-10 scale)
 - Kubios HRV: Manual entry via DailyCheckin form (Polar H10 → Kubios app → read values → enter in Life OS). Metrics: RMSSD, PNS index, SNS index, Baevsky stress index, readiness 0-100, mean HR. Sync scaffold at /api/sync/kubios (not active, requires paid Kubios Cloud).
+- Apple Health Import: POST /api/import/apple-health (session auth, JSON body)
+  - Client-side streaming parser reads export.xml via ReadableStream (handles 200MB+ files without loading into memory)
+  - Extracts: weight, body_fat_pct, hrv, resting_hr, steps, active_calories, vo2_max, mean_hr, sleep
+  - Aggregates per day (sum: steps/calories/sleep, average: HR, first: weight/body_fat/HRV/resting_hr/VO2)
+  - Selective merge upsert — never overwrites existing workout_checkins values
+  - Batched upload (200 days per request) with progress indicator in Settings UI
 - Cronometer: POST /api/import/cronometer (CSV upload, session auth) — auto-detects format:
   - Nutrition CSV (wide format): parses → nutrition_daily (macros/micros), workout_checkins (weight/body_fat/waist, selective merge), journal_entries (mood/energy, existing entries only)
   - Biometrics CSV (long format: Day,Group,Metric,Unit,Amount): pivots → workout_checkins (weight, body_fat_pct, sleep, sleep_score, hrv, resting_hr, mean_hr — selective merge), journal_entries (mood/energy, existing entries only)
@@ -284,7 +291,13 @@ Recent additions (2026-04-13):
 - Manifest/SW console errors fixed: proxy.ts skips /manifest.json and /sw.js
 - Historical emoji habits migrated to pixel icon names in DB
 
-Next: Cronometer auto-import via Apple Health (eliminates CSV), goal auto-progress, review snapshots.
+Recent additions (2026-04-14):
+- Apple Health XML import (streaming client-side parser for 200MB+ export.xml, selective merge backfill)
+- Cronometer biometrics CSV import (long-format parser, sleep summing, HR averaging, selective merge)
+- sleep_score column added to workout_checkins (dashboard sparkline, AI context, webhook support)
+- Garmin Recovery documented: map to readiness via iOS Shortcut (divide by 10)
+
+Next: Goal auto-progress, review snapshots.
 
 ## graphify
 
