@@ -12,9 +12,21 @@ interface Task {
   priority: string;
   status: string;
   due_date: string | null;
+  reminder_before: string | null;
   parent_id: number | null;
   created_at: string;
 }
+
+const REMINDER_OPTIONS = [
+  { label: "None", value: "" },
+  { label: "15 min", value: "15 minutes" },
+  { label: "30 min", value: "30 minutes" },
+  { label: "1 hour", value: "1 hour" },
+  { label: "1 day", value: "1 day" },
+  { label: "2 days", value: "2 days" },
+  { label: "1 week", value: "1 week" },
+  { label: "Custom", value: "custom" },
+];
 
 interface TaskWithChildren extends Task {
   subtasks: Task[];
@@ -79,8 +91,12 @@ export default function TasksPage() {
   const [showForm, setShowForm] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [editForm, setEditForm] = useState({ title: "", description: "", priority: "medium", due_date: "", parent_id: "" });
-  const [newTask, setNewTask] = useState({ title: "", description: "", priority: "medium", due_date: "", parent_id: "" });
+  const [editForm, setEditForm] = useState({ title: "", description: "", priority: "medium", due_date: "", parent_id: "", reminder_before: "" });
+  const [newTask, setNewTask] = useState({ title: "", description: "", priority: "medium", due_date: "", parent_id: "", reminder_before: "" });
+  const [newCustomReminderNum, setNewCustomReminderNum] = useState(1);
+  const [newCustomReminderUnit, setNewCustomReminderUnit] = useState("days");
+  const [editCustomReminderNum, setEditCustomReminderNum] = useState(1);
+  const [editCustomReminderUnit, setEditCustomReminderUnit] = useState("days");
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -138,6 +154,12 @@ export default function TasksPage() {
   const activeTasks = tasks.filter((t) => t.status !== "done");
   const doneTasks = tasks.filter((t) => t.status === "done");
 
+  const resolveReminderBefore = (value: string, customNum: number, customUnit: string): string | null => {
+    if (!value) return null;
+    if (value === "custom") return `${customNum} ${customUnit}`;
+    return value;
+  };
+
   const addTask = async () => {
     if (!newTask.title.trim() || !userId) return;
     const payload = {
@@ -145,12 +167,13 @@ export default function TasksPage() {
       description: newTask.description || "",
       priority: newTask.priority,
       due_date: newTask.due_date || null,
+      reminder_before: resolveReminderBefore(newTask.reminder_before, newCustomReminderNum, newCustomReminderUnit),
       parent_id: newTask.parent_id ? parseInt(newTask.parent_id) : null,
       user_id: userId,
     };
     const { error } = await supabase.from("tasks").insert(payload);
     if (error) await queueWrite("tasks", "insert", payload);
-    setNewTask({ title: "", description: "", priority: "medium", due_date: "", parent_id: "" });
+    setNewTask({ title: "", description: "", priority: "medium", due_date: "", parent_id: "", reminder_before: "" });
     setShowForm(false);
     fetchTasks();
   };
@@ -170,6 +193,7 @@ export default function TasksPage() {
       description: editForm.description || "",
       priority: editForm.priority,
       due_date: editForm.due_date || null,
+      reminder_before: resolveReminderBefore(editForm.reminder_before, editCustomReminderNum, editCustomReminderUnit),
       parent_id: editForm.parent_id ? parseInt(editForm.parent_id) : null,
     };
     const { error } = await supabase.from("tasks").update(updates).eq("id", editingId);
@@ -180,11 +204,27 @@ export default function TasksPage() {
 
   const startEditing = (task: Task) => {
     setEditingId(task.id);
+    // Check if the existing reminder_before matches a preset option
+    const presetMatch = REMINDER_OPTIONS.find((o) => o.value === task.reminder_before);
+    const reminderValue = task.reminder_before
+      ? presetMatch
+        ? task.reminder_before
+        : "custom"
+      : "";
+    if (!presetMatch && task.reminder_before) {
+      // Parse custom value: e.g. "3 days"
+      const parts = task.reminder_before.split(" ");
+      if (parts.length === 2) {
+        setEditCustomReminderNum(parseInt(parts[0]) || 1);
+        setEditCustomReminderUnit(parts[1]);
+      }
+    }
     setEditForm({
       title: task.title,
       description: task.description || "",
       priority: task.priority,
       due_date: task.due_date || "",
+      reminder_before: reminderValue,
       parent_id: task.parent_id ? String(task.parent_id) : "",
     });
   };
@@ -239,6 +279,41 @@ export default function TasksPage() {
                 onChange={(e) => setEditForm({ ...editForm, due_date: e.target.value })}
                 className={selectClass}
               />
+              {editForm.due_date && (
+                <>
+                  <select
+                    value={editForm.reminder_before}
+                    onChange={(e) => setEditForm({ ...editForm, reminder_before: e.target.value })}
+                    className={selectClass}
+                    title="Remind me"
+                  >
+                    {REMINDER_OPTIONS.map((o) => (
+                      <option key={o.value} value={o.value}>{o.label}</option>
+                    ))}
+                  </select>
+                  {editForm.reminder_before === "custom" && (
+                    <>
+                      <input
+                        type="number"
+                        min={1}
+                        value={editCustomReminderNum}
+                        onChange={(e) => setEditCustomReminderNum(parseInt(e.target.value) || 1)}
+                        className="w-16 bg-desert-bg border border-desert-border-strong rounded-sm px-2 py-1.5 font-mono text-sm text-desert-text focus:outline-none focus:border-desert-accent"
+                      />
+                      <select
+                        value={editCustomReminderUnit}
+                        onChange={(e) => setEditCustomReminderUnit(e.target.value)}
+                        className={selectClass}
+                      >
+                        <option value="minutes">min</option>
+                        <option value="hours">hours</option>
+                        <option value="days">days</option>
+                        <option value="weeks">weeks</option>
+                      </select>
+                    </>
+                  )}
+                </>
+              )}
               <select
                 value={editForm.parent_id}
                 onChange={(e) => setEditForm({ ...editForm, parent_id: e.target.value })}
@@ -441,6 +516,41 @@ export default function TasksPage() {
                 onChange={(e) => setNewTask({ ...newTask, due_date: e.target.value })}
                 className={selectClass}
               />
+              {newTask.due_date && (
+                <>
+                  <select
+                    value={newTask.reminder_before}
+                    onChange={(e) => setNewTask({ ...newTask, reminder_before: e.target.value })}
+                    className={selectClass}
+                    title="Remind me"
+                  >
+                    {REMINDER_OPTIONS.map((o) => (
+                      <option key={o.value} value={o.value}>{o.label}</option>
+                    ))}
+                  </select>
+                  {newTask.reminder_before === "custom" && (
+                    <>
+                      <input
+                        type="number"
+                        min={1}
+                        value={newCustomReminderNum}
+                        onChange={(e) => setNewCustomReminderNum(parseInt(e.target.value) || 1)}
+                        className="w-16 bg-desert-bg border border-desert-border-strong rounded-sm px-2 py-1.5 font-mono text-sm text-desert-text focus:outline-none focus:border-desert-accent"
+                      />
+                      <select
+                        value={newCustomReminderUnit}
+                        onChange={(e) => setNewCustomReminderUnit(e.target.value)}
+                        className={selectClass}
+                      >
+                        <option value="minutes">min</option>
+                        <option value="hours">hours</option>
+                        <option value="days">days</option>
+                        <option value="weeks">weeks</option>
+                      </select>
+                    </>
+                  )}
+                </>
+              )}
               <select
                 value={newTask.parent_id}
                 onChange={(e) => setNewTask({ ...newTask, parent_id: e.target.value })}
