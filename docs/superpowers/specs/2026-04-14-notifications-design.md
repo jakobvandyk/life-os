@@ -267,12 +267,30 @@ self.addEventListener("notificationclick", (event) => {
 - Uses service-role Supabase client (no user session, bot messages are external)
 - Habit fuzzy matching: case-insensitive substring match on `habits.name`. If exactly one match, execute. If multiple, reply with numbered list. If none, reply "No habit found matching '<input>'".
 
+**Callback queries (inline keyboard button presses):**
+- Telegram sends a `callback_query` instead of a `message` when a user taps an inline button
+- The webhook checks for `update.callback_query` before `update.message`
+- Callback data format: `habit_done:<habit_id>` — parse the action and ID
+- On `habit_done:<id>`: log the habit for today, answer the callback query with confirmation, update the message to show the habit as completed (strike through or checkmark)
+- Use `answerCallbackQuery` to dismiss the loading spinner on the button
+- Use `editMessageText` or `editMessageReplyMarkup` to update the original message (remove the completed habit button, or mark it with a checkmark)
+
 **Sending notifications:**
 ```
 POST https://api.telegram.org/bot<TOKEN>/sendMessage
-{ "chat_id": "<chat_id>", "text": "<markdown>", "parse_mode": "Markdown" }
+{
+  "chat_id": "<chat_id>",
+  "text": "<markdown>",
+  "parse_mode": "Markdown",
+  "reply_markup": { "inline_keyboard": [[...buttons]] }  // optional, for habit reminders/summaries
+}
 ```
 The Telegram API returns `result.message_id` — save this to `notifications.telegram_message_id` so `/snooze` replies can be matched back to the notification.
+
+**Inline keyboards are attached to these notification types:**
+- `habit_reminder` — one button per incomplete habit: `[{ "text": "✓ Meditate", "callback_data": "habit_done:42" }]`. Habits shown in a single column (one per row).
+- `daily_summary` — same incomplete habit buttons appended below the summary text.
+- Other notification types: no inline keyboard, text only.
 
 **Disconnecting:** "Disconnect" button clears `telegram_chat_id`. Optional: send a goodbye message to the chat before clearing.
 
@@ -387,5 +405,5 @@ Not in this section. Per-task `reminder_before` dropdown on the task create/edit
 - Supabase Realtime for in-app notifications — polling is sufficient for v1
 - Notification preferences sync to offline/local-db — settings are online-only
 - Email notifications — not needed for single-user PWA
-- Extended Telegram interactions beyond /done, /mood, /energy, /snooze (e.g., creating tasks, updating goals)
-- Telegram inline keyboards / callback queries — text commands are sufficient for v1
+- Extended Telegram text commands beyond /done, /mood, /energy, /snooze (e.g., creating tasks, updating goals — better done in the app UI)
+- Telegram inline keyboards beyond habit completion (e.g., task actions, goal updates)
