@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import PixelIcon from "@/components/PixelIcon";
 import SignOutButton from "@/components/SignOutButton";
+import { parseAppleHealthExport } from "@/lib/apple-health-parser";
 
 interface ExchangeRate {
   id: number;
@@ -33,6 +34,8 @@ export default function SettingsPage() {
   const [exporting, setExporting] = useState<string | null>(null);
   const cronometerRef = useRef<HTMLInputElement>(null);
   const ofxRef = useRef<HTMLInputElement>(null);
+  const healthXmlRef = useRef<HTMLInputElement>(null);
+  const [healthImportProgress, setHealthImportProgress] = useState<string | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -131,6 +134,42 @@ export default function SettingsPage() {
     setSyncing(null);
   };
 
+  const importHealthXml = async (file: File) => {
+    setSyncing("HealthImport");
+    setUploadResult(null);
+    setHealthImportProgress("Parsing XML...");
+    try {
+      const records = await parseAppleHealthExport(file, (read, total) => {
+        const pct = Math.round((read / total) * 100);
+        setHealthImportProgress(`Parsing XML... ${pct}%`);
+      });
+      setHealthImportProgress(`Uploading ${records.length} days...`);
+
+      const BATCH = 200;
+      let totalImported = 0;
+      let totalSkipped = 0;
+      for (let i = 0; i < records.length; i += BATCH) {
+        const batch = records.slice(i, i + BATCH);
+        const res = await fetch("/api/import/apple-health", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(batch),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Upload failed");
+        totalImported += data.imported;
+        totalSkipped += data.skipped;
+        setHealthImportProgress(`Uploading... ${Math.min(i + BATCH, records.length)}/${records.length} days`);
+      }
+
+      setUploadResult(`Apple Health: ${totalImported} days imported, ${totalSkipped} skipped (${records.length} total days parsed)`);
+    } catch (e) {
+      setUploadResult(`Apple Health: ${e instanceof Error ? e.message : "Import failed"}`);
+    }
+    setHealthImportProgress(null);
+    setSyncing(null);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen p-6 relative z-10">
@@ -205,6 +244,40 @@ export default function SettingsPage() {
                 <span className="text-desert-text-3 font-mono text-[10px]">
                   {formatSyncTime(getLastSync("apple_health"))}
                 </span>
+              </div>
+            </div>
+
+            {/* Apple Health Import */}
+            <div className="bg-desert-surface border border-desert-border rounded-sm p-4 hover:border-desert-border-strong transition-colors duration-150">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="w-8 text-center flex items-center justify-center"><PixelIcon name="int_health" size={20} className="text-desert-danger" /></span>
+                  <div>
+                    <p className="text-desert-text font-mono text-sm font-medium">Apple Health Import</p>
+                    <p className="text-desert-text-3 text-xs">
+                      {healthImportProgress || "Upload export.xml — historical backfill"}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    ref={healthXmlRef}
+                    type="file"
+                    accept=".xml"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) importHealthXml(file);
+                    }}
+                  />
+                  <button
+                    onClick={() => healthXmlRef.current?.click()}
+                    disabled={syncing === "HealthImport"}
+                    className="px-3 py-1.5 bg-desert-accent text-desert-bg font-mono font-semibold uppercase tracking-wider text-[10px] rounded-sm hover:bg-desert-accent-glow transition-colors duration-150 disabled:opacity-50"
+                  >
+                    {syncing === "HealthImport" ? "Importing..." : "Upload XML"}
+                  </button>
+                </div>
               </div>
             </div>
 
