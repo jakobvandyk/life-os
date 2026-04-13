@@ -104,7 +104,7 @@ src/app/
     ├── sync/ical/route.ts
     ├── sync/kubios/route.ts (scaffold, not active)
     └── export/analysis/route.ts
-src/proxy.ts (auth proxy — Next.js 16, excludes /api/ routes)
+src/proxy.ts (auth proxy — Next.js 16, excludes /api/, /manifest.json, /sw.js)
 src/components/ (Sidebar, SignOutButton, SyncStatus, ServiceWorkerRegistrar, PixelIcon, PixelBackground, Sparkline, Markdown)
 src/hooks/ (useOnlineStatus.ts)
 src/lib/ (supabase.ts, supabase-server.ts, supabase-service.ts, local-db.ts, sync.ts)
@@ -191,6 +191,7 @@ integration_syncs, raw_imports, nutrition_daily
 ## Auth / Routing
 - Auth handled by src/proxy.ts (Next.js 16 uses proxy.ts, NOT middleware.ts)
 - /api/* routes are excluded from auth redirect (webhooks/crons handle their own auth)
+- /manifest.json, /sw.js excluded from auth redirect (PWA assets must not return HTML)
 - /login, static files, PWA assets also excluded
 - All other routes redirect to /login if no session
 
@@ -199,8 +200,10 @@ integration_syncs, raw_imports, nutrition_daily
 - Manifest: public/manifest.json
 - Dexie.js local DB: src/lib/local-db.ts (mirrors tasks, habits, journal, goals, workouts)
 - Sync queue: src/lib/sync.ts (queueWrite, processSyncQueue, seedLocalCache)
+- Replay uses upsert for tables with unique constraints (UPSERT_TABLES map in sync.ts)
+- Auto-retry: useOnlineStatus replays pending items every 30s when online (not just on offline→online)
 - useOnlineStatus hook: src/hooks/useOnlineStatus.ts
-- SyncStatus component in sidebar (green/amber/red dot)
+- SyncStatus component in sidebar (green/amber/red dot, clickable with Retry/Clear when pending/error)
 - All 25 write operations across 13 files have offline fallbacks wired
 
 ## AI Chat System Prompt
@@ -267,6 +270,16 @@ Recent additions (2026-04-12):
 - Data strategy docs: DATA-STRATEGY.md (workflow, iOS Shortcut spec), DATA-INVENTORY.md (rewritten)
 - Press Start 2P font fix (CSS variable resolution)
 - Export route includes nutrition_daily
+
+Recent additions (2026-04-13):
+- Icon clarity revamp: tasks (clipboard), review (cycle arrows), settings (wrench), unclear habit icons redrawn bolder
+- Sync queue fix: replay uses upsert for tables with unique constraints (was failing on duplicate kb_tags)
+- Auto-retry pending sync items every 30s when online (was only on offline→online transition)
+- SyncStatus clickable with Retry/Clear buttons for stuck queue items
+- Sign out button moved from sidebar to Settings page (Account section)
+- KB pin icon: 📌 emoji → kb_pinned PixelIcon
+- Manifest/SW console errors fixed: proxy.ts skips /manifest.json and /sw.js
+- Historical emoji habits migrated to pixel icon names in DB
 
 Next: Cronometer auto-import via Apple Health (eliminates CSV), goal auto-progress, review snapshots.
 
