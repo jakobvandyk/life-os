@@ -311,26 +311,40 @@ Body: {JSON payload above}
     → Calculate Statistics: Sum
     → Round to integer → Set variable "mindfulness_minutes"
 
+--- Manual Inputs (optional) ---
+
+13. [Ask for Input]
+    Prompt: "Garmin Recovery % (or skip)"
+    Input Type: Number
+    Default: (empty)
+    → If has value: Calculate (value ÷ 10) → Round to 1 decimal → Set variable "readiness"
+
+14. [Ask for Input]
+    Prompt: "Shin pain 0-10 (or skip)"
+    Input Type: Number
+    Default: (empty)
+    → If has value: Set variable "shin_pain"
+
 --- Build JSON ---
 
-13. [Dictionary]
+15. [Dictionary]
     Add key "date" → value: today
     For each variable (hrv, resting_hr, vo2_max, steps, active_calories,
-    sleep_hours, weight, body_fat_pct, mindfulness_minutes):
+    sleep_hours, weight, body_fat_pct, mindfulness_minutes, readiness, shin_pain):
       → If variable has value: add key → value
       → If variable is empty: skip (do NOT add null)
 
 --- Send Request ---
 
-14. [Get Contents of URL]
+16. [Get Contents of URL]
     URL: baseURL
     Method: POST
     Headers:
       Content-Type: application/json
       x-api-key: apiKey
-    Request Body: JSON (the dictionary from step 13)
+    Request Body: JSON (the dictionary from step 15)
 
-15. [If] response contains "ok"
+17. [If] response contains "ok"
       → [Show Notification] "Life OS synced ✓" (optional)
     [Otherwise]
       → [Show Notification] "Life OS sync failed" (optional)
@@ -340,7 +354,8 @@ Body: {JSON payload above}
 
 - **Sleep window**: Query sleep from yesterday 6pm to today 12pm to capture overnight sleep. Apple Watch records sleep in segments; summing the duration gives total hours.
 - **Body fat**: Some scales store body fat as a decimal (0.185 = 18.5%). Check your scale's format — multiply by 100 if needed before sending.
-- **Readiness and shin_pain**: These are subjective. You can add an [Ask for Input] step at the end of the Shortcut to prompt yourself, or skip them and enter manually in DailyCheckin.
+- **Readiness (Garmin Recovery)**: Garmin Recovery/Body Battery doesn't sync to Apple Health — it's proprietary. The Shortcut prompts for it manually. Divide by 10 to map Garmin's 0-100% to the 0-10 readiness scale (e.g., 75% → 7.5). Skip the prompt on days you don't check Garmin.
+- **Shin pain**: Subjective 0-10 scale. Prompted in the Shortcut, skip if no pain. Can also enter manually in DailyCheckin.
 - **Error handling**: The webhook returns `{ ok: true, imported: [...] }` on success. If the Shortcut gets a non-200 response, it's usually an auth issue (wrong API key) or the server is cold-starting (retry once).
 - **Garmin data availability**: Steps, resting HR, and VO2 max from Garmin take time to sync to Apple Health. Running the Shortcut at 6:30am+ ensures overnight Garmin → AH sync has completed.
 
