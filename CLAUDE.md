@@ -322,7 +322,16 @@ Recent additions (2026-04-14):
 - Notification cron (every 15min): timed reminders, data-driven alerts, daily summary, snooze re-firing
 - Task reminder_before: per-task pre-due-date reminders with custom interval support
 
-Next: Goal auto-progress, review snapshots.
+Recent additions (2026-04-15):
+- Workout history edit/delete: hover to reveal edit/del buttons, inline editing for weight/sets/reps/RPE/notes, delete with confirmation
+- Daily checkin bug fix: upsert was overwriting webhook data (steps, active_calories, resting_hr, vo2_max, sleep_score) with nulls. Now uses selective save (check-then-update) to preserve webhook-sourced values
+- Training log import: 25 historical workout sessions imported from JSON (Nov 2025 - Jan 2026)
+- Kubios HRV data: 11 days of Kubios screenshots (Apr 4-14) OCR'd and written to workout_checkins (rmssd, pns_index, sns_index, stress_index, kubios_readiness, mean_hr)
+- Elite HRV data: 9 days of raw RR interval files (Mar 26 - Apr 3) processed → RMSSD, SDNN, mean HR computed and written
+- Cross-cutting insights report generated from full database audit, saved to KB (note id 11, tagged claude-analysis)
+- TODO-export.md: documents missing tables in the export route (finance, KB, chat, calendar, all task statuses)
+
+Next: Finance module data entry, goal auto-progress, review snapshots.
 
 ## graphify
 
