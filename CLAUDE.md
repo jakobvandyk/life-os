@@ -101,6 +101,7 @@ src/app/
     ├── import/cronometer/route.ts
     ├── import/apple-health/route.ts
     ├── import/ofx/route.ts
+    ├── sync/akahu/route.ts
     ├── sync/binance/route.ts
     ├── sync/ical/route.ts
     ├── sync/kubios/route.ts (scaffold, not active)
@@ -166,7 +167,7 @@ notification_preferences, notification_rules, notifications, telegram_pairing_co
 - AI Chat (5 capabilities, context builders, session history, save-to-KB)
 - Settings (profile, live integration controls, exchange rates, sync logs)
 - Desert Mystic design system (D1-D6 applied)
-- Integrations (Apple Health webhook, Cronometer CSV, myBOQ OFX, Binance API, iCal feed)
+- Integrations (Apple Health webhook, Cronometer CSV, myBOQ OFX, Binance API, Akahu NZ banking, iCal feed)
 - PWA + offline sync (Dexie.js, service worker, SyncStatus, queueWrite on all 25 write ops)
 
 ## Integrations (Phase 6)
@@ -197,6 +198,12 @@ notification_preferences, notification_rules, notifications, telegram_pairing_co
   - Pairing flow via /pair <code>, commands: /done, /mood, /energy, /snooze, /help
   - Inline keyboards on habit reminders and daily summaries for one-tap habit completion
   - Callback queries update button state after habit logged
+- Akahu: GET /api/sync/akahu (CRON_SECRET or session auth, daily 8am via vercel.json, env: AKAHU_USER_TOKEN, AKAHU_APP_TOKEN)
+  - Syncs NZ bank accounts (balances) and transactions from Akahu personal app
+  - Account find-or-create by institution + name; maps Akahu types to finance schema
+  - Transactions deduped by external_id (Akahu transaction _id), paginated with cursor
+  - First sync fetches 90 days back; subsequent syncs from last successful sync time
+  - Category enrichment from Akahu's NZFCC classification or merchant name
 - Notification Cron: GET /api/cron/notifications (every 15min via vercel.json, CRON_SECRET auth)
   - Evaluates timed + data-driven rules, dispatches to push/telegram/inapp
   - Respects timezone, quiet hours, deduplication, snooze re-firing
@@ -216,6 +223,8 @@ notification_preferences, notification_rules, notifications, telegram_pairing_co
 - NEXT_PUBLIC_VAPID_PUBLIC_KEY — public VAPID key (client-side, for push subscription)
 - TELEGRAM_BOT_TOKEN — Telegram bot API token
 - TELEGRAM_WEBHOOK_SECRET — secret for verifying Telegram webhook requests
+- AKAHU_USER_TOKEN — Akahu personal app user access token (NZ banking)
+- AKAHU_APP_TOKEN — Akahu personal app ID token
 # Future (Kubios sync, requires paid cloud): KUBIOS_CLIENT_ID, KUBIOS_CLIENT_SECRET, KUBIOS_ACCESS_TOKEN
 
 ## Auth / Routing
