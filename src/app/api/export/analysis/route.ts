@@ -28,11 +28,22 @@ export async function GET(request: NextRequest) {
     { data: sessions },
     { data: journalEntries },
     { data: habitLogs },
-    { data: completedTasks },
+    { data: tasks },
     { data: weeklyReviews },
     { data: habits },
     { data: goals },
     { data: nutrition },
+    { data: financeAccounts },
+    { data: financeIncome },
+    { data: financeExpenses },
+    { data: financeLiabilities },
+    { data: financeTransactions },
+    { data: financeTaxFlags },
+    { data: calendarEvents },
+    { data: kbNotes },
+    { data: kbTags },
+    { data: kbNoteTags },
+    { data: chatSessions },
   ] = await Promise.all([
     supabase
       .from("workout_checkins")
@@ -61,10 +72,7 @@ export async function GET(request: NextRequest) {
     supabase
       .from("tasks")
       .select("*")
-      .eq("user_id", userId)
-      .eq("status", "done")
-      .gte("completed_at", from)
-      .lte("completed_at", to + "T23:59:59"),
+      .eq("user_id", userId),
     supabase
       .from("weekly_reviews")
       .select("*")
@@ -87,6 +95,54 @@ export async function GET(request: NextRequest) {
       .eq("user_id", userId)
       .gte("date", from)
       .lte("date", to),
+    supabase
+      .from("finance_accounts")
+      .select("*")
+      .eq("user_id", userId),
+    supabase
+      .from("finance_income")
+      .select("*")
+      .eq("user_id", userId),
+    supabase
+      .from("finance_expenses")
+      .select("*")
+      .eq("user_id", userId),
+    supabase
+      .from("finance_liabilities")
+      .select("*")
+      .eq("user_id", userId),
+    supabase
+      .from("finance_transactions")
+      .select("*")
+      .eq("user_id", userId)
+      .gte("date", from)
+      .lte("date", to),
+    supabase
+      .from("finance_tax_flags")
+      .select("*")
+      .eq("user_id", userId)
+      .gte("created_at", from),
+    supabase
+      .from("calendar_events")
+      .select("*")
+      .eq("user_id", userId)
+      .gte("start_date", from),
+    supabase
+      .from("kb_notes")
+      .select("*")
+      .eq("user_id", userId),
+    supabase
+      .from("kb_tags")
+      .select("*")
+      .eq("user_id", userId),
+    supabase
+      .from("kb_note_tags")
+      .select("*"),
+    supabase
+      .from("chat_sessions")
+      .select("*")
+      .eq("user_id", userId)
+      .gte("created_at", from),
   ]);
 
   // Fetch workout exercises by session IDs
@@ -111,6 +167,17 @@ export async function GET(request: NextRequest) {
     keyResults = krData || [];
   }
 
+  // Fetch chat messages by session IDs
+  const chatSessionIds = (chatSessions || []).map((s) => s.id);
+  let chatMessages: Record<string, unknown>[] = [];
+  if (chatSessionIds.length > 0) {
+    const { data: msgData } = await supabase
+      .from("chat_messages")
+      .select("*")
+      .in("session_id", chatSessionIds);
+    chatMessages = msgData || [];
+  }
+
   // Strip user_id from all records
   const strip = <T extends Record<string, unknown>>(records: T[]) =>
     records.map(({ user_id: _uid, ...rest }) => rest);
@@ -127,8 +194,20 @@ export async function GET(request: NextRequest) {
     goals: strip(goals || []),
     key_results: strip(keyResults),
     nutrition: strip(nutrition || []),
-    tasks_completed: strip(completedTasks || []),
+    tasks: strip(tasks || []),
     weekly_reviews: strip(weeklyReviews || []),
+    finance_accounts: strip(financeAccounts || []),
+    finance_income: strip(financeIncome || []),
+    finance_expenses: strip(financeExpenses || []),
+    finance_liabilities: strip(financeLiabilities || []),
+    finance_transactions: strip(financeTransactions || []),
+    finance_tax_flags: strip(financeTaxFlags || []),
+    calendar_events: strip(calendarEvents || []),
+    kb_notes: strip(kbNotes || []),
+    kb_tags: strip(kbTags || []),
+    kb_note_tags: kbNoteTags || [],
+    chat_sessions: strip(chatSessions || []),
+    chat_messages: strip(chatMessages || []),
   };
 
   const filename = `life-os-export-${to}.json`;

@@ -189,7 +189,7 @@ notification_preferences, notification_rules, notifications, telegram_pairing_co
 - myBOQ: POST /api/import/ofx (OFX upload, session auth)
 - Binance: GET /api/sync/binance (HMAC-SHA256, env: BINANCE_API_KEY, BINANCE_SECRET, CRON_SECRET, daily 8am via vercel.json)
 - iCal: GET /api/sync/ical (env: ICAL_URL_1..ICAL_URL_10)
-- Data Export: GET /api/export/analysis?days=14 (session auth, max 90). Full JSON bundle for offline AI analysis. Download buttons on dashboard + review page.
+- Data Export: GET /api/export/analysis?days=14 (session auth, max 9999). Full JSON bundle for offline AI analysis. Download buttons on dashboard + review page. Exports all data: checkins, sessions, exercises, journal, habits, habit_logs, goals, key_results, nutrition, tasks (all statuses), weekly_reviews, finance (accounts/income/expenses/liabilities/transactions/tax_flags), calendar_events, kb_notes/tags, chat_sessions/messages.
 - Insight Import: Knowledge Base "Import Insight" modal. Accepts .md/.txt or pasted markdown. Saves as kb_notes type: ai_response, auto-tagged: claude-analysis.
 - Analysis prompt template: public/analysis-prompt.md
 - Workflow: Export JSON → analyse in Claude (subscription) → save markdown → import insight to KB
@@ -329,7 +329,7 @@ Recent additions (2026-04-15):
 - Kubios HRV data: 11 days of Kubios screenshots (Apr 4-14) OCR'd and written to workout_checkins (rmssd, pns_index, sns_index, stress_index, kubios_readiness, mean_hr)
 - Elite HRV data: 9 days of raw RR interval files (Mar 26 - Apr 3) processed → RMSSD, SDNN, mean HR computed and written
 - Cross-cutting insights report generated from full database audit, saved to KB (note id 11, tagged claude-analysis)
-- TODO-export.md: documents missing tables in the export route (finance, KB, chat, calendar, all task statuses)
+- Export route expanded: now exports all 22 tables (was 11) — added finance, KB, chat, calendar, all task statuses
 
 Next: Finance module data entry, goal auto-progress, review snapshots.
 
