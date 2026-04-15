@@ -213,6 +213,9 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
     }
   }, [todayCheckin]);
 
+  // Build payload with only form-managed fields — never sends fields the
+  // form doesn't control (steps, active_calories, resting_hr, vo2_max,
+  // sleep_score) so webhook-sourced values aren't overwritten with null.
   const buildPayload = (dateStr: string) => ({
     user_id: userId,
     date: dateStr,
@@ -232,25 +235,49 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
     tags: tags ? tags.split(",").map(t => t.trim()).filter(Boolean) : null,
   });
 
+  // Selective save: update only form-managed fields if row exists,
+  // insert full payload if it doesn't. Prevents overwriting webhook data.
+  const selectiveSave = async (dateStr: string) => {
+    const payload = buildPayload(dateStr);
+
+    const { data: existing } = await supabase
+      .from("workout_checkins")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("date", dateStr)
+      .maybeSingle();
+
+    if (existing) {
+      // Update only — omit user_id and date (they're the key)
+      const { user_id: _u, date: _d, ...updateFields } = payload;
+      const { error: updateError } = await supabase
+        .from("workout_checkins")
+        .update(updateFields)
+        .eq("id", existing.id);
+
+      if (updateError) {
+        console.error("Checkin update failed, queueing offline:", updateError);
+        await queueWrite("workout_checkins", "update", { id: existing.id, ...updateFields });
+      }
+    } else {
+      const { error: insertError } = await supabase
+        .from("workout_checkins")
+        .insert(payload);
+
+      if (insertError) {
+        console.error("Checkin insert failed, queueing offline:", insertError);
+        await queueWrite("workout_checkins", "insert", payload);
+      }
+    }
+  };
+
   const handleSave = async () => {
     if (!userId) return;
     setLoading(true);
     setError(null);
 
     try {
-      const payload = buildPayload(todayStr);
-
-      // Bug fix: renamed to avoid shadowing the state `error` variable,
-      // and added explicit error logging so save failures are visible.
-      const { error: upsertError } = await supabase
-        .from("workout_checkins")
-        .upsert(payload, { onConflict: "user_id,date" });
-
-      if (upsertError) {
-        console.error("Checkin upsert failed, queueing offline:", upsertError);
-        await queueWrite("workout_checkins", "insert", payload);
-      }
-
+      await selectiveSave(todayStr);
       onRefetch();
       if (!todayCheckin) {
         resetForm();
@@ -287,16 +314,7 @@ export default function DailyCheckin({ userId, checkins, onRefetch }: DailyCheck
     setError(null);
 
     try {
-      const payload = buildPayload(pastDate);
-
-      const { error: upsertError } = await supabase
-        .from("workout_checkins")
-        .upsert(payload, { onConflict: "user_id,date" });
-
-      if (upsertError) {
-        console.error("Checkin modal upsert failed, queueing offline:", upsertError);
-        await queueWrite("workout_checkins", "insert", payload);
-      }
+      await selectiveSave(pastDate);
 
       closeModal();
       onRefetch();
