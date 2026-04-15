@@ -65,7 +65,7 @@ const FREQUENCY_TO_MONTHLY_FACTOR: Record<string, number> = {
 
 const convertCurrency = (amount: number, currency: string, rates: ExchangeRate[]) => {
   if (currency === "NZD") return amount;
-  const rate = rates.find(r => r.pair === `NZD/${currency}`)?.rate;
+  const rate = rates.find(r => r.pair === `NZD${currency}`)?.rate;
   if (rate) return amount / rate; // Convert to NZD
   return amount; // Fallback
 };
@@ -137,7 +137,7 @@ export default function FinancesPage() {
 
   const convertCurrency = (amount: number, currency: string, rates: ExchangeRate[]) => {
     if (currency === "NZD") return amount;
-    const rate = rates.find(r => r.pair === `NZD/${currency}`)?.rate;
+    const rate = rates.find(r => r.pair === `NZD${currency}`)?.rate;
     if (rate) return amount / rate; // Convert to NZD
     return amount; // Fallback
   };
