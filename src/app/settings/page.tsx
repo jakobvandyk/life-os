@@ -417,13 +417,13 @@ export default function SettingsPage() {
                 <div className="flex items-center gap-3">
                   <span className="w-8 text-center flex items-center justify-center"><PixelIcon name="int_bank" size={20} className="text-desert-celestial" /></span>
                   <div>
-                    <p className="text-desert-text font-mono text-sm font-medium">myBOQ</p>
-                    <p className="text-desert-text-3 text-xs">Upload OFX bank export</p>
+                    <p className="text-desert-text font-mono text-sm font-medium">Bank OFX</p>
+                    <p className="text-desert-text-3 text-xs">Upload OFX/QFX from any bank</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-desert-text-3 font-mono text-[10px]">
-                    {formatSyncTime(getLastSync("boq_ofx"))}
+                    {formatSyncTime(syncLogs.find(l => l.source.endsWith("_ofx")))}
                   </span>
                   <input
                     ref={ofxRef}
@@ -432,15 +432,15 @@ export default function SettingsPage() {
                     className="hidden"
                     onChange={(e) => {
                       const file = e.target.files?.[0];
-                      if (file) uploadFile("myBOQ", "/api/import/ofx", file);
+                      if (file) uploadFile("OFX", "/api/import/ofx", file);
                     }}
                   />
                   <button
                     onClick={() => ofxRef.current?.click()}
-                    disabled={syncing === "myBOQ"}
+                    disabled={syncing === "OFX"}
                     className="px-3 py-1.5 bg-desert-accent text-desert-bg font-mono font-semibold uppercase tracking-wider text-[10px] rounded-sm hover:bg-desert-accent-glow transition-colors duration-150 disabled:opacity-50"
                   >
-                    {syncing === "myBOQ" ? "..." : "Upload OFX"}
+                    {syncing === "OFX" ? "..." : "Upload OFX"}
                   </button>
                 </div>
               </div>
