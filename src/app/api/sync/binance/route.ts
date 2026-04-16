@@ -2,7 +2,7 @@ import { getServiceClient } from "@/lib/supabase-service";
 import { createClient } from "@/lib/supabase-server";
 import { createHmac } from "crypto";
 
-export const config = { preferredRegion: "syd1" };
+export const preferredRegion = "sin1";
 
 async function getUserId(request: Request): Promise<string | null> {
   // Check for cron secret first
