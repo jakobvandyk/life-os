@@ -2,6 +2,6 @@
   "crons": [
     { "path": "/api/sync/binance", "schedule": "0 8 * * *" },
     { "path": "/api/sync/akahu", "schedule": "0 8 * * *" },
-    { "path": "/api/cron/notifications", "schedule": "*/15 * * * *" }
+    { "path": "/api/cron/notifications", "schedule": "0 7 * * *" }
   ]
 }
