@@ -58,6 +58,14 @@ export async function GET(request: Request) {
 
   const db = getServiceClient();
 
+  // Fetch current NZDAUD rate for transaction records
+  const { data: nzdaudRate } = await db
+    .from("finance_exchange_rates")
+    .select("rate")
+    .eq("pair", "NZDAUD")
+    .single();
+  const rateNzdaud = nzdaudRate?.rate || 0.83;
+
   // --- Sync accounts ---
   const accountsRes = await fetch(`${AKAHU_BASE}/accounts`, {
     headers: akahuHeaders(),
@@ -179,6 +187,7 @@ export async function GET(request: Request) {
           category,
           import_source: "akahu",
           external_id: tx._id,
+          rate_nzdaud: rateNzdaud,
         },
         { onConflict: "import_source,external_id" }
       );

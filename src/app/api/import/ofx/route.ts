@@ -138,6 +138,14 @@ export async function POST(request: Request) {
   let skipped = 0;
   let totalValue = 0;
 
+  // Fetch current NZDAUD rate for transaction records
+  const { data: nzdaudRate } = await supabase
+    .from("finance_exchange_rates")
+    .select("rate")
+    .eq("pair", "NZDAUD")
+    .single();
+  const rateNzdaud = nzdaudRate?.rate || 0.83;
+
   // Build rows for batch upsert
   const rows = [];
   for (const txn of transactions) {
@@ -169,6 +177,7 @@ export async function POST(request: Request) {
       type,
       import_source: importSource,
       external_id: externalId,
+      rate_nzdaud: rateNzdaud,
     });
 
     totalValue += Math.abs(amountCents);
