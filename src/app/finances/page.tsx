@@ -5,6 +5,7 @@ import MetricCards from "./components/MetricCards";
 import AccountsTab from "./components/AccountsTab";
 import CashflowTab from "./components/CashflowTab";
 import TaxFlagsTab from "./components/TaxFlagsTab";
+import TransactionsTab from "./components/TransactionsTab";
 import { supabase } from "@/lib/supabase";
 import PixelIcon from "@/components/PixelIcon";
 
@@ -28,6 +29,11 @@ interface Liability {
 interface TaxFlag {
   id: number; title: string; jurisdiction: string; priority: string; notes: string; user_id: string;
 }
+interface Transaction {
+  id: number; date: string; amount: number; currency: string;
+  description: string; type: string; category: string | null;
+  import_source: string; rate_nzdaud: number | null; user_id: string;
+}
 interface ExchangeRate {
   id: number; pair: string; rate: number;
 }
@@ -37,6 +43,7 @@ interface FinanceData {
   expenses: Expense[];
   liabilities: Liability[];
   taxFlags: TaxFlag[];
+  transactions: Transaction[];
   rates: ExchangeRate[];
   // snapshots: { date: string; net_worth_aud: number }[]; // Not used in current component
   metrics: Metrics;
@@ -122,7 +129,7 @@ const calculateMetrics = (accounts: Account[], income: Income[], expenses: Expen
   };
 };
 
-type Tab = "accounts" | "cashflow" | "tax";
+type Tab = "accounts" | "cashflow" | "tax" | "transactions";
 
 export default function FinancesPage() {
   const [data, setData] = useState<FinanceData | null>(null);
@@ -197,12 +204,13 @@ export default function FinancesPage() {
   const fetchData = async () => {
     if (!userId) return;
 
-    const [{ data: accountsData }, { data: incomeData }, { data: expensesData }, { data: liabilitiesData }, { data: taxFlagsData }, { data: ratesData }] = await Promise.all([
+    const [{ data: accountsData }, { data: incomeData }, { data: expensesData }, { data: liabilitiesData }, { data: taxFlagsData }, { data: transactionsData }, { data: ratesData }] = await Promise.all([
       supabase.from("finance_accounts").select("*").eq("user_id", userId),
       supabase.from("finance_income").select("*").eq("user_id", userId),
       supabase.from("finance_expenses").select("*").eq("user_id", userId),
       supabase.from("finance_liabilities").select("*").eq("user_id", userId),
       supabase.from("finance_tax_flags").select("*").eq("user_id", userId),
+      supabase.from("finance_transactions").select("*").eq("user_id", userId).order("date", { ascending: false }),
       supabase.from("finance_exchange_rates").select("*"),
     ]);
 
@@ -211,6 +219,7 @@ export default function FinancesPage() {
     const expenses = expensesData || [];
     const liabilities = liabilitiesData || [];
     const taxFlags = taxFlagsData || [];
+    const transactions = transactionsData || [];
     const rates = ratesData || [];
 
     const metrics = calculateMetrics(accounts, income, expenses, liabilities, rates);
@@ -221,6 +230,7 @@ export default function FinancesPage() {
       expenses,
       liabilities,
       taxFlags,
+      transactions,
       rates,
       metrics,
     });
@@ -259,6 +269,7 @@ export default function FinancesPage() {
           { key: "accounts", label: "Accounts" },
           { key: "cashflow", label: "Cashflow" },
           { key: "tax", label: "Tax & Flags" },
+          { key: "transactions", label: "Transactions" },
         ] as { key: Tab; label: string }[]).map((t) => (
           <button
             key={t.key}
@@ -297,6 +308,15 @@ export default function FinancesPage() {
 
       {tab === "tax" && (
         <TaxFlagsTab taxFlags={data.taxFlags} onRefresh={fetchData} userId={userId} />
+      )}
+
+      {tab === "transactions" && (
+        <TransactionsTab
+          transactions={data.transactions}
+          rates={data.rates}
+          userId={userId}
+          onRefresh={fetchData}
+        />
       )}
     </div>
   );
