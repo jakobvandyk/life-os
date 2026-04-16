@@ -41,6 +41,16 @@ export async function POST(request: Request) {
     return Response.json({ error: "No statement found in OFX file" }, { status: 400 });
   }
 
+  // Detect institution from OFX metadata
+  const bankId = stmtrs?.BANKACCTFROM?.BANKID || stmtrs?.CCACCTFROM?.ACCTID || "";
+  const org = ofx?.SIGNONMSGSRSV1?.SONRS?.FI?.ORG || "";
+  const importSource = org
+    ? `${org.toLowerCase().replace(/\s+/g, "_")}_ofx`
+    : "ofx";
+
+  // Detect currency from OFX or default to AUD
+  const currency = stmtrs?.CURDEF || "AUD";
+
   const tranList = stmtrs?.BANKTRANLIST?.STMTTRN || [];
   const transactions = Array.isArray(tranList) ? tranList : [tranList];
 
@@ -65,10 +75,10 @@ export async function POST(request: Request) {
         user_id: user.id,
         date: dateStr,
         amount: amountCents,
-        currency: "AUD",
+        currency,
         description: txn.NAME || txn.MEMO || "",
         type,
-        import_source: "boq_ofx",
+        import_source: importSource,
         external_id: txn.FITID,
       },
       { onConflict: "import_source,external_id" }
@@ -84,7 +94,7 @@ export async function POST(request: Request) {
 
   await supabase.from("integration_syncs").insert({
     user_id: user.id,
-    source: "boq_ofx",
+    source: importSource,
     status: "ok",
     records_imported: imported,
   });
