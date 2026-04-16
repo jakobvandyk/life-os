@@ -23,6 +23,55 @@ function sign(queryString: string): string {
     .digest("hex");
 }
 
+async function refreshExchangeRates(): Promise<{ usdToNzd: number }> {
+  const db = getServiceClient();
+  const now = new Date().toISOString();
+
+  try {
+    // frankfurter.app uses ECB rates, free, no key needed
+    const res = await fetch("https://api.frankfurter.dev/v1/latest?base=NZD&symbols=AUD,USD");
+    if (res.ok) {
+      const data = await res.json();
+      const nzdAud = data.rates.AUD; // 1 NZD = X AUD
+      const nzdUsd = data.rates.USD; // 1 NZD = X USD
+      const usdNzd = 1 / nzdUsd;    // 1 USD = X NZD
+
+      const pairs = [
+        { pair: "NZDAUD", rate: nzdAud, updated_at: now },
+        { pair: "NZDUSD", rate: nzdUsd, updated_at: now },
+        { pair: "USDNZD", rate: usdNzd, updated_at: now },
+      ];
+
+      for (const p of pairs) {
+        const { data: existing } = await db
+          .from("finance_exchange_rates")
+          .select("id")
+          .eq("pair", p.pair)
+          .single();
+
+        if (existing) {
+          await db.from("finance_exchange_rates").update({ rate: p.rate, updated_at: now }).eq("id", existing.id);
+        } else {
+          await db.from("finance_exchange_rates").insert(p);
+        }
+      }
+
+      return { usdToNzd: usdNzd };
+    }
+  } catch {
+    // Fall through to DB fallback
+  }
+
+  // Fallback: read existing rate from DB
+  const { data: usdRate } = await db
+    .from("finance_exchange_rates")
+    .select("rate")
+    .eq("pair", "USDNZD")
+    .single();
+
+  return { usdToNzd: usdRate?.rate || 1.6667 };
+}
+
 export async function GET(request: Request) {
   const userId = await getUserId(request);
   if (!userId) {
@@ -33,14 +82,8 @@ export async function GET(request: Request) {
     return Response.json({ error: "Binance credentials not configured" }, { status: 500 });
   }
 
-  // Get USDT→NZD rate
-  const { data: usdRate } = await getServiceClient()
-    .from("finance_exchange_rates")
-    .select("rate")
-    .eq("pair", "USDNZD")
-    .single();
-
-  const usdToNzd = usdRate?.rate || 1.6667;
+  // Refresh exchange rates from ECB (writes to DB for all components)
+  const { usdToNzd } = await refreshExchangeRates();
 
   // Fetch Binance account
   const timestamp = Date.now();
