@@ -429,10 +429,42 @@ export default function SettingsPage() {
                     ref={ofxRef}
                     type="file"
                     accept=".ofx,.qfx"
+                    multiple
                     className="hidden"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) uploadFile("OFX", "/api/import/ofx", file);
+                    onChange={async (e) => {
+                      const files = e.target.files;
+                      if (!files || files.length === 0) return;
+                      setSyncing("OFX");
+                      setUploadResult(null);
+                      let totalImported = 0;
+                      let totalSkipped = 0;
+                      let totalValue = 0;
+                      for (let i = 0; i < files.length; i++) {
+                        setUploadResult(`Importing file ${i + 1} of ${files.length}...`);
+                        const formData = new FormData();
+                        formData.append("file", files[i]);
+                        try {
+                          const res = await fetch("/api/import/ofx", { method: "POST", body: formData });
+                          const data = await res.json();
+                          if (res.ok) {
+                            totalImported += data.imported || 0;
+                            totalSkipped += data.skipped || 0;
+                            totalValue += parseFloat(data.total_value || "0");
+                          }
+                        } catch {}
+                      }
+                      setUploadResult(
+                        `OFX: ${totalImported} imported, ${totalSkipped} skipped, $${totalValue.toFixed(2)}`
+                      );
+                      setSyncing(null);
+                      // Refresh sync logs
+                      const { data: freshLogs } = await supabase
+                        .from("integration_syncs")
+                        .select("*")
+                        .order("synced_at", { ascending: false })
+                        .limit(20);
+                      if (freshLogs) setSyncLogs(freshLogs);
+                      if (ofxRef.current) ofxRef.current.value = "";
                     }}
                   />
                   <button
