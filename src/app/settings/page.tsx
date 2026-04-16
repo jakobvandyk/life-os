@@ -471,6 +471,31 @@ export default function SettingsPage() {
               </div>
             </div>
 
+            {/* Akahu */}
+            <div className="bg-desert-surface border border-desert-border rounded-sm p-4 hover:border-desert-border-strong transition-colors duration-150">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="w-8 text-center flex items-center justify-center"><PixelIcon name="int_bank" size={20} className="text-desert-success" /></span>
+                  <div>
+                    <p className="text-desert-text font-mono text-sm font-medium">Akahu</p>
+                    <p className="text-desert-text-3 text-xs">Sync NZ bank accounts &amp; transactions</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-desert-text-3 font-mono text-[10px]">
+                    {formatSyncTime(getLastSync("akahu"))}
+                  </span>
+                  <button
+                    onClick={() => triggerSync("Akahu", "/api/sync/akahu")}
+                    disabled={syncing === "Akahu"}
+                    className="px-3 py-1.5 bg-desert-accent text-desert-bg font-mono font-semibold uppercase tracking-wider text-[10px] rounded-sm hover:bg-desert-accent-glow transition-colors duration-150 disabled:opacity-50"
+                  >
+                    {syncing === "Akahu" ? "..." : "Sync Now"}
+                  </button>
+                </div>
+              </div>
+            </div>
+
             {/* iCal */}
             <div className="bg-desert-surface border border-desert-border rounded-sm p-4 hover:border-desert-border-strong transition-colors duration-150">
               <div className="flex items-center justify-between">
