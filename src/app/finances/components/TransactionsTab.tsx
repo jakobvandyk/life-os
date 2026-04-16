@@ -39,6 +39,8 @@ const CATEGORY_MAP: [string, string[]][] = [
   ["Health", ["MEDICAL", "PHARMACY", "CHEMIST", "DOCTOR", "DENTAL"]],
   ["Entertainment", ["HOYTS", "CINEMA", "TICKETEK", "EVENT"]],
   ["Fees & Interest", ["INTEREST CHARGES", "INTEREST CHARGE", "FEE", "LEVY"]],
+  ["Transfer", ["TRANSFER TO", "TRANSFER FROM", "COMMBANK APP", "PAYMENT RECEIVED"]],
+  ["Travel", ["AIRLINE", "AIRLINES", "HOSTEL", "BACKPACKER", "SAFETYWING", "TRAVEL INSURANCE", "AMTRAK", "FIORDLAND"]],
 ];
 
 function autoCategory(description: string): string {
