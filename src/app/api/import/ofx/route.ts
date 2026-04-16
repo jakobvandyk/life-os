@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase-server";
 import { createHash } from "crypto";
 
+export const maxDuration = 60;
+
 // ofx-js is CommonJS, import dynamically
 async function parseOFXv2(text: string) {
   const ofx = await import("ofx-js");
@@ -133,10 +135,11 @@ export async function POST(request: Request) {
     transactions = Array.isArray(tranList) ? tranList : [tranList];
   }
 
-  let imported = 0;
   let skipped = 0;
   let totalValue = 0;
 
+  // Build rows for batch upsert
+  const rows = [];
   for (const txn of transactions) {
     if (!txn || !txn.DTPOSTED || !txn.TRNAMT) {
       skipped++;
@@ -157,25 +160,31 @@ export async function POST(request: Request) {
         .digest("hex")
         .slice(0, 16);
 
-    const { error } = await supabase.from("finance_transactions").upsert(
-      {
-        user_id: user.id,
-        date: dateStr,
-        amount: amountCents,
-        currency,
-        description,
-        type,
-        import_source: importSource,
-        external_id: externalId,
-      },
-      { onConflict: "import_source,external_id" }
-    );
+    rows.push({
+      user_id: user.id,
+      date: dateStr,
+      amount: amountCents,
+      currency,
+      description,
+      type,
+      import_source: importSource,
+      external_id: externalId,
+    });
 
+    totalValue += Math.abs(amountCents);
+  }
+
+  // Batch upsert in chunks of 100
+  let imported = 0;
+  for (let i = 0; i < rows.length; i += 100) {
+    const batch = rows.slice(i, i + 100);
+    const { error } = await supabase
+      .from("finance_transactions")
+      .upsert(batch, { onConflict: "import_source,external_id" });
     if (error) {
-      skipped++;
+      skipped += batch.length;
     } else {
-      imported++;
-      totalValue += Math.abs(amountCents);
+      imported += batch.length;
     }
   }
 
