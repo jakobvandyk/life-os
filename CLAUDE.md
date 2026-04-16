@@ -340,7 +340,19 @@ Recent additions (2026-04-15):
 - Cross-cutting insights report generated from full database audit, saved to KB (note id 11, tagged claude-analysis)
 - Export route expanded: now exports all 22 tables (was 11) — added finance, KB, chat, calendar, all task statuses
 
-Next: Finance module data entry, goal auto-progress, review snapshots.
+Recent additions (2026-04-16):
+- Finance data populated: accounts, income, expenses, tax flags seeded from March 2026 snapshot
+- Akahu integration: GET /api/sync/akahu (NZ bank accounts + transactions, daily cron)
+- Akahu sync button in Settings integrations
+- Binance sync: local script (scripts/sync-binance.js) + launchd daily cron (Vercel geo-blocked)
+- Exchange rate auto-refresh: ECB rates via frankfurter.app on each Binance sync
+- OFX import: bank-agnostic (SGML v1 + XML v2), batch dedup, maxDuration=60
+- Batch OFX upload: Settings accepts multiple files, sequential processing with progress
+- Transactions tab: monthly spend chart, auto-categorised transactions, category override, currency toggle (NZD/AUD/USD)
+- Historical exchange rates: rate_nzdaud column on finance_transactions, backfilled via frankfurter API
+- Exchange rate pair format fix: NZD${currency} (no slash) matching Binance sync convention
+
+Next: Goal auto-progress, review snapshots.
 
 ## graphify
 
