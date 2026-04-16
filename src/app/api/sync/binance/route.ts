@@ -145,6 +145,9 @@ export async function GET(request: Request) {
       }
     }
 
+    // Skip dust (under NZ$1)
+    if (nzdValue < 1) continue;
+
     const balanceCents = Math.round(nzdValue * 100);
 
     // Find or create account
