@@ -174,10 +174,18 @@ export async function POST(request: Request) {
     totalValue += Math.abs(amountCents);
   }
 
+  // Deduplicate rows by external_id (keep last occurrence)
+  const deduped = new Map<string, (typeof rows)[0]>();
+  for (const row of rows) {
+    deduped.set(`${row.import_source}|${row.external_id}`, row);
+  }
+  const uniqueRows = [...deduped.values()];
+  skipped += rows.length - uniqueRows.length;
+
   // Batch upsert in chunks of 100
   let imported = 0;
-  for (let i = 0; i < rows.length; i += 100) {
-    const batch = rows.slice(i, i + 100);
+  for (let i = 0; i < uniqueRows.length; i += 100) {
+    const batch = uniqueRows.slice(i, i + 100);
     const { error } = await supabase
       .from("finance_transactions")
       .upsert(batch, { onConflict: "import_source,external_id" });
