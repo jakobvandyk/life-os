@@ -4,6 +4,7 @@ import { replyTelegram, answerCallbackQuery, editMessageReplyMarkup } from "@/li
 export async function POST(request: Request) {
   const secret = request.headers.get("x-telegram-bot-api-secret-token");
   if (secret !== process.env.TELEGRAM_WEBHOOK_SECRET) {
+    console.log("Telegram auth failed. Got:", JSON.stringify(secret), "Expected:", JSON.stringify(process.env.TELEGRAM_WEBHOOK_SECRET?.slice(0, 4) + "..."));
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
