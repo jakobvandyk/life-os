@@ -118,8 +118,12 @@ async function main() {
 
   let updated = 0;
 
+  // Skip tokens that are written off or not worth tracking
+  const SKIP = ["LTO", "AUD", "FDUSD", "ACA", "SNM", "LRC"];
+
   for (const bal of balances) {
     const symbol = bal.asset;
+    if (SKIP.includes(symbol)) continue;
     const amount = parseFloat(bal.free) + parseFloat(bal.locked);
     let nzdValue;
 
