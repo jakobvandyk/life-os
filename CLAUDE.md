@@ -176,6 +176,8 @@ notification_preferences, notification_rules, notifications, telegram_pairing_co
   - All fields except date are optional — only send what the iOS Shortcut pulls
   - Upserts to workout_checkins, logs mindfulness to habit_logs if matching habit exists
   - maxDuration=10, uses maybeSingle() to avoid crash on missing rows
+  - date is normalised server-side: ISO passes through, d/M/yyyy (NZ Shortcuts locale) is converted; anything else logs a sync error and returns 400
+  - write failures are captured and logged to integration_syncs (status "error" + error_message); status "ok" means the rows actually landed
 - Garmin Recovery: not a direct API integration — map recovery % to readiness field via iOS Shortcut (divide by 10 for 0-10 scale)
 - Kubios HRV: Manual entry via DailyCheckin form (Polar H10 → Kubios app → read values → enter in Life OS). Metrics: RMSSD, PNS index, SNS index, Baevsky stress index, readiness 0-100, mean HR. Sync scaffold at /api/sync/kubios (not active, requires paid Kubios Cloud).
 - Apple Health Import: POST /api/import/apple-health (session auth, JSON body)

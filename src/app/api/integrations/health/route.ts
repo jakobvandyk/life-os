@@ -2,6 +2,23 @@ import { getServiceClient } from "@/lib/supabase-service";
 
 export const maxDuration = 10;
 
+// iOS Shortcuts' default date-as-text is NZ locale (d/M/yyyy); Postgres needs ISO.
+function normalizeDate(raw: unknown): string | null {
+  if (typeof raw !== "string" || !raw.trim()) return null;
+  const s = raw.trim();
+  const iso = s.match(/^\d{4}-\d{2}-\d{2}/);
+  if (iso) return iso[0];
+  const dmy = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if (dmy) {
+    const day = Number(dmy[1]);
+    const month = Number(dmy[2]);
+    if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+      return `${dmy[3]}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    }
+  }
+  return null;
+}
+
 export async function POST(request: Request) {
   const apiKey = request.headers.get("x-api-key");
   if (!apiKey || apiKey !== process.env.HEALTH_WEBHOOK_KEY) {
@@ -27,7 +44,21 @@ export async function POST(request: Request) {
   }
 
   const db = getServiceClient();
+
+  const day = normalizeDate(date);
+  if (!day) {
+    await db.from("integration_syncs").insert({
+      user_id: userId,
+      source: "apple_health",
+      status: "error",
+      records_imported: 0,
+      error_message: `unparseable date: ${JSON.stringify(date)}`,
+    });
+    return Response.json({ error: `unparseable date: ${JSON.stringify(date)}` }, { status: 400 });
+  }
+
   const imported: string[] = [];
+  const writeErrors: string[] = [];
 
   // Upsert workout_checkins
   const checkinFields: Record<string, unknown> = {};
@@ -51,17 +82,21 @@ export async function POST(request: Request) {
   if (vo2_max != null) { checkinFields.vo2_max = vo2_max; imported.push("vo2_max"); }
 
   if (Object.keys(checkinFields).length > 0) {
-    const { data: existing } = await db
+    const { data: existing, error: lookupError } = await db
       .from("workout_checkins")
       .select("id")
       .eq("user_id", userId)
-      .eq("date", date)
+      .eq("date", day)
       .maybeSingle();
 
-    if (existing) {
-      await db.from("workout_checkins").update(checkinFields).eq("id", existing.id);
+    if (lookupError) {
+      writeErrors.push(`checkin lookup: ${lookupError.message}`);
+    } else if (existing) {
+      const { error } = await db.from("workout_checkins").update(checkinFields).eq("id", existing.id);
+      if (error) writeErrors.push(`checkin update: ${error.message}`);
     } else {
-      await db.from("workout_checkins").insert({ user_id: userId, date, ...checkinFields });
+      const { error } = await db.from("workout_checkins").insert({ user_id: userId, date: day, ...checkinFields });
+      if (error) writeErrors.push(`checkin insert: ${error.message}`);
     }
   }
 
@@ -75,13 +110,14 @@ export async function POST(request: Request) {
       .maybeSingle();
 
     if (habit) {
-      await db
+      const { error } = await db
         .from("habit_logs")
         .upsert(
-          { user_id: userId, habit_id: habit.id, date, value: mindfulness_minutes },
+          { user_id: userId, habit_id: habit.id, date: day, value: mindfulness_minutes },
           { onConflict: "habit_id,date" }
         );
-      imported.push("mindfulness");
+      if (error) writeErrors.push(`habit upsert: ${error.message}`);
+      else imported.push("mindfulness");
     }
   }
 
@@ -89,9 +125,13 @@ export async function POST(request: Request) {
   await db.from("integration_syncs").insert({
     user_id: userId,
     source: "apple_health",
-    status: "ok",
-    records_imported: imported.length,
+    status: writeErrors.length ? "error" : "ok",
+    records_imported: writeErrors.length ? 0 : imported.length,
+    error_message: writeErrors.length ? writeErrors.join("; ") : null,
   });
 
+  if (writeErrors.length) {
+    return Response.json({ ok: false, errors: writeErrors }, { status: 500 });
+  }
   return Response.json({ ok: true, imported });
 }
