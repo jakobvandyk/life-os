@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { queueWrite } from "@/lib/sync";
 import { SESSIONS, SessionTypeKey, ExerciseDef, SessionType } from "../constants";
@@ -12,6 +12,14 @@ interface ExerciseEntry {
   rpe: string;
 }
 
+// Local calendar date — toISOString() is UTC, which is yesterday for NZ mornings
+function localToday(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+const DRAFT_KEY = "workout-session-draft";
+
 interface SessionLoggerProps {
   userId: string | null;
   onRefetch: () => void;
@@ -22,6 +30,34 @@ export default function SessionLogger({ userId, onRefetch }: SessionLoggerProps)
   const [exerciseEntries, setExerciseEntries] = useState<Record<string, ExerciseEntry>>({});
   const [sessionNotes, setSessionNotes] = useState("");
   const [saving, setSaving] = useState(false);
+
+  // Restore a same-day draft on mount — iOS Safari evicts background tabs and
+  // in-app navigation unmounts this component, so memory-only state gets wiped
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (!raw) return;
+      const draft = JSON.parse(raw);
+      if (draft.date !== localToday() || !SESSIONS[draft.session as SessionTypeKey]) {
+        localStorage.removeItem(DRAFT_KEY);
+        return;
+      }
+      setSelectedSession(draft.session);
+      setExerciseEntries(draft.entries ?? {});
+      setSessionNotes(draft.notes ?? "");
+    } catch {
+      localStorage.removeItem(DRAFT_KEY);
+    }
+  }, []);
+
+  // Persist the in-progress entry on every change
+  useEffect(() => {
+    if (!selectedSession) return;
+    localStorage.setItem(
+      DRAFT_KEY,
+      JSON.stringify({ date: localToday(), session: selectedSession, entries: exerciseEntries, notes: sessionNotes })
+    );
+  }, [selectedSession, exerciseEntries, sessionNotes]);
 
   const handleSessionSelect = (sessionKey: SessionTypeKey) => {
     setSelectedSession(sessionKey);
@@ -40,6 +76,7 @@ export default function SessionLogger({ userId, onRefetch }: SessionLoggerProps)
   };
 
   const handleBackToPicker = () => {
+    localStorage.removeItem(DRAFT_KEY);
     setSelectedSession(null);
     setExerciseEntries({});
     setSessionNotes("");
@@ -106,7 +143,7 @@ export default function SessionLogger({ userId, onRefetch }: SessionLoggerProps)
     setSaving(true);
     try {
       const session = SESSIONS[selectedSession];
-      const today = new Date().toISOString().split('T')[0];
+      const today = localToday();
 
       // Insert session
       const sessionPayload = {
