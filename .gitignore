@@ -40,3 +40,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .env.local
+.env*.local
+
+# local tooling output, not part of the app
+.remember/
+graphify-out/
